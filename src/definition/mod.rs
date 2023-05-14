@@ -8,9 +8,6 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Id(pub String);
-// pub struct Id {
-//     value: String,
-// }
 
 impl Id {
     pub fn new(id: &str) -> Id {
