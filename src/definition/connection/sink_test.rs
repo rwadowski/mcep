@@ -4,7 +4,7 @@ mod test {
     use crate::definition::{DataType, Id};
 
     #[test]
-    fn sink_json_serialization() {
+    fn sink_json_deserialization() {
         let id = Id::new("sink_id");
         let dt = DataType::Text;
         let payload = r#"
@@ -19,7 +19,7 @@ mod test {
     }
 
     #[test]
-    fn sink_json_deserialization() {
+    fn sink_json_serialization() {
         let id = Id::new("sink_id");
         let dt = DataType::Text;
         let sink = Sink::new(id, dt);

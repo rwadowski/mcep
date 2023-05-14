@@ -29,7 +29,7 @@ mod junction_test {
     }
 
     #[test]
-    fn junction_json_serialization() {
+    fn junction_json_deserialization() {
         let payload = r#"
             {
                 "parent": "parent_id",
@@ -47,7 +47,7 @@ mod junction_test {
     }
 
     #[test]
-    fn junction_json_deserialization() {
+    fn junction_json_serialization() {
         let junction = Junction {
             parent: Id("parent_id".to_string()),
             id: Id("id".to_string()),
