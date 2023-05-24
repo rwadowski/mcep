@@ -28,17 +28,6 @@ pub struct Definition {
     pub help: Option<String>,
 }
 
-#[derive(Insertable, Deserialize)]
-#[serde(crate = "rocket::serde")]
-#[diesel(table_name = app_definitions)]
-pub struct NewDefinition {
-    pub title: String,
-    pub version: String,
-    pub body: Option<String>,
-    pub description: Option<String>,
-    pub help: Option<String>,
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum DataType {
     Boolean,
