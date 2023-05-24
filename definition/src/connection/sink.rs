@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::definition::{DataType, Id};
+use crate::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Sink {

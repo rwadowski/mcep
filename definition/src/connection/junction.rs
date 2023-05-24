@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::definition::error::DefinitionError;
-use crate::definition::{DataType, Id};
+use crate::error::DefinitionError;
+use crate::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Junction {

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::definition::block::{Block, BlockType, Input, Output};
-use crate::definition::Id;
+use crate::block::{Block, BlockType, Input, Output};
+use crate::Id;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Js {
@@ -11,8 +11,7 @@ pub struct Js {
     pub code: String,
 }
 
-impl Js {}
-
+#[typetag::serde]
 impl Block for Js {
     fn id(&self) -> Id {
         self.id.clone()

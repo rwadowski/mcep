@@ -1,7 +1,76 @@
+pub mod block;
+pub mod connection;
+pub mod error;
+pub mod schema;
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
+use diesel::prelude::*;
+use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
+use crate::schema::app_definitions;
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Id(pub String);
+
+impl Id {
+    pub fn new(id: &str) -> Id {
+        Id(id.to_string())
+    }
+}
+
+#[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
+pub struct Definition {
+    pub id: i32,
+    pub title: String,
+    pub version: String,
+    pub body: Option<String>,
+    pub description: Option<String>,
+    pub help: Option<String>,
+}
+
+#[derive(Insertable, Deserialize)]
+#[serde(crate = "rocket::serde")]
+#[diesel(table_name = app_definitions)]
+pub struct NewDefinition {
+    pub title: String,
+    pub version: String,
+    pub body: Option<String>,
+    pub description: Option<String>,
+    pub help: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum DataType {
+    Boolean,
+    UnsignedInt,
+    SignedInt,
+    FloatType,
+    Text,
+    Array(Box<DataType>),
+    Map(Box<DataType>, Box<DataType>),
+}
+
+enum Data {
+    Boolean(bool),
+    UnsignedInt(u32),
+    SignedInt(i32),
+    Float(f32),
+    Text(String),
+    Array(Vec<Data>),
+    Map(HashMap<Data, Data>),
+}
+
+use std::rc::Rc;
+use diesel::Queryable;
+use crate::block::Block;
+use crate::connection::sink::Sink;
+use crate::connection::source::Source;
+use crate::connection::Connection;
+
 #[cfg(test)]
-mod test {
+mod tests {
     use test_case::test_case;
-    use crate::definition::DataType;
+    use crate::DataType;
 
     #[test_case(DataType::Boolean, "\"Boolean\""; "serialization of boolean is correct")]
     #[test_case(DataType::UnsignedInt, "\"UnsignedInt\""; "serialization of unsigned int is correct")]

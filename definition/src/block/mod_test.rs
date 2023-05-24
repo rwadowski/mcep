@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::{DataType, Id};
-    use crate::definition::block::{Input, Output};
+    use crate::{DataType, Id};
+    use crate::block::{Input, Output};
 
     #[test]
     fn id_json_serialize() {

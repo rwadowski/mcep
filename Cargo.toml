@@ -1,13 +1,18 @@
+[workspace]
+members = [
+    "definition",
+    "database",
+    "api",
+    "services",
+]
+
 [package]
 name = "mcep"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+target = "src/main.rs"
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
+api = { path = "api"}
 
-[dev-dependencies]
-test-case = "3.1.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

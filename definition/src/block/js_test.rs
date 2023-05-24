@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::block::{BlockType, Input, Output};
-    use crate::definition::{DataType, Id};
-        use crate::definition::block::js::Js;
+    use crate::block::{BlockType, Input, Output};
+    use crate::{DataType, Id};
+    use crate::block::js::Js;
 
     #[test]
     fn js_json_serialization() {

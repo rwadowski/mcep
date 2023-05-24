@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  psql:
+    container_name: database
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=mcep
+      - POSTGRES_PASSWORD=mcep
+    ports:
+      - '5432:5432'

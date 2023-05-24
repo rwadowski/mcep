@@ -1,0 +1,5 @@
+/target/
+/database/.env
+/database/migrations/.keep
+
+.idea

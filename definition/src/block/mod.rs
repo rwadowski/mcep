@@ -3,13 +3,14 @@ mod mod_test;
 mod js_test;
 
 use serde::{Deserialize, Serialize};
-use crate::definition::{DataType, Id};
+use crate::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BlockType {
     Js,
 }
 
+#[typetag::serde(tag = "type")]
 pub trait Block {
     fn id(&self) -> Id;
     fn block_type(&self) -> BlockType;
