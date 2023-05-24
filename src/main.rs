@@ -1,11 +1,15 @@
+#[macro_use] extern crate rocket;
+
 use tokio::signal::ctrl_c;
 use tokio::signal;
 use api;
 
-#[tokio::main]
+#[rocket::main]
 async fn main() {
     println!("Running mcep");
-    std::thread::spawn(move || api::start_rocket());
+    tokio::spawn(async move {
+        api::start_rocket().launch().await
+    });
 
     signal::ctrl_c().await.expect("failed to listen for event");
 
