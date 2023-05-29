@@ -1,4 +1,4 @@
--- Your SQL goes here
+-- Add migration script here
 
 CREATE TABLE app_definitions (
     id SERIAL PRIMARY KEY,
@@ -7,4 +7,4 @@ CREATE TABLE app_definitions (
     body TEXT NOT NULL,
     description TEXT,
     help TEXT
-)
+);

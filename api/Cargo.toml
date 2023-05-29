@@ -11,3 +11,4 @@ services = { path = "../services"}
 
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde_json = "1.0.88"
+sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres" ] }

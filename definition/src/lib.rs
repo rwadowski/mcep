@@ -1,13 +1,10 @@
 pub mod block;
 pub mod connection;
 pub mod error;
-pub mod schema;
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use diesel::prelude::*;
 use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
-use crate::schema::app_definitions;
-
+use sqlx::{FromRow, postgres::PgRow, Row};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Id(pub String);
@@ -18,7 +15,7 @@ impl Id {
     }
 }
 
-#[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
+#[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, sqlx::FromRow)]
 pub struct Definition {
     pub id: i32,
     pub title: String,
@@ -27,6 +24,7 @@ pub struct Definition {
     pub description: Option<String>,
     pub help: Option<String>,
 }
+
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum DataType {
@@ -50,7 +48,6 @@ enum Data {
 }
 
 use std::rc::Rc;
-use diesel::Queryable;
 use crate::block::Block;
 use crate::connection::sink::Sink;
 use crate::connection::source::Source;

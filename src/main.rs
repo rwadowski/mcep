@@ -2,13 +2,17 @@
 
 use tokio::signal::ctrl_c;
 use tokio::signal;
+use database;
 use api;
 
 #[rocket::main]
 async fn main() {
     println!("Running mcep");
+
+    let database_connection_pool = database::init_connection_pool().await;
+
     tokio::spawn(async move {
-        api::start_rocket().launch().await
+        api::start_rocket(database_connection_pool).launch().await
     });
 
     signal::ctrl_c().await.expect("failed to listen for event");

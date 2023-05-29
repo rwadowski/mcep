@@ -1,15 +1,12 @@
 use rocket::response::status::Created;
 use rocket::serde::json::Json;
 use definition::Definition;
-use database::establish_connection;
-use diesel::prelude::*;
 use rocket::serde;
 use serde::Deserialize;
-use definition::schema::app_definitions;
+use sqlx::{Error, Executor, Pool, Postgres};
 
-#[derive(Insertable, Deserialize)]
+#[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
-#[diesel(table_name = app_definitions)]
 pub struct NewDefinition {
     pub title: String,
     pub version: String,
@@ -18,14 +15,18 @@ pub struct NewDefinition {
     pub help: Option<String>,
 }
 
-pub fn create_definition(def: Json<NewDefinition>) -> Created<String> {
-    use definition::schema::app_definitions;
+pub async fn create_definition(pool: &Pool<Postgres>, def: NewDefinition) -> Option<Definition> {
+    let result: Result<Definition, Error> = sqlx::query_as::<_, Definition>("INSERT INTO app_definitions (title, version, body, description, help) VALUES ($1, $2, $3, $4, $5) RETURNING *;")
+        .bind(def.title)
+        .bind(def.version)
+        .bind(def.body)
+        .bind(def.description)
+        .bind(def.help)
+        .fetch_one(pool)
+        .await;
 
-    let d = def.into_inner();
-
-    match diesel::insert_into(app_definitions::table).values(&d).get_result::<Definition>(&mut establish_connection()) {
-        Ok(d) =>
-            Created::new(d.id.to_string()),
-        Err(err) =>  panic!("Database error - {}", err)
+    match result {
+        Ok(created_def) => Some(created_def),
+        _ => None
     }
 }

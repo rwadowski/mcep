@@ -1,11 +1,11 @@
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use rocket::data::ToByteUnit;
-use database::establish_connection;
-use definition::schema::app_definitions::dsl::app_definitions;
+use sqlx::{Error, Pool, Postgres};
+use definition::Definition;
 
-pub fn delete_definition(id: i32) -> Result<(), String> {
-    use definition::schema::app_definitions;
-
-    let _ = diesel::delete(app_definitions.filter(app_definitions::id.eq(id))).execute(&mut establish_connection());
+pub async fn delete_definition(pool: &Pool<Postgres>, id: i32) -> Result<(), String> {
+    let r: Result<_, Error> = sqlx::query_as::<_, Definition>("DELETE FROM app_definitions WHERE id = $1")
+        .bind(id)
+        .fetch_one(pool)
+        .await;
     Ok(())
 }
