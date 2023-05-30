@@ -10,6 +10,8 @@ async fn main() {
 
     let database_connection_pool = database::init_connection_pool().await;
 
+    database::apply_migrations(&database_connection_pool).await.expect("migrations failed");
+
     tokio::spawn(async move {
         api::start_rocket(database_connection_pool).launch().await
     });

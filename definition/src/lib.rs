@@ -20,11 +20,11 @@ pub struct Definition {
     pub id: i32,
     pub title: String,
     pub version: String,
-    pub body: Option<String>,
+    pub body: String,
+    pub body_type: String,
     pub description: Option<String>,
     pub help: Option<String>,
 }
-
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum DataType {

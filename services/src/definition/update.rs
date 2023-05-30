@@ -10,6 +10,7 @@ pub struct UpdateDefinition {
     pub version: Option<String>,
     pub title: Option<String>,
     pub body: Option<String>,
+    pub body_type: Option<String>,
     pub description: Option<String>,
     pub help: Option<String>,
 }
@@ -62,6 +63,12 @@ fn query_data(def: UpdateDefinition) -> (String, Vec<String>) {
         let q = format!("{} = ${}", "version", index);
         set_clauses.push(q);
         values.push(version);
+        index = index + 1;
+    }
+    if let Some(body_type) = def.body_type {
+        let q = format!("{} = ${}", "body_type", index);
+        set_clauses.push(q);
+        values.push(body_type);
         index = index + 1;
     }
     query_str.push_str(set_clauses.join(", ").as_str());
