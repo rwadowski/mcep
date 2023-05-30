@@ -1,11 +1,9 @@
-use rocket::{Response, State};
+use rocket::State;
 use rocket::http::Status;
-use rocket::response::status;
-use rocket::response::status::{Created, NotFound};
+use rocket::response::status::NotFound;
 use services::definition::{create, delete, get, update};
 use rocket::serde::json::Json;
 use sqlx::{Pool, Postgres};
-use definition::Definition;
 use services::definition::create::NewDefinition;
 use services::definition::update::UpdateDefinition;
 

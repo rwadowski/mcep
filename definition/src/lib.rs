@@ -4,7 +4,7 @@ pub mod error;
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
-use sqlx::{FromRow, postgres::PgRow, Row};
+use sqlx::FromRow;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Id(pub String);
@@ -15,7 +15,7 @@ impl Id {
     }
 }
 
-#[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, sqlx::FromRow)]
+#[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, FromRow)]
 pub struct Definition {
     pub id: i32,
     pub title: String,
@@ -46,12 +46,6 @@ enum Data {
     Array(Vec<Data>),
     Map(HashMap<Data, Data>),
 }
-
-use std::rc::Rc;
-use crate::block::Block;
-use crate::connection::sink::Sink;
-use crate::connection::source::Source;
-use crate::connection::Connection;
 
 #[cfg(test)]
 mod tests {

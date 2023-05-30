@@ -2,7 +2,7 @@ mod definition;
 
 #[macro_use] extern crate rocket;
 
-use rocket::{Build, Error, Ignite, Rocket, tokio};
+use rocket::{Build, Rocket};
 use sqlx::{Pool, Postgres};
 
 pub fn start_rocket(pool: Pool<Postgres>) -> Rocket<Build> {

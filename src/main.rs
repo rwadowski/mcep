@@ -1,6 +1,5 @@
-#[macro_use] extern crate rocket;
+extern crate rocket;
 
-use tokio::signal::ctrl_c;
 use tokio::signal;
 use database;
 use api;

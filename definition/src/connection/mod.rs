@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use crate::connection::junction::Junction;
-use crate::error::DefinitionError;
 
 pub mod sink;
 pub mod source;
@@ -16,13 +15,3 @@ pub struct Connection {
     to: Junction,
 }
 
-impl Connection {
-    fn new(from: Junction, to: Junction) -> Result<Connection, DefinitionError> {
-        if from.data_type != to.data_type {
-            return Err(DefinitionError::IncorrectJunctionDataTypes);
-        }
-        Ok(
-            Connection { from, to }
-        )
-    }
-}

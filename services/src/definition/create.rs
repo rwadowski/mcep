@@ -1,9 +1,7 @@
-use rocket::response::status::Created;
-use rocket::serde::json::Json;
 use definition::Definition;
 use rocket::serde;
 use serde::Deserialize;
-use sqlx::{Error, Executor, Pool, Postgres};
+use sqlx::{Error, Pool, Postgres};
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]

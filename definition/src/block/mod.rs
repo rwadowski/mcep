@@ -24,26 +24,9 @@ pub struct Input {
     pub data_type: DataType,
 }
 
-impl Input {
-    fn new(name: String, dt: DataType) -> Input {
-        Input {
-            name,
-            data_type: dt,
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Output {
     pub name: String,
     pub data_type: DataType,
 }
 
-impl Output {
-    fn new(name: String, dt: DataType) -> Output {
-        Output {
-            name,
-            data_type: dt,
-        }
-    }
-}
