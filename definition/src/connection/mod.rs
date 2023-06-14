@@ -12,8 +12,8 @@ mod source_test;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Connection {
-    from: Junction,
-    to: Junction,
+    pub from: Junction,
+    pub to: Junction,
 }
 
 impl Connection {

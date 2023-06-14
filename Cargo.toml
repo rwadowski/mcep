@@ -10,7 +10,7 @@ members = [
 name = "mcep"
 version = "0.1.0"
 edition = "2021"
-target = "src/main.rs"
+
 
 [dependencies]
 api = { path = "api"}

@@ -23,7 +23,7 @@ mod test {
 
     #[test]
     fn input_json_serialize() {
-        let name = "input_name".to_string();
+        let name = "input_name";
         let dt = DataType::Text;
         let input = Input::new(name, dt);
         let expected: String = r#"
@@ -38,7 +38,7 @@ mod test {
 
     #[test]
     fn input_json_deserialize() {
-        let name = "input_name".to_string();
+        let name = "input_name";
         let dt = DataType::Text;
         let payload = r#"
             {
@@ -54,7 +54,7 @@ mod test {
 
     #[test]
     fn output_json_serialize() {
-        let name = "output_name".to_string();
+        let name = "output_name";
         let dt = DataType::Text;
         let output = Output::new(name, dt);
         let expected: String = r#"
@@ -69,7 +69,7 @@ mod test {
 
     #[test]
     fn output_json_deserialize() {
-        let name = "output_name".to_string();
+        let name = "output_name";
         let dt = DataType::Text;
         let payload = r#"
             {

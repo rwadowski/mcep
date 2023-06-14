@@ -8,8 +8,8 @@ mod test {
     fn js_json_serialization() {
         let id = Id::new("js_id");
         let bt = BlockType::Js;
-        let inputs = vec![Input::new("input_id_1".to_string(), DataType::Text)];
-        let outputs = vec![Output::new("output_id_1".to_string(), DataType::Text)];
+        let inputs = vec![Input::new("input_id_1", DataType::Text)];
+        let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
         let js = Js {
             id,
@@ -47,8 +47,8 @@ mod test {
     fn js_json_deserialize() {
         let id = Id::new("js_id");
         let bt = BlockType::Js;
-        let inputs = vec![Input::new("input_id_1".to_string(), DataType::Text)];
-        let outputs = vec![Output::new("output_id_1".to_string(), DataType::Text)];
+        let inputs = vec![Input::new("input_id_1", DataType::Text)];
+        let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
         let expected = Js {
             id,

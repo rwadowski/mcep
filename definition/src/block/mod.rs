@@ -25,9 +25,9 @@ pub struct Input {
 }
 
 impl Input {
-    fn new(name: String, dt: DataType) -> Input {
+    pub fn new(name: &str, dt: DataType) -> Input {
         Input {
-            name,
+            name: name.to_string(),
             data_type: dt,
         }
     }
@@ -40,9 +40,9 @@ pub struct Output {
 }
 
 impl Output {
-    fn new(name: String, dt: DataType) -> Output {
+    pub fn new(name: &str, dt: DataType) -> Output {
         Output {
-            name,
+            name: name.to_string(),
             data_type: dt,
         }
     }

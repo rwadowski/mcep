@@ -3,8 +3,8 @@ use crate::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Sink {
-    id: Id,
-    data_type: DataType,
+    pub id: Id,
+    pub data_type: DataType,
 }
 
 impl Sink {
