@@ -53,7 +53,7 @@ enum Data {
     Map(HashMap<Data, Data>),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Body {
     pub id: String,
     pub title: String,

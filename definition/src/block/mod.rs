@@ -11,7 +11,7 @@ pub enum BlockType {
 }
 
 #[typetag::serde(tag = "type")]
-pub trait Block {
+pub trait Block: std::fmt::Debug {
     fn id(&self) -> Id;
     fn block_type(&self) -> BlockType;
     fn inputs(&self) -> Vec<Input>;

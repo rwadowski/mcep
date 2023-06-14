@@ -162,7 +162,143 @@ mod tests {
         }"#.chars().filter(|c| !c.is_whitespace()).collect();
         let result = serde_json::to_string_pretty(&body);
         assert_eq!(result.is_ok(), true);
-        let result_str: String = result.unwrap().chars().filter(|c| !c.is_whitespace()).collect();;
+        let result_str: String = result.unwrap().chars().filter(|c| !c.is_whitespace()).collect();
         assert_eq!(result_str, expected);
+    }
+
+    #[test]
+    fn test_deserialize_body() {
+        let payload = r#"{
+          "id": "0",
+          "title": "title",
+          "version": "1.0.0",
+          "blocks": [
+            {
+              "type": "Js",
+              "id": "js_id",
+              "block_type": "Js",
+              "inputs": [
+                {
+                  "name": "input_id_1",
+                  "data_type": "Text"
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "output_id_1",
+                  "data_type": "Text"
+                }
+              ],
+              "code": "function f(x){return x+x}"
+            }
+          ],
+          "connections": [
+            {
+              "from": {
+                "parent": "app_id",
+                "id": "source_1_id",
+                "data_type": "Text"
+              },
+              "to": {
+                "parent": "js_1",
+                "id": "input_1_id",
+                "data_type": "Text"
+              }
+            },
+            {
+              "from": {
+                "parent": "js_1",
+                "id": "output_1_id",
+                "data_type": "Text"
+              },
+              "to": {
+                "parent": "app_id",
+                "id": "sink_1_id",
+                "data_type": "Text"
+              }
+            }
+          ],
+          "sources": [
+            {
+              "id": "source_1_id",
+              "data_type": "Text"
+            }
+          ],
+          "sinks": [
+            {
+              "id": "sink_1_id",
+              "data_type": "Text"
+            }
+          ],
+          "description": "description",
+          "help": "help"
+        }"#;
+        let block_id = Id::new("js_id");
+        let block_type = BlockType::Js;
+        let inputs = vec![Input::new("input_id_1", DataType::Text)];
+        let outputs = vec![Output::new("output_id_1", DataType::Text)];
+        let code = "function f(x){return x+x}".to_string();
+        let js = Js {
+            id: block_id,
+            block_type,
+            inputs,
+            outputs,
+            code
+        };
+        let id = 0.to_string();
+        let title = "title".to_string();
+        let version = "1.0.0".to_string();
+        let description = "description".to_string();
+        let help = "help".to_string();
+        let mut js_block_inputs: Vec<Input> = Vec::new();
+        js_block_inputs.push(
+            Input::new("input_1_id", DataType::Text)
+        );
+        let mut js_block_outputs: Vec<Output> = Vec::new();
+        js_block_outputs.push(
+            Output::new("output_1_id", DataType::Text)
+        );
+        let mut blocks: Vec<Box<dyn Block>> = Vec::new();
+        blocks.push(Box::new(js));
+        let mut sources: Vec<Source> = Vec::new();
+        sources.push(Source{
+            id: Id::new("source_1_id"),
+            data_type: DataType::Text
+        });
+        let mut sinks: Vec<Sink> = Vec::new();
+        sinks.push(Sink {
+            id: Id::new("sink_1_id"),
+            data_type: DataType::Text
+        });
+        let mut connections: Vec<Connection> = Vec::new();
+        connections.push(Connection {
+            from: Junction::new("app_id.source_1_id", DataType::Text).unwrap(),
+            to: Junction::new("js_1.input_1_id", DataType::Text).unwrap(),
+        });
+        connections.push(Connection {
+            from: Junction::new("js_1.output_1_id", DataType::Text).unwrap(),
+            to: Junction::new("app_id.sink_1_id", DataType::Text).unwrap()
+        });
+        let expected = Body {
+            id,
+            title,
+            version,
+            blocks,
+            connections,
+            sources,
+            sinks,
+            description: Some(description),
+            help: Some(help),
+        };
+
+        let result = serde_json::from_str::<Body>(payload).unwrap();
+        assert_eq!(result.id, expected.id);
+        assert_eq!(result.connections, expected.connections);
+        assert_eq!(result.description, expected.description);
+        assert_eq!(result.title, expected.title);
+        assert_eq!(result.help, expected.help);
+        assert_eq!(result.version, expected.version);
+        assert_eq!(result.sinks, expected.sinks);
+        assert_eq!(result.sources, expected.sources);
     }
 }

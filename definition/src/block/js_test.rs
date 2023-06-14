@@ -5,7 +5,7 @@ mod test {
     use crate::block::js::Js;
 
     #[test]
-    fn js_json_serialization() {
+    fn js_json_serialize() {
         let id = Id::new("js_id");
         let bt = BlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
