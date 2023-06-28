@@ -4,6 +4,7 @@ members = [
     "database",
     "api",
     "services",
+    "runtime",
 ]
 
 [package]
