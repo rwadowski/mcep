@@ -1,0 +1,4 @@
+id = "mcep-kafka-source"
+hosts = ["localhost:9092"]
+topic = "input"
+client_id = "mcep"

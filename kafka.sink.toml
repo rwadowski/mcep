@@ -1,0 +1,4 @@
+id = "mcep-kafka-sink"
+hosts = ["localhost:9092"]
+topic = "output"
+client_id = "mcep"

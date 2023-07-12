@@ -30,7 +30,7 @@ pub async fn delete_app_definition_handler(pool: &State<Pool<Postgres>>, id: i32
     Ok(id.to_string())
 }
 
-#[put("/definition", format="application/json", data="<def>")]
+#[patch("/definition", format="application/json", data="<def>")]
 pub async fn update_app_definition_handler(pool: &State<Pool<Postgres>>, def: Json<UpdateDefinition>) -> Result<String, Status> {
     match update::update_definition(pool.inner(), def.into_inner()).await {
         Some(definition) => Ok(serde_json::to_string(&definition).unwrap()),
