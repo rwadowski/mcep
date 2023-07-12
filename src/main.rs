@@ -23,10 +23,10 @@ async fn main() {
 
     let app_pool = runtime::pool::create_pool(8).expect("app pool should start");
     app_pool.spawn(move || {
-        runtime::source::kafka::run_kafka_source(tx).expect("kafka source should run");
+        runtime::source::kafka::run_kafka_source(tx.clone()).expect("kafka source should run");
     });
     app_pool.spawn(move || {
-        runtime::sink::kafka::run_kafka_sink(rx).expect("kafka sink should run");
+        runtime::sink::kafka::run_kafka_sink(rx.clone()).expect("kafka sink should run");
     });
     signal::ctrl_c().await.expect("failed to listen for event");
 
