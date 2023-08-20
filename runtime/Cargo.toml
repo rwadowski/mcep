@@ -14,3 +14,6 @@ crossbeam-channel = { version = "0.5.8" }
 toml = { version = "0.7.5" }
 serde = { version = "1.0.164" }
 serde_derive = { version = "1.0.164" }
+deno_core = { version = "0.199.0" }
+js-sandbox = { version = "0.1.6" }
+#rusty_v8 = { version = "0.32.1" }

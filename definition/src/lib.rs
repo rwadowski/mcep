@@ -3,7 +3,6 @@ pub mod connection;
 pub mod error;
 pub mod lib_test;
 
-use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
 use sqlx::FromRow;
@@ -41,16 +40,6 @@ pub enum DataType {
     Text,
     Array(Box<DataType>),
     Map(Box<DataType>, Box<DataType>),
-}
-
-enum Data {
-    Boolean(bool),
-    UnsignedInt(u32),
-    SignedInt(i32),
-    Float(f32),
-    Text(String),
-    Array(Vec<Data>),
-    Map(HashMap<Data, Data>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -22,8 +22,8 @@ pub fn run_kafka_sink(receiver: Receiver<DataFrame>) -> Result<(), String> {
        let df = receiver.recv().unwrap();
         let payload = Record::from_key_value(
             config.topic.as_str(),
-            df.origin.instance_id.0,
-            df.payload
+            df.key(),
+            df.as_json(),
         );
         producer.send(&payload).expect("should end");
     }

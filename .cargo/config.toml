@@ -1,0 +1,2 @@
+#[build]
+#rustflags = ["-L", "/Users/rwadowski/repositories/opensource/rusty_v8/target/debug/gn_out/obj"]

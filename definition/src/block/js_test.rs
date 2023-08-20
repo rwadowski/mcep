@@ -2,7 +2,7 @@
 mod test {
     use crate::block::{BlockType, Input, Output};
     use crate::{DataType, Id};
-    use crate::block::js::Js;
+    use crate::block::js::JsBlock;
 
     #[test]
     fn js_json_serialize() {
@@ -11,7 +11,7 @@ mod test {
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let js = Js {
+        let js = JsBlock {
             id,
             block_type: bt,
             inputs,
@@ -50,7 +50,7 @@ mod test {
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let expected = Js {
+        let expected = JsBlock {
             id,
             block_type: bt,
             inputs,
@@ -76,7 +76,7 @@ mod test {
                 "code": "function f(x){return x+x}"
             }
         "#.to_string();
-        let result = serde_json::from_str::<Js>(&payload);
+        let result = serde_json::from_str::<JsBlock>(&payload);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);
     }

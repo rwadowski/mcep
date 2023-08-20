@@ -2,6 +2,7 @@ pub mod js;
 mod mod_test;
 mod js_test;
 
+use std::any::Any;
 use serde::{Deserialize, Serialize};
 use crate::{DataType, Id};
 
@@ -16,6 +17,7 @@ pub trait Block: std::fmt::Debug {
     fn block_type(&self) -> BlockType;
     fn inputs(&self) -> Vec<Input>;
     fn outputs(&self) -> Vec<Output>;
+    fn as_any(&self) -> &dyn Any;
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

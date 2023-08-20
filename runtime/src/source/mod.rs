@@ -5,7 +5,7 @@ pub mod kafka;
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub(crate) struct SourceId(pub String);
 
-trait Source: std::fmt::Debug {
+pub(crate) trait Source: std::fmt::Debug {
     fn id(&self) -> SourceId;
     fn run(&self) -> Result<(), String>;
 }
