@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::os::macos::raw::stat;
 use serde_derive::{Deserialize, Serialize};
 use definition::Id;
 use crate::engine::applications::ApplicationId;

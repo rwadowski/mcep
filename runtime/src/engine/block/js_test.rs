@@ -12,11 +12,11 @@ mod test {
     use crate::engine::{BlockId, Data};
 
     #[test]
-    fn run_js_block() {
+    fn run_js_block() { ;
         let script = r#"
             function logic(input) {
                 return {
-                    z: input.y + '_' + input.x
+                    "z": { "Text": input.x["Text"] + " " + input.y["Text"] }
                 };
             }
         "#.to_string();
@@ -47,31 +47,47 @@ mod test {
             ),
             code: script,
         };
-        let input_frame_name = Name::from("input_frame_name".to_string());
-        let output_frame_name = Name::from("output_frame_name".to_string());
+        let input_x_frame_name = Name::from("x".to_string());
+        let input_y_frame_name = Name::from("y".to_string());
+        let output_frame_name = Name::from("z".to_string());
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         let mut block = JsBlock::new(
             &application_id,
             definition,
         );
-        let code = "function(x) { return x + '_' + x; }".to_string();
-        let input = DataFrame::new(
+        let input_x = DataFrame::new(
             Origin::from(InstanceId("src".to_string())),
             Instant::now(),
-            input_frame_name.clone(),
-            Data::Text("text".to_string()),
+            input_x_frame_name.clone(),
+            Data::Text("hello".to_string()),
         );
-        let result = block.run(input);
+        let input_y = DataFrame::new(
+            Origin::from(InstanceId("src".to_string())),
+            Instant::now(),
+            input_y_frame_name.clone(),
+            Data::Text("world".to_string()),
+        );
+        let mut result = block.run(input_x);
+        result = block.run(input_y);
         let expected = DataFrame::new(
             Origin::from(block.id),
             Instant::now(),
             output_frame_name.clone(),
-            Data::Text("text_text".to_string()),
+            Data::Text("hello world".to_string()),
         );
         assert_eq!(result.is_ok(), true);
         let res = result.unwrap();
-        // assert_eq!(res.origin, expected.origin);
-        // assert_eq!(res.payload, expected.payload);
+        assert_eq!(res.len(), 1);
+        let df = res.get(0).unwrap();
+        assert_eq!(df.origin, expected.origin);
+        assert_eq!(df.payload, expected.payload);
+    }
+
+    #[test]
+    fn sandbox_test() {
+        let v = Data::Text("txt".to_string());
+        let result = serde_json::to_string(&v);
+        println!("{}", result.unwrap())
     }
 }

@@ -1,8 +1,6 @@
-use std::collections::HashMap;
+use std::any::Any;
+use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
-
-use deno_core::{JsRuntime, RuntimeOptions};
-use deno_core::url::Url;
 use js_sandbox::Script;
 use serde_derive::{Deserialize, Serialize};
 
@@ -12,24 +10,16 @@ use crate::{DataFrame, Name, Origin};
 use crate::engine::applications::ApplicationId;
 use crate::engine::block::Block;
 use crate::engine::{BlockId, Data};
+type Output = BTreeMap<String, Data>;
+type Input = BTreeMap<String, Data>;
 
-#[derive(Serialize, Deserialize)]
-struct ScriptInput {
-    values: HashMap<Name, Data>
-}
-
-impl ScriptInput {
-    fn new() -> ScriptInput {
-        ScriptInput {
-            values: HashMap::new(),
-        }
+    fn new_input() -> Input {
+        let mut m: BTreeMap<String, Data> = BTreeMap::new();
+        m.insert("x".to_string(), Data::Text("txt".to_string()));
+        m.insert("y".to_string(), Data::Boolean(true));
+        m
     }
-}
 
-#[derive(Serialize, Deserialize)]
-struct ScriptOutput {
-    values: HashMap<Name, Data>
-}
 
 pub(crate) struct JsBlock {
     pub(crate) id: BlockId,
@@ -49,45 +39,23 @@ impl Block for JsBlock {
             return Ok(Vec::new())
         }
         let mut script = Script::from_string(self.definition.code.as_str()).map_err(|e| e.to_string())?;
-        let mut input = ScriptInput::new();
+        let mut input: BTreeMap<String, Data> = BTreeMap::new();
         for (name, value) in self.state.iter() {
-            input.values.insert(name.clone(), value.clone());
+            input.insert(name.value.clone(), value.clone());
         }
-        let result: ScriptOutput = script.call("logic", &(input,))
+        let result: Output = script.call("logic", &input)
             .map_err(|e| e.to_string())?;
         let origin = Origin::from(self.id());
-        let frames: Vec<DataFrame> = result.values.iter().map(|tuple| {
+        let frames: Vec<DataFrame> = result.iter().map(|tuple| {
             DataFrame::new(
                 origin.clone(),
                 Instant::now(),
-                tuple.0.clone(),
+                Name::from(tuple.0.clone()),
                 tuple.1.clone(),
             )
         }).collect();
         Ok(frames)
     }
-}
-
-async fn run__(definition:JsBlockDefinition, df: DataFrame) -> Result<DataFrame, String> {
-    //TODO - it should be handled more reasonable
-    let url = Url::parse("https://example.net").unwrap();
-    // let module = deno_core::ModuleSource::new(
-    //     deno_core::ModuleType::JavaScript,
-    //     ModuleCode::from(self.definition.code.clone()),
-    //     &url,
-    // );
-    let module_c = deno_core::ModuleCode::from(definition.code);
-    let mut runtime = JsRuntime::new(
-        RuntimeOptions::default(),
-    );
-    let mod_id = runtime.load_main_module(&url, Some(module_c)).await.unwrap();
-    let result = runtime.mod_evaluate(mod_id);
-    runtime.run_event_loop(false).await.unwrap();
-    // let result = runtime.execute_script(
-    //     "script",
-    //     ModuleCode::from(self.definition.code.clone())
-    // );
-    Err("not_implemented".to_string())
 }
 
 impl JsBlock {
