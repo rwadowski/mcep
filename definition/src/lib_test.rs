@@ -3,7 +3,7 @@ mod tests {
     use test_case::test_case;
     use crate::{Body, DataType, Id};
     use crate::block::{Block, BlockType, Input, Output};
-    use crate::block::js::Js;
+    use crate::block::js::JsBlock;
     use crate::connection::Connection;
     use crate::connection::junction::Junction;
     use crate::connection::sink::Sink;
@@ -42,7 +42,7 @@ mod tests {
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let js = Js {
+        let js = JsBlock {
             id: block_id,
             block_type,
             inputs,
@@ -101,7 +101,7 @@ mod tests {
           "version": "1.0.0",
           "blocks": [
             {
-              "type": "Js",
+              "type": "JsBlock",
               "id": "js_id",
               "block_type": "Js",
               "inputs": [
@@ -174,7 +174,7 @@ mod tests {
           "version": "1.0.0",
           "blocks": [
             {
-              "type": "Js",
+              "type": "JsBlock",
               "id": "js_id",
               "block_type": "Js",
               "inputs": [
@@ -238,7 +238,7 @@ mod tests {
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let js = Js {
+        let js = JsBlock {
             id: block_id,
             block_type,
             inputs,

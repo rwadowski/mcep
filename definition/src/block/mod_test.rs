@@ -2,7 +2,7 @@
 mod test {
     use crate::{DataType, Id};
     use crate::block::{Block, BlockType, Input, Output};
-    use crate::block::js::Js;
+    use crate::block::js::JsBlock;
 
     #[test]
     fn id_json_serialize() {
@@ -90,14 +90,14 @@ mod test {
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let expected: Box<dyn Block> = Box::new(Js {
+        let expected: Box<dyn Block> = Box::new(JsBlock {
             id,
             block_type: bt,
             inputs,
             outputs,
             code
         });
-        let payload: String = r#"{"type":"Js","id":"js_id","block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
+        let payload: String = r#"{"type":"JsBlock","id":"js_id","block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
 
         let result: Box<dyn Block> = serde_json::from_str(&payload).unwrap();
         assert_eq!(result.id(), expected.id());
