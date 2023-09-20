@@ -4,7 +4,7 @@ use std::time::Instant;
 use js_sandbox::Script;
 use serde_derive::{Deserialize, Serialize};
 
-use definition::block::js::JsBlock as JsBlockDefinition;
+use definition::block::code::CodeBlock as JsBlockDefinition;
 
 use crate::{DataFrame, Name, Origin};
 use crate::engine::applications::ApplicationId;

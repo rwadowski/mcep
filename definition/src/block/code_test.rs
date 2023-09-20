@@ -1,19 +1,21 @@
 #[cfg(test)]
 mod test {
-    use crate::block::{BlockType, Input, Output};
+    use crate::block::{BlockType, CodeBlockType, Input, Output};
     use crate::{DataType, Id};
-    use crate::block::js::JsBlock;
+    use crate::block::code::CodeBlock;
 
     #[test]
     fn js_json_serialize() {
         let id = Id::new("js_id");
-        let bt = BlockType::Js;
+        let block_type = BlockType::Code;
+        let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let js = JsBlock {
+        let js = CodeBlock {
             id,
-            block_type: bt,
+            code_block_type,
+            block_type,
             inputs,
             outputs,
             code
@@ -21,7 +23,8 @@ mod test {
         let js_string: String = r#"
             {
                 "id": "js_id",
-                "block_type": "Js",
+                "block_type": "Code",
+                "code_block_type": "Js",
                 "inputs": [
                     {
                         "name": "input_id_1",
@@ -46,13 +49,15 @@ mod test {
     #[test]
     fn js_json_deserialize() {
         let id = Id::new("js_id");
-        let bt = BlockType::Js;
+        let block_type = BlockType::Code;
+        let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let expected = JsBlock {
+        let expected = CodeBlock {
             id,
-            block_type: bt,
+            block_type,
+            code_block_type,
             inputs,
             outputs,
             code
@@ -60,7 +65,8 @@ mod test {
         let payload: String = r#"
             {
                 "id": "js_id",
-                "block_type": "Js",
+                "block_type": "Code",
+                "code_block_type": "Js",
                 "inputs": [
                     {
                         "name": "input_id_1",
@@ -76,7 +82,7 @@ mod test {
                 "code": "function f(x){return x+x}"
             }
         "#.to_string();
-        let result = serde_json::from_str::<JsBlock>(&payload);
+        let result = serde_json::from_str::<CodeBlock>(&payload);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);
     }

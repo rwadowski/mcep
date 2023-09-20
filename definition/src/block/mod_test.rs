@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod test {
+    use rocket::figment::Source::Code;
     use crate::{DataType, Id};
-    use crate::block::{Block, BlockType, Input, Output};
-    use crate::block::js::JsBlock;
+    use crate::block::{Block, BlockType, CodeBlockType, Input, Output};
+    use crate::block::code::CodeBlock;
 
     #[test]
     fn id_json_serialize() {
@@ -86,18 +87,20 @@ mod test {
     #[test]
     fn dynamic_block_json_deserialize() {
         let id = Id::new("js_id");
-        let bt = BlockType::Js;
+        let code_block_type = CodeBlockType::Js;
+        let block_type = BlockType::Code;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let expected: Box<dyn Block> = Box::new(JsBlock {
+        let expected: Box<dyn Block> = Box::new(CodeBlock {
             id,
-            block_type: bt,
+            block_type,
+            code_block_type,
             inputs,
             outputs,
             code
         });
-        let payload: String = r#"{"type":"JsBlock","id":"js_id","block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
+        let payload: String = r#"{"type":"CodeBlock","id":"js_id","block_type":"Code","code_block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
 
         let result: Box<dyn Block> = serde_json::from_str(&payload).unwrap();
         assert_eq!(result.id(), expected.id());

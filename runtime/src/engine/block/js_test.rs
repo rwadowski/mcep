@@ -2,8 +2,8 @@
 mod test {
     use std::collections::HashMap;
     use std::time::Instant;
-    use definition::block::{BlockType, Input, Output};
-    use definition::block::js::{JsBlock as JsBlockDefinition};
+    use definition::block::{BlockType, CodeBlockType, Input, Output};
+    use definition::block::code::{CodeBlock as CodeBlockDefinition};
     use definition::{DataType, Id};
     use crate::{DataFrame, InstanceId, Name, Origin};
     use crate::engine::applications::ApplicationId;
@@ -26,9 +26,10 @@ mod test {
         let x_input = "x".to_string();
         let y_input = "y".to_string();
         let output = "output".to_string();
-        let definition = JsBlockDefinition {
+        let definition = CodeBlockDefinition {
             id,
-            block_type: BlockType::Js,
+            code_block_type: CodeBlockType::Python,
+            block_type: BlockType::Code,
             inputs: vec!(
                 Input {
                     name: x_input,

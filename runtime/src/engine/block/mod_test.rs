@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use definition::block::{BlockType, Input, Output};
-    use definition::block::js::{JsBlock as JsBlockDefinition};
+    use definition::block::{BlockType, CodeBlockType, Input, Output};
+    use definition::block::code::{CodeBlock as CodeBlockDefinition};
     use definition::{DataType, Id};
     use crate::engine::applications::ApplicationId;
     use crate::engine::block;
@@ -9,11 +9,12 @@ mod test {
     #[test]
     fn create_from_correct_definition() {
         let definition_id = Id::new("definition_id");
-        let block_type = BlockType::Js;
+        let block_type = BlockType::Code;
         let input_1_name = "input_1_name".to_string();
         let input_1_data_type = DataType::Text;
         let output_1_name = "output_1_name".to_string();
         let output_1_data_type = DataType::Text;
+        let lang = CodeBlockType::Python;
         let inputs = vec!(
             Input {
                 name: input_1_name,
@@ -27,8 +28,9 @@ mod test {
             }
         );
         let code = "function logic(x) { return x + '_' + x; }".to_string();
-        let definition = JsBlockDefinition {
+        let definition = CodeBlockDefinition {
             id: definition_id,
+            code_block_type: lang,
             block_type,
             inputs,
             outputs,

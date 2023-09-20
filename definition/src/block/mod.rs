@@ -1,6 +1,6 @@
-pub mod js;
+pub mod code;
 mod mod_test;
-mod js_test;
+mod code_test;
 
 use std::any::Any;
 use serde::{Deserialize, Serialize};
@@ -8,7 +8,13 @@ use crate::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BlockType {
+    Code,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum CodeBlockType {
     Js,
+    Python,
 }
 
 #[typetag::serde(tag = "type")]

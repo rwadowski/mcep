@@ -2,8 +2,8 @@
 mod tests {
     use test_case::test_case;
     use crate::{Body, DataType, Id};
-    use crate::block::{Block, BlockType, Input, Output};
-    use crate::block::js::JsBlock;
+    use crate::block::{Block, BlockType, CodeBlockType, Input, Output};
+    use crate::block::code::CodeBlock;
     use crate::connection::Connection;
     use crate::connection::junction::Junction;
     use crate::connection::sink::Sink;
@@ -38,13 +38,15 @@ mod tests {
     #[test]
     fn test_serialize_body() {
         let block_id = Id::new("js_id");
-        let block_type = BlockType::Js;
+        let code_block_type = CodeBlockType::Js;
+        let block_type = BlockType::Code;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let js = JsBlock {
+        let js = CodeBlock {
             id: block_id,
             block_type,
+            code_block_type,
             inputs,
             outputs,
             code
@@ -101,9 +103,10 @@ mod tests {
           "version": "1.0.0",
           "blocks": [
             {
-              "type": "JsBlock",
+              "type": "CodeBlock",
               "id": "js_id",
-              "block_type": "Js",
+              "block_type": "Code",
+              "code_block_type": "Js",
               "inputs": [
                 {
                   "name": "input_id_1",
@@ -174,9 +177,10 @@ mod tests {
           "version": "1.0.0",
           "blocks": [
             {
-              "type": "JsBlock",
+              "type": "CodeBlock",
               "id": "js_id",
-              "block_type": "Js",
+              "block_type": "Code",
+              "code_block_type": "Js",
               "inputs": [
                 {
                   "name": "input_id_1",
@@ -234,12 +238,14 @@ mod tests {
           "help": "help"
         }"#;
         let block_id = Id::new("js_id");
-        let block_type = BlockType::Js;
+        let block_type = BlockType::Code;
+        let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
-        let js = JsBlock {
+        let js = CodeBlock {
             id: block_id,
+            code_block_type,
             block_type,
             inputs,
             outputs,

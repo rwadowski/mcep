@@ -1,5 +1,5 @@
-use definition::block::{Block as BlockDefinition, BlockType};
-use definition::block::js::JsBlock as JsBlockDefinition;
+use definition::block::{Block as BlockDefinition, BlockType, CodeBlockType};
+use definition::block::code::CodeBlock as CodeBlockDefinition;
 
 use crate::DataFrame;
 use crate::engine::BlockId;
@@ -18,16 +18,16 @@ pub(crate) trait Block {
 pub(crate) fn new_block(application_id: ApplicationId, definition: Box<dyn BlockDefinition>) -> Result<Box<dyn Block>, String> {
     let block_type = definition.block_type();
     match block_type {
-        BlockType::Js => {
+        BlockType::Code => {
             let def = as_js_block_definition(definition)?;
             Ok(Box::new(JsBlock::new(&application_id, def)))
-        },
+        }
         _ => Err("unrecognized definition".to_string()),
     }
 }
 
-fn as_js_block_definition(definition: Box<dyn BlockDefinition>) -> Result<JsBlockDefinition, String> {
-    match definition.as_any().downcast_ref::<JsBlockDefinition>() {
+fn as_js_block_definition(definition: Box<dyn BlockDefinition>) -> Result<CodeBlockDefinition, String> {
+    match definition.as_any().downcast_ref::<CodeBlockDefinition>() {
         Some(def) => Ok(def.clone()),
         None => Err("can't cast to js definition".to_string()),
     }
