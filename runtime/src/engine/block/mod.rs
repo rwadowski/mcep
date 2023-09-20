@@ -4,10 +4,10 @@ use definition::block::code::CodeBlock as CodeBlockDefinition;
 use crate::DataFrame;
 use crate::engine::BlockId;
 use crate::engine::applications::ApplicationId;
-use crate::engine::block::js::JsBlock;
+use crate::engine::block::code::CodeBlock;
 
-mod js;
-mod js_test;
+mod code;
+mod code_test;
 mod mod_test;
 
 pub(crate) trait Block {
@@ -20,7 +20,7 @@ pub(crate) fn new_block(application_id: ApplicationId, definition: Box<dyn Block
     match block_type {
         BlockType::Code => {
             let def = as_js_block_definition(definition)?;
-            Ok(Box::new(JsBlock::new(&application_id, def)))
+            Ok(Box::new(CodeBlock::new(&application_id, def)))
         }
         _ => Err("unrecognized definition".to_string()),
     }

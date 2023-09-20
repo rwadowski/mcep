@@ -8,7 +8,7 @@ mod test {
     use crate::{DataFrame, InstanceId, Name, Origin};
     use crate::engine::applications::ApplicationId;
     use crate::engine::block::Block;
-    use crate::engine::block::js::JsBlock;
+    use crate::engine::block::code::CodeBlock;
     use crate::engine::{BlockId, Data};
 
     #[test]
@@ -53,7 +53,7 @@ mod test {
         let output_frame_name = Name::from("z".to_string());
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
-        let mut block = JsBlock::new(
+        let mut block = CodeBlock::new(
             &application_id,
             definition,
         );

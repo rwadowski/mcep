@@ -4,7 +4,7 @@ use std::time::Instant;
 use js_sandbox::Script;
 use serde_derive::{Deserialize, Serialize};
 
-use definition::block::code::CodeBlock as JsBlockDefinition;
+use definition::block::code::CodeBlock as CodeBlockDefinition;
 
 use crate::{DataFrame, Name, Origin};
 use crate::engine::applications::ApplicationId;
@@ -21,14 +21,14 @@ type Input = BTreeMap<String, Data>;
     }
 
 
-pub(crate) struct JsBlock {
+pub(crate) struct CodeBlock {
     pub(crate) id: BlockId,
-    pub(crate) definition: JsBlockDefinition,
+    pub(crate) definition: CodeBlockDefinition,
     pub(crate) output_mappings: HashMap<Name, Name>,
     state: HashMap<Name, Data>,
 }
 
-impl Block for JsBlock {
+impl Block for CodeBlock {
     fn id(&self) -> BlockId {
         self.id.clone()
     }
@@ -58,14 +58,14 @@ impl Block for JsBlock {
     }
 }
 
-impl JsBlock {
-    pub(crate) fn new(application_id: &ApplicationId, definition: JsBlockDefinition) -> JsBlock {
+impl CodeBlock {
+    pub(crate) fn new(application_id: &ApplicationId, definition: CodeBlockDefinition) -> CodeBlock {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         for output in definition.outputs.iter() {
             let name = Name::from(output.name.clone());
             output_mappings.insert(name.clone(), name.clone());
         }
-        JsBlock {
+        CodeBlock {
             id: BlockId::new(application_id, &definition.id),
             definition,
             output_mappings,
