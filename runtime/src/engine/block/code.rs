@@ -1,8 +1,5 @@
-use std::any::Any;
 use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
-use js_sandbox::Script;
-use serde_derive::{Deserialize, Serialize};
 
 use definition::block::code::CodeBlock as CodeBlockDefinition;
 
@@ -38,23 +35,24 @@ impl Block for CodeBlock {
         if self.state.len() != self.definition.inputs.len() {
             return Ok(Vec::new())
         }
-        let mut script = Script::from_string(self.definition.code.as_str()).map_err(|e| e.to_string())?;
+        // let mut script = Script::from_string(self.definition.code.as_str()).map_err(|e| e.to_string())?;
         let mut input: BTreeMap<String, Data> = BTreeMap::new();
         for (name, value) in self.state.iter() {
             input.insert(name.value.clone(), value.clone());
         }
-        let result: Output = script.call("logic", &input)
-            .map_err(|e| e.to_string())?;
+        // let result: Output = script.call("logic", &input)
+        //     .map_err(|e| e.to_string())?;
         let origin = Origin::from(self.id());
-        let frames: Vec<DataFrame> = result.iter().map(|tuple| {
-            DataFrame::new(
-                origin.clone(),
-                Instant::now(),
-                Name::from(tuple.0.clone()),
-                tuple.1.clone(),
-            )
-        }).collect();
-        Ok(frames)
+        // let frames: Vec<DataFrame> = result.iter().map(|tuple| {
+        //     DataFrame::new(
+        //         origin.clone(),
+        //         Instant::now(),
+        //         Name::from(tuple.0.clone()),
+        //         tuple.1.clone(),
+        //     )
+        // }).collect();
+        // Ok(frames)
+        Err("not implemented".to_string())
     }
 }
 
