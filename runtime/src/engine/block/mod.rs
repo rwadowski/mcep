@@ -7,7 +7,6 @@ use crate::engine::applications::ApplicationId;
 use crate::engine::block::code::CodeBlock;
 
 mod code;
-mod code_test;
 mod mod_test;
 
 pub(crate) trait Block {

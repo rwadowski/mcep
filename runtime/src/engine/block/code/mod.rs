@@ -1,3 +1,5 @@
+mod python;
+
 use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
 
@@ -10,12 +12,12 @@ use crate::engine::{BlockId, Data};
 type Output = BTreeMap<String, Data>;
 type Input = BTreeMap<String, Data>;
 
-    fn new_input() -> Input {
-        let mut m: BTreeMap<String, Data> = BTreeMap::new();
-        m.insert("x".to_string(), Data::Text("txt".to_string()));
-        m.insert("y".to_string(), Data::Boolean(true));
-        m
-    }
+fn new_input() -> Input {
+    let mut m: BTreeMap<String, Data> = BTreeMap::new();
+    m.insert("x".to_string(), Data::Text("txt".to_string()));
+    m.insert("y".to_string(), Data::Boolean(true));
+    m
+}
 
 
 pub(crate) struct CodeBlock {
