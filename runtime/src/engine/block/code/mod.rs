@@ -1,4 +1,5 @@
-mod python;
+pub mod python;
+mod python_test;
 
 use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
@@ -38,10 +39,14 @@ impl Block for CodeBlock {
             return Ok(Vec::new())
         }
         // let mut script = Script::from_string(self.definition.code.as_str()).map_err(|e| e.to_string())?;
-        let mut input: BTreeMap<String, Data> = BTreeMap::new();
+        let mut input: HashMap<String, Data> = HashMap::new();
         for (name, value) in self.state.iter() {
             input.insert(name.value.clone(), value.clone());
         }
+        let python_block = python::PythonBlock {
+            code: self.definition.code.clone()
+        };
+        let result = python_block.run_python_code(input);
         // let result: Output = script.call("logic", &input)
         //     .map_err(|e| e.to_string())?;
         let origin = Origin::from(self.id());
