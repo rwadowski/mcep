@@ -24,8 +24,8 @@ impl BlockId {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Data {
     Boolean(bool),
-    UnsignedInt(u32),
-    SignedInt(i32),
+    UnsignedInt(u64),
+    SignedInt(i64),
     //TODO - add floats
     // Float(f64),
     Text(String),

@@ -1,38 +1,39 @@
-use std::collections::{BTreeMap, HashMap};
+
+use std::collections::HashMap;
+use std::hash::Hash;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
-use crate::DataFrame;
+use pyo3::types::{PyBool, PyInt, PyLong, PyString};
 use crate::engine::Data;
+use pyo3::types::IntoPyDict;
 
 pub(crate) struct PythonBlock {
     pub code: String
 }
 
-
 impl PythonBlock {
 
     //TODO - initialize python during creation of struct
-    pub fn run_python_code(&self, input: HashMap<String, Data>) -> PyResult<()> {
+    pub fn run_python_code(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
+        pyo3::prepare_freethreaded_python();
         Python::with_gil(|py| {
-            let function: Py<PyAny> =  PyModule::from_code(py, self.code.as_str(), "", "")?
-                .getattr("logic")?
+            let function: Py<PyAny> =  PyModule::from_code(py, self.code.as_str(), "", "")
+                .map_err(|e| e.to_string())?
+                .getattr("logic")
+                .map_err(|e| e.to_string())?
                 .into();
-            let args = PyTuple::new(py, input);
-            let result = function.call1(py, args)?;
-
-            Ok(())
-            // let f: Py<PyAny> = PyModule::from_code(py, self.code.as_str(), "", "")?
-            //     .getattr("logic")?
-            //     .into();
-            // let values = input.values().into_iter();
-            // let args = PyTuple::new(py, values);
-            // let result = f.call1(py, args);
-            //     ()
+            let args = (input.into_py_dict(py),);
+            let result = function.call(py, args, None);
+            match result {
+                Ok(object) => {
+                    let map: HashMap<String, Data> = object.extract(py)
+                        .map_err(|e| e.to_string())?;
+                    Ok(map)
+                },
+                Err(e) => Err(e.to_string())
+            }
         })
     }
-
-    // fn to_data_frame(object: PyObject) -> DataFrame {
-    // }
 }
 
 
@@ -43,7 +44,25 @@ impl ToPyObject for Data {
             Data::UnsignedInt(v) => v.into_py(py),
             Data::SignedInt(v) => v.into_py(py),
             Data::Text(v) => v.into_py(py),
-            _ => panic!("ups")
+            _ => panic!("Not handled")
         }
+    }
+}
+
+impl<'source> FromPyObject<'source> for Data {
+    fn extract(ob: &'source PyAny) -> PyResult<Self> {
+        if ob.is_instance_of::<PyString>() {
+            let str: String = ob.extract()?;
+            return Ok(Data::Text(str))
+        }
+        if ob.is_instance_of::<PyLong>() || ob.is_instance_of::<PyInt>() {
+            let i: i64 = ob.extract()?;
+            return Ok(Data::SignedInt(i))
+        }
+        if ob.is_instance_of::<PyBool>() {
+            let v: bool = ob.extract()?;
+            return Ok(Data::Boolean(v))
+        }
+        Err(PyValueError::new_err("unrecognized type".to_string()))
     }
 }

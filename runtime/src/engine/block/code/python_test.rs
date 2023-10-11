@@ -13,18 +13,19 @@ mod python {
 
     #[test]
     fn run_python_block() {
-        let script = r#"
-            def logic(input) {
-                return {
-                    "z": { "Text": input.x["Text"] + " " + input.y["Text"] }
-                };
-            }
-        "#.to_string();
+        let script = "def logic(v):
+    print(f'{v[\"x\"]}')
+    print(f'{v[\"y\"]}')
+    r = {
+        \"z\": v[\"x\"] + \" \" + v[\"y\"]
+    }
+    print(f'{r[\"z\"]}')
+    return r".to_string();
         let application_id = ApplicationId("application_id".to_string());
         let id = Id::new("definition_id");
         let x_input = "x".to_string();
         let y_input = "y".to_string();
-        let output = "output".to_string();
+        let output = "z".to_string();
         let definition = CodeBlockDefinition {
             id,
             code_block_type: CodeBlockType::Python,

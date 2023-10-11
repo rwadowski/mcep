@@ -46,20 +46,17 @@ impl Block for CodeBlock {
         let python_block = python::PythonBlock {
             code: self.definition.code.clone()
         };
-        let result = python_block.run_python_code(input);
-        // let result: Output = script.call("logic", &input)
-        //     .map_err(|e| e.to_string())?;
+        let result = python_block.run_python_code(input)?;
         let origin = Origin::from(self.id());
-        // let frames: Vec<DataFrame> = result.iter().map(|tuple| {
-        //     DataFrame::new(
-        //         origin.clone(),
-        //         Instant::now(),
-        //         Name::from(tuple.0.clone()),
-        //         tuple.1.clone(),
-        //     )
-        // }).collect();
-        // Ok(frames)
-        Err("not implemented".to_string())
+        let frames: Vec<DataFrame> = result.iter().map(|tuple| {
+            DataFrame::new(
+                origin.clone(),
+                Instant::now(),
+                Name::from(tuple.0.clone()),
+                tuple.1.clone(),
+            )
+        }).collect();
+        Ok(frames)
     }
 }
 
