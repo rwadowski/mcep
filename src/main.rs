@@ -12,6 +12,8 @@ use runtime::DataFrame;
 async fn main() {
     println!("Running mcep");
 
+    runtime::init();
+
     let database_connection_pool = database::init_connection_pool().await;
 
     database::apply_migrations(&database_connection_pool).await.expect("migrations failed");

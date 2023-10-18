@@ -77,3 +77,7 @@ impl DataFrame {
         String::new()
     }
 }
+
+pub fn init() {
+    pyo3::prepare_freethreaded_python();
+}

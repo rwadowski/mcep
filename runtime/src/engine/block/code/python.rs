@@ -14,7 +14,6 @@ impl PythonBlock {
 
     //TODO - initialize python during creation of struct
     pub fn run_python_code(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
-        pyo3::prepare_freethreaded_python();
         Python::with_gil(|py| {
             let function: Py<PyAny> = PyModule::from_code(py, self.code.as_str(), "", "")
                 .map_err(|e| e.to_string())?
