@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-    use rocket::figment::Source::Code;
     use crate::{DataType, Id};
     use crate::block::{Block, BlockType, CodeBlockType, Input, Output};
     use crate::block::code::CodeBlock;

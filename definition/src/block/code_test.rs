@@ -3,7 +3,6 @@ mod test {
     use crate::block::{BlockType, CodeBlockType, Input, Output};
     use crate::{DataType, Id};
     use crate::block::code::CodeBlock;
-
     #[test]
     fn js_json_serialize() {
         let id = Id::new("js_id");

@@ -3,7 +3,6 @@ use std::hash::{Hash, Hasher};
 use serde_derive::{Deserialize, Serialize};
 use definition::Id;
 use crate::engine::applications::ApplicationId;
-use crate::engine::Data::Boolean;
 
 pub mod engine;
 mod applications;
@@ -21,19 +20,21 @@ impl BlockId {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Data {
     Boolean(bool),
     UnsignedInt(u64),
     SignedInt(i64),
-    //TODO - add floats
-    // Float(f64),
+    Float(f64),
     Text(String),
     Array(Vec<Data>),
-    //TODO - add hashes
-    // Map(HashMap<String, Data>),
 }
 
+impl AsRef<Data> for Data {
+    fn as_ref(&self) -> &Data {
+        return &self
+    }
+}
 impl Hash for Data {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
@@ -41,6 +42,7 @@ impl Hash for Data {
             Data::UnsignedInt(i) => i.hash(state),
             Data::SignedInt(i) => i.hash(state),
             Data::Text(s) => s.hash(state),
+            Data::Float(f) => f.to_string().hash(state),
             Data::Array(arr) => arr.hash(state),
         }
     }

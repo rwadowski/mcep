@@ -20,6 +20,12 @@ runtime = { path = "runtime" }
 crossbeam-channel = { version = "0.5.8" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
-toml = { version = "0.7.5" }
+toml = { version = "0.8.2" }
 serde = { version = "1.0.164" }
 serde_derive = { version = "1.0.164" }
+
+pyo3 = { version = "0.20.0", features = ["auto-initialize"]}
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]

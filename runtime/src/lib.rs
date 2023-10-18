@@ -51,7 +51,7 @@ impl From<String> for Name {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct DataFrame {
     origin: Origin,
     ts: Instant,
