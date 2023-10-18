@@ -11,8 +11,6 @@ pub(crate) struct PythonBlock {
 }
 
 impl PythonBlock {
-
-    //TODO - initialize python during creation of struct
     pub fn run_python_code(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
         Python::with_gil(|py| {
             let function: Py<PyAny> = PyModule::from_code(py, self.code.as_str(), "", "")
