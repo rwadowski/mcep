@@ -1,4 +1,7 @@
-
 fn main() {
-    println!("cargo:rustc-link-lib=dylib=python3.10")
+    if cfg!(target_os = "macos") {
+        println!("cargo:rustc-link-lib=framework=CoreFoundation");
+    } else {
+        println!("cargo:rustc-link-lib=dylib=python3.10")
+    }
 }
