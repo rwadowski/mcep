@@ -7,7 +7,7 @@ use database;
 use api;
 use runtime;
 use runtime::DataFrame;
-use runtime::engine::{Command, Engine};
+use runtime::engine::Command;
 
 #[rocket::main]
 async fn main() {

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run mcep" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-    <option name="command" value="run --no-default-features --package mcep --bin mcep" />
+    <option name="command" value="run --no-default-features  --package mcep --bin mcep --verbose" />
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <option name="emulateTerminal" value="true" />
     <option name="channel" value="DEFAULT" />
