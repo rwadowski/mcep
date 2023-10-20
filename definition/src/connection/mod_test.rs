@@ -42,12 +42,12 @@ mod test {
         let expected: String = r#"
             {
                 "from": {
-                    "parent": "p1",
+                    "block": "p1",
                     "id": "j1",
                     "data_type": "Text"
                 },
                 "to": {
-                    "parent": "p2",
+                    "block": "p2",
                     "id": "j2",
                     "data_type": "Text"
                 }
@@ -65,12 +65,12 @@ mod test {
         let payload = r#"
             {
                 "from": {
-                    "parent": "p1",
+                    "block": "p1",
                     "id": "j1",
                     "data_type": "Text"
                 },
                 "to": {
-                    "parent": "p2",
+                    "block": "p2",
                     "id": "j2",
                     "data_type": "Text"
                 }

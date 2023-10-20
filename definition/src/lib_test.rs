@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use test_case::test_case;
-    use crate::{Body, DataType, Id};
+    use crate::{Application, DataType, Id};
     use crate::block::{Block, BlockType, CodeBlockType, Input, Output};
     use crate::block::code::CodeBlock;
     use crate::connection::Connection;
@@ -85,7 +85,7 @@ mod tests {
             from: Junction::new("js_1.output_1_id", DataType::Text).unwrap(),
             to: Junction::new("app_id.sink_1_id", DataType::Text).unwrap()
         });
-        let body = Body {
+        let body = Application {
             id,
             title,
             version,
@@ -125,24 +125,24 @@ mod tests {
           "connections": [
             {
               "from": {
-                "parent": "app_id",
+                "block": "app_id",
                 "id": "source_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "parent": "js_1",
+                "block": "js_1",
                 "id": "input_1_id",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "parent": "js_1",
+                "block": "js_1",
                 "id": "output_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "parent": "app_id",
+                "block": "app_id",
                 "id": "sink_1_id",
                 "data_type": "Text"
               }
@@ -199,24 +199,24 @@ mod tests {
           "connections": [
             {
               "from": {
-                "parent": "app_id",
+                "block": "app_id",
                 "id": "source_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "parent": "js_1",
+                "block": "js_1",
                 "id": "input_1_id",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "parent": "js_1",
+                "block": "js_1",
                 "id": "output_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "parent": "app_id",
+                "block": "app_id",
                 "id": "sink_1_id",
                 "data_type": "Text"
               }
@@ -285,7 +285,7 @@ mod tests {
             from: Junction::new("js_1.output_1_id", DataType::Text).unwrap(),
             to: Junction::new("app_id.sink_1_id", DataType::Text).unwrap()
         });
-        let expected = Body {
+        let expected = Application {
             id,
             title,
             version,
@@ -297,7 +297,7 @@ mod tests {
             help: Some(help),
         };
 
-        let result = serde_json::from_str::<Body>(payload).unwrap();
+        let result = serde_json::from_str::<Application>(payload).unwrap();
         assert_eq!(result.id, expected.id);
         assert_eq!(result.connections, expected.connections);
         assert_eq!(result.description, expected.description);

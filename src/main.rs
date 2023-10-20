@@ -7,6 +7,7 @@ use database;
 use api;
 use runtime;
 use runtime::DataFrame;
+use runtime::engine::{Command, Engine};
 
 #[rocket::main]
 async fn main() {
@@ -21,14 +22,21 @@ async fn main() {
         api::start_rocket(rocket_config(), database_connection_pool).launch().await
     });
 
-    let (tx, rx): (Sender<DataFrame>, Receiver<DataFrame>) = crossbeam_channel::unbounded();
+    let (command_tx, command_rx): (Sender<Command>, Receiver<Command>) = crossbeam_channel::unbounded();
+    let (kafka_tx, kafka_rx): (Sender<DataFrame>, Receiver<DataFrame>) = crossbeam_channel::unbounded();
 
+    let engine_data_input = kafka_rx.clone();
+    let engine_data_output = kafka_tx.clone();
+    let engine_command_rx = command_rx.clone();
     let app_pool = runtime::pool::create_pool(8).expect("app pool should start");
     app_pool.spawn(move || {
-        runtime::source::kafka::run_kafka_source(tx.clone()).expect("kafka source should run");
+        runtime::engine::run(engine_command_rx, engine_data_input, engine_data_output);
     });
     app_pool.spawn(move || {
-        runtime::sink::kafka::run_kafka_sink(rx.clone()).expect("kafka sink should run");
+        runtime::source::kafka::run_kafka_source(kafka_tx).expect("kafka source should run");
+    });
+    app_pool.spawn(move || {
+        runtime::sink::kafka::run_kafka_sink(kafka_rx).expect("kafka sink should run");
     });
     signal::ctrl_c().await.expect("failed to listen for event");
 

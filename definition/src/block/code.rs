@@ -32,4 +32,16 @@ impl Block for CodeBlock {
     }
 
     fn as_any(&self) -> &dyn Any { self }
+
+    fn clone_box(&self) -> Box<dyn Block> {
+        let block = CodeBlock {
+            id: self.id.clone(),
+            block_type: self.block_type.clone(),
+            code_block_type: self.code_block_type.clone(),
+            inputs: self.inputs.clone(),
+            outputs: self.outputs.clone(),
+            code: self.code.clone(),
+        };
+        Box::new(block)
+    }
 }

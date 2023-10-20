@@ -43,14 +43,14 @@ pub enum DataType {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Body {
+pub struct Application {
     pub id: String,
     pub title: String,
     pub version: String,
-    pub blocks: Vec<Box<dyn Block>>,
+    pub blocks: Vec<Box<dyn Block + Send>>,
     pub connections: Vec<Connection>,
-    pub sources: Vec<Source>,
-    pub sinks: Vec<Sink>,
+    pub sources: Vec<Source>, //TODO - is it required
+    pub sinks: Vec<Sink>, //TODO - is it required
     pub description: Option<String>,
     pub help: Option<String>,
 }

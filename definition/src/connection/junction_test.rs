@@ -9,7 +9,7 @@ mod junction_test {
         let input = "block_id.input_id";
         let junction_id = Junction::new(input, DataType::Text);
         let expected = Junction {
-            parent: Id::new("block_id"),
+            block: Id::new("block_id"),
             id: Id::new("input_id"),
             data_type: DataType::Text,
         };
@@ -37,7 +37,7 @@ mod junction_test {
                 "data_type": "Text"
             }"#;
         let expected = Junction {
-            parent: Id("parent_id".to_string()),
+            block: Id("parent_id".to_string()),
             id: Id("id".to_string()),
             data_type: DataType::Text,
         };
@@ -49,7 +49,7 @@ mod junction_test {
     #[test]
     fn junction_json_serialization() {
         let junction = Junction {
-            parent: Id("parent_id".to_string()),
+            block: Id("parent_id".to_string()),
             id: Id("id".to_string()),
             data_type: DataType::Text,
         };

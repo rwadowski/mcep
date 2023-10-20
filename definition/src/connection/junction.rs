@@ -4,7 +4,7 @@ use crate::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Junction {
-    pub parent: Id,
+    pub block: Id,
     pub id: Id,
     pub data_type: DataType,
 }
@@ -16,7 +16,7 @@ impl Junction {
             return Err(DefinitionError::IncorrectJunctionString);
         }
         Ok(Junction {
-            parent: Id::new(res[0]),
+            block: Id::new(res[0]),
             id: Id::new(res[1]),
             data_type,
         })

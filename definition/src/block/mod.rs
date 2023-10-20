@@ -3,6 +3,7 @@ mod mod_test;
 mod code_test;
 
 use std::any::Any;
+use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
 use crate::{DataType, Id};
 
@@ -18,12 +19,19 @@ pub enum CodeBlockType {
 }
 
 #[typetag::serde(tag = "type")]
-pub trait Block: std::fmt::Debug {
+pub trait Block: Send + Debug {
     fn id(&self) -> Id;
     fn block_type(&self) -> BlockType;
     fn inputs(&self) -> Vec<Input>;
     fn outputs(&self) -> Vec<Output>;
     fn as_any(&self) -> &dyn Any;
+    fn clone_box(&self) -> Box<dyn Block>;
+}
+
+impl Clone for Box<dyn Block> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

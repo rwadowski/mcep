@@ -3,13 +3,13 @@ use crate::engine::block::Block;
 use crate::engine::Data;
 use crate::engine::router::Router;
 
-pub(crate) struct ApplicationId(pub String);
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ApplicationId(pub String);
 
-pub(crate) struct Application {
+//TODO - implement me
+pub struct Application {
     blocks: Vec<Box<dyn Block>>,
     router: Router,
-    // input: Receiver<Data>,
-    // sender: Sender<Data>,
 }
 
 impl Application {

@@ -3,8 +3,12 @@ use std::hash::{Hash, Hasher};
 use serde_derive::{Deserialize, Serialize};
 use definition::Id;
 use crate::engine::applications::ApplicationId;
+use crossbeam_channel::{Receiver, Sender, select};
+use definition::Application;
+use definition::connection::junction::Junction;
+use crate::DataFrame;
+use crate::engine::block::Block;
 
-pub mod engine;
 mod applications;
 mod router;
 mod block;
@@ -44,6 +48,48 @@ impl Hash for Data {
             Data::Text(s) => s.hash(state),
             Data::Float(f) => f.to_string().hash(state),
             Data::Array(arr) => arr.hash(state),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Command {
+    CreateApplication(Application),
+    DeleteApplication(ApplicationId)
+}
+
+pub struct Engine {
+    blocks: HashMap<BlockId, Box<dyn Block>>,
+    connections: HashMap<Junction, Vec<Junction>>,
+    command_rx: Receiver<Command>,
+    data_input: Receiver<DataFrame>,
+    data_output: Sender<DataFrame>,
+}
+
+impl Engine {
+    pub fn new(command_rx: Receiver<Command>,
+               data_input: Receiver<DataFrame>,
+               data_output: Sender<DataFrame>) -> Engine {
+        Engine {
+            blocks: HashMap::new(),
+            connections: HashMap::new(),
+            command_rx,
+            data_input,
+            data_output,
+        }
+    }
+}
+pub fn run(command_rx: Receiver<Command>,
+           data_input:Receiver<DataFrame>,
+           data_output: Sender<DataFrame>){
+    let engine = Engine::new(
+        command_rx,
+        data_input,
+        data_output,
+    );
+    loop {
+        select! {
+            recv(engine.command_rx) -> cmd => println!("{:?}", cmd.unwrap())
         }
     }
 }
