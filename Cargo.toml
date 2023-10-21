@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "definition",
+    "types",
     "database",
     "api",
     "services",
@@ -12,8 +12,8 @@ name = "mcep"
 version = "0.1.0"
 edition = "2021"
 
-
 [dependencies]
+types = { path = "types" }
 api = { path = "api"}
 database = { path = "database" }
 runtime = { path = "runtime" }

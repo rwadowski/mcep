@@ -1,9 +1,9 @@
-use definition::block::{Block as BlockDefinition, BlockType, CodeBlockType};
-use definition::block::code::CodeBlock as CodeBlockDefinition;
+use types::definition::ApplicationId;
+use types::definition::block::{Block as BlockDefinition, BlockType};
+use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 
 use crate::DataFrame;
 use crate::engine::BlockId;
-use crate::engine::applications::ApplicationId;
 use crate::engine::block::code::CodeBlock;
 
 mod code;

@@ -1,7 +1,6 @@
 use sqlx::{Error, Pool, Postgres};
-use definition::Definition;
-use rocket::serde;
-use serde::Deserialize;
+use rocket::serde::Deserialize;
+use types::definition::Definition;
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]

@@ -4,7 +4,6 @@ fn main() {
         println!(
             "cargo:rustc-link-search=native=/opt/homebrew/Cellar/python@3.10/3.10.13/Frameworks/Python.framework/Versions/3.10/lib"
         );
-        println!("link-args=-Wl,-rpath,/opt/homebrew/Cellar/python@3.10/3.10.13/Frameworks/Python.framework/Versions/3.10/lib");
         println!("cargo:rustc-link-lib=dylib=python3.10");
     } else {
         println!("cargo:rustc-link-lib=dylib=python3.10")

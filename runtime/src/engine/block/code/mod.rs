@@ -4,11 +4,11 @@ mod mod_test;
 
 use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
+use types::definition::ApplicationId;
 
-use definition::block::code::CodeBlock as CodeBlockDefinition;
+use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 
 use crate::{DataFrame, Name, Origin};
-use crate::engine::applications::ApplicationId;
 use crate::engine::block::Block;
 use crate::engine::{BlockId, Data};
 type Output = BTreeMap<String, Data>;

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use definition::block::{BlockType, CodeBlockType, Input, Output};
+    use types::definition::block::{BlockType, CodeBlockType, Input, Output};
     use definition::block::code::{CodeBlock as CodeBlockDefinition};
     use definition::{DataType, Id};
     use crate::engine::applications::ApplicationId;

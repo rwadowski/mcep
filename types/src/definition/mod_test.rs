@@ -97,7 +97,7 @@ mod tests {
             help: Some(help),
         };
         let expected: String =
-        r#"{
+            r#"{
           "id": "0",
           "title": "title",
           "version": "1.0.0",

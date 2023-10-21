@@ -1,7 +1,7 @@
 use std::any::Any;
 use serde::{Deserialize, Serialize};
-use crate::block::{Block, BlockType, CodeBlockType, Input, Output};
-use crate::Id;
+use crate::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
+use crate::definition::Id;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CodeBlock {

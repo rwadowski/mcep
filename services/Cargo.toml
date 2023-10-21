@@ -6,10 +6,12 @@ edition = "2021"
 # See more keys and their definition at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-definition = { path = "../definition"}
+types = { path = "../types"}
 database = { path = "../database" }
 
 diesel = { version = "2.0.0", features = ["postgres"] }
-serde_json = "1.0.88"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
+crossbeam-channel = { version = "0.5.8" }

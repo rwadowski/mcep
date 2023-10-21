@@ -34,11 +34,12 @@ dependencies = [
 name = "api"
 version = "0.1.0"
 dependencies = [
- "definition",
+ "crossbeam-channel",
  "rocket",
  "serde_json",
  "services",
  "sqlx",
+ "types",
 ]
 
 [[package]]
@@ -287,18 +288,6 @@ version = "0.1.0"
 dependencies = [
  "dotenvy",
  "sqlx",
-]
-
-[[package]]
-name = "definition"
-version = "0.1.0"
-dependencies = [
- "rocket",
- "serde",
- "serde_json",
- "sqlx",
- "test-case",
- "typetag",
 ]
 
 [[package]]
@@ -999,6 +988,7 @@ dependencies = [
  "serde_derive",
  "tokio",
  "toml 0.8.2",
+ "types",
 ]
 
 [[package]]
@@ -1646,7 +1636,6 @@ name = "runtime"
 version = "0.1.0"
 dependencies = [
  "crossbeam-channel",
- "definition",
  "kafka",
  "pyo3",
  "pyo3-build-config",
@@ -1654,8 +1643,10 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "services",
  "tokio",
  "toml 0.8.2",
+ "types",
 ]
 
 [[package]]
@@ -1772,12 +1763,14 @@ dependencies = [
 name = "services"
 version = "0.1.0"
 dependencies = [
+ "crossbeam-channel",
  "database",
- "definition",
  "diesel",
  "rocket",
+ "serde",
  "serde_json",
  "sqlx",
+ "types",
 ]
 
 [[package]]
@@ -2360,6 +2353,18 @@ name = "typenum"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
+
+[[package]]
+name = "types"
+version = "0.1.0"
+dependencies = [
+ "rocket",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "test-case",
+ "typetag",
+]
 
 [[package]]
 name = "typetag"

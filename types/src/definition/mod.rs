@@ -1,15 +1,15 @@
 pub mod block;
 pub mod connection;
 pub mod error;
-pub mod lib_test;
+pub mod mod_test;
 
 use serde::{Serialize, Deserialize};
 use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
 use sqlx::FromRow;
-use crate::block::Block;
-use crate::connection::Connection;
-use crate::connection::sink::Sink;
-use crate::connection::source::Source;
+use crate::definition::block::Block;
+use crate::definition::connection::Connection;
+use crate::definition::connection::sink::Sink;
+use crate::definition::connection::source::Source;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Id(pub String);
@@ -40,6 +40,11 @@ pub enum DataType {
     Text,
     Array(Box<DataType>),
     Map(Box<DataType>, Box<DataType>),
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub struct ApplicationId {
+    pub value: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]

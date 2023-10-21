@@ -5,7 +5,7 @@ mod code_test;
 use std::any::Any;
 use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
-use crate::{DataType, Id};
+use crate::definition::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BlockType {

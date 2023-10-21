@@ -7,11 +7,14 @@ use database;
 use api;
 use runtime;
 use runtime::DataFrame;
-use runtime::engine::Command;
+use types::deployment::Command;
 
 #[rocket::main]
 async fn main() {
     println!("Running mcep");
+
+    let (command_tx, command_rx): (Sender<Command>, Receiver<Command>) = crossbeam_channel::unbounded();
+    let (kafka_tx, kafka_rx): (Sender<DataFrame>, Receiver<DataFrame>) = crossbeam_channel::unbounded();
 
     runtime::init();
 
@@ -19,11 +22,8 @@ async fn main() {
 
     database::apply_migrations(&database_connection_pool).await.expect("migrations failed");
     tokio::spawn(async move {
-        api::start_rocket(rocket_config(), database_connection_pool).launch().await
+        api::start_rocket(rocket_config(), database_connection_pool, command_tx).launch().await
     });
-
-    let (command_tx, command_rx): (Sender<Command>, Receiver<Command>) = crossbeam_channel::unbounded();
-    let (kafka_tx, kafka_rx): (Sender<DataFrame>, Receiver<DataFrame>) = crossbeam_channel::unbounded();
 
     let engine_data_input = kafka_rx.clone();
     let engine_data_output = kafka_tx.clone();

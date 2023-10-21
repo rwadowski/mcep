@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::connection::junction::Junction;
-use crate::error::DefinitionError;
+use crate::definition::connection::junction::Junction;
+use crate::definition::error::DefinitionError;
 
 pub mod sink;
 pub mod source;

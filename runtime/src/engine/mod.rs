@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use serde_derive::{Deserialize, Serialize};
-use definition::Id;
-use crate::engine::applications::ApplicationId;
+use types::definition::{ApplicationId, Id};
 use crossbeam_channel::{Receiver, Sender, select};
-use definition::Application;
-use definition::connection::junction::Junction;
+use types::definition::connection::junction::Junction;
+use types::deployment::Command;
 use crate::DataFrame;
 use crate::engine::block::Block;
 
@@ -19,7 +18,7 @@ pub(crate) struct BlockId(pub String);
 impl BlockId {
     fn new(application_id: &ApplicationId, id: &Id) -> BlockId {
         BlockId(
-            application_id.0.clone() + "." + id.0.as_str(),
+            application_id.value.clone() + "." + id.0.as_str(),
         )
     }
 }
@@ -50,12 +49,6 @@ impl Hash for Data {
             Data::Array(arr) => arr.hash(state),
         }
     }
-}
-
-#[derive(Debug)]
-pub enum Command {
-    CreateApplication(Application),
-    DeleteApplication(ApplicationId)
 }
 
 pub struct Engine {
