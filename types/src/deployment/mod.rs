@@ -2,10 +2,17 @@ use serde::{Serialize, Deserialize};
 use sqlx::{Error, FromRow, Row};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
-use crate::definition::connection::Connection;
-use crate::definition::connection::sink::Sink;
-use crate::definition::connection::source::Source;
-use crate::definition::Id;
+use crate::deployment::connection::Connection;
+use crate::definition::{DefinitionId, Id};
+use crate::deployment::sink::Sink;
+use crate::deployment::source::Source;
+
+pub mod sink;
+pub mod source;
+mod sink_test;
+mod source_test;
+pub mod connection;
+mod mod_test;
 
 #[derive(Debug)]
 pub enum Command {
@@ -23,6 +30,24 @@ pub struct Deployment {
     pub connections: Vec<Connection>,
     pub sources: Vec<Source>,
     pub sinks: Vec<Sink>,
+}
+
+impl Deployment {
+
+    pub fn block_id(&self) -> BlockId {
+        let id = Id::new(self.name.as_str());
+        BlockId::new(&self.id, &id)
+    }
+    pub fn definition_ids(&self) -> Result<Vec<DefinitionId>, String> {
+        let mut result: Vec<DefinitionId> = Vec::new();
+        for connection in self.connections.iter() {
+            let from: DefinitionId = connection.from.block.value.parse::<DefinitionId>().map_err(|err| err.to_string())?;
+            result.push(from);
+            let to: DefinitionId = connection.to.block.value.parse::<DefinitionId>().map_err(|err| err.to_string())?;
+            result.push(to);
+        }
+        Ok(result)
+    }
 }
 
 impl FromRow<'_, PgRow> for Deployment {

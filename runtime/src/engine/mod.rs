@@ -2,8 +2,9 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use serde_derive::{Deserialize, Serialize};
 use crossbeam_channel::{Receiver, Sender, select};
-use types::definition::connection::junction::Junction;
-use types::deployment::{BlockId, Command};
+use log::debug;
+use types::deployment::{BlockId, Command, Deployment};
+use types::deployment::connection::junction::Junction;
 use crate::DataFrame;
 use crate::engine::block::Block;
 use crate::engine::router::Router;
@@ -74,4 +75,25 @@ pub fn run(command_rx: Receiver<Command>,
             recv(engine.command_rx) -> cmd => println!("{:?}", cmd.unwrap())
         }
     }
+}
+
+fn process_command(engine: &mut Engine, command: Command) -> Result<(), String> {
+    debug!("command {:?} received", command);
+    match command {
+        Command::Deploy(deployment) => {
+            // let code_block = PythonCodeBlock::new(deployment.id, )
+        }
+        Command::Undeploy(deploymnent_id) => {}
+    }
+    Ok(())
+}
+
+//TODO deployment needs a list of definition_ids, connection is the right place, it is going to be use only in deployment
+//TODO we need to read the block body from the database so service for that is needed
+fn deploy_blocks(engine: &mut Engine, deployment: &Deployment) -> Result<(), String> {
+    let definition_ids = deployment.definition_ids()?;
+    for definition_id in definition_ids.iter() {
+
+    }
+    Ok(())
 }

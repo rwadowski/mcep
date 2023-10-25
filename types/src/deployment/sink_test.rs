@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::connection::sink::Sink;
     use crate::definition::{DataType, Id};
+    use crate::deployment::sink::Sink;
 
     #[test]
     fn sink_json_deserialization() {

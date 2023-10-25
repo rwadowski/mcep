@@ -3,8 +3,8 @@ use rocket::log::private::{error, info};
 use rocket::serde::Deserialize;
 use types::deployment::{Command, Deployment};
 use sqlx::{Error, Pool, Postgres};
-use types::definition::connection::Connection;
 use types::deployment::Command::Deploy;
+use types::deployment::connection::Connection;
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]

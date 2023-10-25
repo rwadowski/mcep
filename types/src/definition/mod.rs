@@ -1,5 +1,4 @@
 pub mod block;
-pub mod connection;
 pub mod error;
 pub mod mod_test;
 
@@ -34,9 +33,11 @@ impl<'de> Deserialize<'de> for Id {
     }
 }
 
+pub type DefinitionId = i32;
+
 #[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, FromRow)]
 pub struct Definition {
-    pub id: i32,
+    pub id: DefinitionId,
     pub name: String,
     pub version: String,
     pub body: String,

@@ -9,7 +9,7 @@ mod test {
     use types::deployment::{Deployment, DeploymentId};
     use crate::{DataFrame, InstanceId, Name, Origin};
     use crate::engine::block::Block;
-    use crate::engine::block::code::CodeBlock;
+    use crate::engine::block::code::PythonCodeBlock;
     use crate::engine::Data;
     #[test]
     fn run_code_block() {
@@ -51,7 +51,7 @@ mod test {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         println!("{:}", serde_json::to_string(&definition).unwrap());
-        let mut block = CodeBlock::new(
+        let mut block = PythonCodeBlock::new(
             &deployment_id,
             definition,
         );

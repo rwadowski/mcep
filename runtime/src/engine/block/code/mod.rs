@@ -2,26 +2,23 @@ pub mod python;
 mod python_test;
 mod mod_test;
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::time::Instant;
-
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use types::deployment::DeploymentId;
-
 use crate::{DataFrame, Name, Origin};
 use crate::engine::block::Block;
 use crate::engine::{BlockId, Data};
-type Output = BTreeMap<String, Data>;
-type Input = BTreeMap<String, Data>;
+use crate::engine::block::code::python::PythonBlock;
 
-pub(crate) struct CodeBlock {
+pub struct PythonCodeBlock {
     pub(crate) id: BlockId,
     pub(crate) definition: CodeBlockDefinition,
-    pub(crate) output_mappings: HashMap<Name, Name>,
     state: HashMap<Name, Data>,
+    python_block: PythonBlock,
 }
 
-impl Block for CodeBlock {
+impl Block for PythonCodeBlock {
     fn id(&self) -> BlockId {
         self.id.clone()
     }
@@ -36,10 +33,7 @@ impl Block for CodeBlock {
         for (name, value) in self.state.iter() {
             input.insert(name.value.clone(), value.clone());
         }
-        let python_block = python::PythonBlock {
-            code: self.definition.code.clone()
-        };
-        let result = python_block.run_python_code(input)?;
+        let result = self.python_block.run(input)?;
         let origin = Origin::from(self.id());
         let frames: Vec<DataFrame> = result.iter().map(|tuple| {
             DataFrame::new(
@@ -53,18 +47,14 @@ impl Block for CodeBlock {
     }
 }
 
-impl CodeBlock {
-    pub(crate) fn new(deployment_id: &DeploymentId, definition: CodeBlockDefinition) -> CodeBlock {
-        let mut output_mappings: HashMap<Name, Name> = HashMap::new();
-        for output in definition.outputs.iter() {
-            let name = Name::from(output.name.clone());
-            output_mappings.insert(name.clone(), name.clone());
-        }
-        CodeBlock {
+impl PythonCodeBlock {
+    pub fn new(deployment_id: &DeploymentId, definition: CodeBlockDefinition) -> PythonCodeBlock {
+        let code = definition.code.clone();
+        PythonCodeBlock {
             id: BlockId::new(deployment_id, &definition.id),
             definition,
-            output_mappings,
             state: HashMap::new(),
+            python_block: PythonBlock{ code }
         }
     }
 }

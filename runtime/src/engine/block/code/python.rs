@@ -11,7 +11,7 @@ pub(crate) struct PythonBlock {
 }
 
 impl PythonBlock {
-    pub fn run_python_code(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
+    pub fn run(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
         Python::with_gil(|py| {
             let function: Py<PyAny> = PyModule::from_code(py, self.code.as_str(), "", "")
                 .map_err(|e| e.to_string())?

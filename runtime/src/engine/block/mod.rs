@@ -4,9 +4,9 @@ use types::deployment::DeploymentId;
 
 use crate::DataFrame;
 use crate::engine::BlockId;
-use crate::engine::block::code::CodeBlock;
+use crate::engine::block::code::PythonCodeBlock;
 
-mod code;
+pub(crate) mod code;
 mod mod_test;
 
 pub(crate) trait Block {
@@ -19,7 +19,7 @@ pub(crate) fn new_block(deployment_id: DeploymentId, definition: Box<dyn BlockDe
     match block_type {
         BlockType::Code => {
             let def = as_js_block_definition(definition)?;
-            Ok(Box::new(CodeBlock::new(&deployment_id, def)))
+            Ok(Box::new(PythonCodeBlock::new(&deployment_id, def)))
         }
         _ => Err("unrecognized definition".to_string()),
     }

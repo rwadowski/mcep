@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::connection::Connection;
-    use crate::definition::connection::junction::Junction;
     use crate::definition::DataType;
     use crate::definition::error::DefinitionError;
+    use crate::deployment::connection::Connection;
+    use crate::deployment::connection::junction::Junction;
 
     #[test]
     fn create_connection_success() {

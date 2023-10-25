@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod junction_test {
-    use crate::definition::connection::junction::Junction;
     use crate::definition::{DataType, Id};
     use crate::definition::error::DefinitionError;
+    use crate::deployment::connection::junction::Junction;
 
     #[test]
     fn create_junction_id_success() {
