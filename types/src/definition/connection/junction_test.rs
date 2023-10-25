@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod junction_test {
-    use crate::connection::junction::Junction;
-    use crate::{DataType, Id};
-    use crate::error::DefinitionError;
+    use crate::definition::connection::junction::Junction;
+    use crate::definition::{DataType, Id};
+    use crate::definition::error::DefinitionError;
 
     #[test]
     fn create_junction_id_success() {
@@ -32,13 +32,13 @@ mod junction_test {
     fn junction_json_deserialization() {
         let payload = r#"
             {
-                "parent": "parent_id",
+                "block": "parent_id",
                 "id": "id",
                 "data_type": "Text"
             }"#;
         let expected = Junction {
-            block: Id("parent_id".to_string()),
-            id: Id("id".to_string()),
+            block: Id::new("parent_id"),
+            id: Id::new("id"),
             data_type: DataType::Text,
         };
         let result = serde_json::from_str::<Junction>(payload);
@@ -49,13 +49,13 @@ mod junction_test {
     #[test]
     fn junction_json_serialization() {
         let junction = Junction {
-            block: Id("parent_id".to_string()),
-            id: Id("id".to_string()),
+            block: Id::new("parent_id"),
+            id: Id::new("id"),
             data_type: DataType::Text,
         };
         let expected: String = r#"
             {
-                "parent": "parent_id",
+                "block": "parent_id",
                 "id": "id",
                 "data_type": "Text"
             }"#

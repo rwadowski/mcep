@@ -7,7 +7,7 @@ use types::definition::Definition;
 pub struct UpdateDefinition {
     pub id: i32,
     pub version: Option<String>,
-    pub title: Option<String>,
+    pub name: Option<String>,
     pub body: Option<String>,
     pub body_type: Option<String>,
     pub description: Option<String>,
@@ -30,11 +30,11 @@ pub async fn update_definition<'a>(pool: &Pool<Postgres>, def: UpdateDefinition)
 }
 
 fn query_data(def: UpdateDefinition) -> (String, Vec<String>) {
-    let mut query_str = "UPDATE app_definitions SET ".to_string();
+    let mut query_str = "UPDATE definitions SET ".to_string();
     let mut set_clauses: Vec<String> = Vec::new();
     let mut values: Vec<String> = Vec::new();
     let mut index = 1;
-    if let Some(title) = def.title {
+    if let Some(title) = def.name {
         let q = format!("{} = ${}", "title", index);
         set_clauses.push(q);
         values.push(title);

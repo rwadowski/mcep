@@ -1,6 +1,6 @@
-use types::definition::ApplicationId;
 use types::definition::block::{Block as BlockDefinition, BlockType};
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
+use types::deployment::DeploymentId;
 
 use crate::DataFrame;
 use crate::engine::BlockId;
@@ -14,12 +14,12 @@ pub(crate) trait Block {
     fn run(&mut self, df: DataFrame) -> Result<Vec<DataFrame>, String>;
 }
 
-pub(crate) fn new_block(application_id: ApplicationId, definition: Box<dyn BlockDefinition>) -> Result<Box<dyn Block>, String> {
+pub(crate) fn new_block(deployment_id: DeploymentId, definition: Box<dyn BlockDefinition>) -> Result<Box<dyn Block>, String> {
     let block_type = definition.block_type();
     match block_type {
         BlockType::Code => {
             let def = as_js_block_definition(definition)?;
-            Ok(Box::new(CodeBlock::new(&application_id, def)))
+            Ok(Box::new(CodeBlock::new(&deployment_id, def)))
         }
         _ => Err("unrecognized definition".to_string()),
     }

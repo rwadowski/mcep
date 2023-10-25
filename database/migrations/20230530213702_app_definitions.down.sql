@@ -1,3 +1,3 @@
 -- Add down migration script here
 
-DROP TABLE app_definitions;
+DROP TABLE definitions;

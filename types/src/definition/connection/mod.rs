@@ -10,7 +10,7 @@ mod mod_test;
 mod sink_test;
 mod source_test;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Connection {
     pub from: Junction,
     pub to: Junction,

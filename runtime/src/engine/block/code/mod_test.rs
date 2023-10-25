@@ -3,11 +3,11 @@ mod test {
     use std::collections::HashMap;
     use std::time::Instant;
     use pyo3::prelude::*;
-    use definition::block::{BlockType, CodeBlockType, Input, Output};
-    use definition::block::code::{CodeBlock as CodeBlockDefinition};
-    use definition::{DataType, Id};
+    use types::definition::block::{BlockType, CodeBlockType, Input, Output};
+    use types::definition::block::code::{CodeBlock as CodeBlockDefinition};
+    use types::definition::{DataType, Id};
+    use types::deployment::{Deployment, DeploymentId};
     use crate::{DataFrame, InstanceId, Name, Origin};
-    use crate::engine::applications::ApplicationId;
     use crate::engine::block::Block;
     use crate::engine::block::code::CodeBlock;
     use crate::engine::Data;
@@ -18,7 +18,7 @@ mod test {
         \"z\": v[\"x\"] + \" \" + v[\"y\"]
     }
     return r".to_string();
-        let application_id = ApplicationId("application_id".to_string());
+        let deployment_id: DeploymentId = 0;
         let id = Id::new("definition_id");
         let x_input = "x".to_string();
         let y_input = "y".to_string();
@@ -50,8 +50,9 @@ mod test {
         let output_frame_name = Name::from("z".to_string());
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
+        println!("{:}", serde_json::to_string(&definition).unwrap());
         let mut block = CodeBlock::new(
-            &application_id,
+            &deployment_id,
             definition,
         );
         let input_x = DataFrame::new(

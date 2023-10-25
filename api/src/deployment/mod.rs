@@ -19,8 +19,8 @@ pub async fn get_deployment_handler(pool: &State<Pool<Postgres>>, id: i32) -> Re
 }
 
 #[post("/deployment", format="application/json", data="<dep>")]
-pub async fn create_deployment_handler(sender: &State<Sender<Command>>, dep: Json<NewDeployment>) -> Result<String, Status> {
-    match create::create_deployment(sender.inner(), dep.into_inner()).await {
+pub async fn create_deployment_handler(sender: &State<Sender<Command>>, pool: &State<Pool<Postgres>>, dep: Json<NewDeployment>) -> Result<String, Status> {
+    match create::create_deployment(sender.inner(),  pool.inner(), dep.into_inner()).await {
         Some(deployment) => Ok(serde_json::to_string(&deployment).unwrap()),
         None => Err(Status::InternalServerError)
     }

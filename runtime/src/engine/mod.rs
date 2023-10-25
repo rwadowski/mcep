@@ -1,27 +1,15 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use serde_derive::{Deserialize, Serialize};
-use types::definition::{ApplicationId, Id};
 use crossbeam_channel::{Receiver, Sender, select};
 use types::definition::connection::junction::Junction;
-use types::deployment::Command;
+use types::deployment::{BlockId, Command};
 use crate::DataFrame;
 use crate::engine::block::Block;
+use crate::engine::router::Router;
 
-mod applications;
 mod router;
 mod block;
-
-#[derive(Eq, PartialEq, Hash, Clone)]
-pub(crate) struct BlockId(pub String);
-
-impl BlockId {
-    fn new(application_id: &ApplicationId, id: &Id) -> BlockId {
-        BlockId(
-            application_id.value.clone() + "." + id.0.as_str(),
-        )
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Data {
@@ -80,6 +68,7 @@ pub fn run(command_rx: Receiver<Command>,
         data_input,
         data_output,
     );
+    let mut router = Router::new();
     loop {
         select! {
             recv(engine.command_rx) -> cmd => println!("{:?}", cmd.unwrap())

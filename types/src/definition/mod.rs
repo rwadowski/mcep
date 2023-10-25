@@ -3,35 +3,48 @@ pub mod connection;
 pub mod error;
 pub mod mod_test;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
 use sqlx::FromRow;
-use crate::definition::block::Block;
-use crate::definition::connection::Connection;
-use crate::definition::connection::sink::Sink;
-use crate::definition::connection::source::Source;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Id(pub String);
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct Id {
+    pub value: String
+}
 
 impl Id {
     pub fn new(id: &str) -> Id {
-        Id(id.to_string())
+        Id {
+            value: id.to_string()
+        }
+    }
+}
+
+impl Serialize for Id {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(self.value.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for Id {
+    fn deserialize<'d, D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+        let str: String = String::deserialize(deserializer)?;
+        Ok(Id::new(str.as_str()))
     }
 }
 
 #[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, FromRow)]
 pub struct Definition {
     pub id: i32,
-    pub title: String,
+    pub name: String,
     pub version: String,
     pub body: String,
-    pub body_type: String,
     pub description: Option<String>,
     pub help: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum DataType {
     Boolean,
     UnsignedInt,
@@ -42,20 +55,3 @@ pub enum DataType {
     Map(Box<DataType>, Box<DataType>),
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
-pub struct ApplicationId {
-    pub value: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Application {
-    pub id: String,
-    pub title: String,
-    pub version: String,
-    pub blocks: Vec<Box<dyn Block + Send>>,
-    pub connections: Vec<Connection>,
-    pub sources: Vec<Source>, //TODO - is it required
-    pub sinks: Vec<Sink>, //TODO - is it required
-    pub description: Option<String>,
-    pub help: Option<String>,
-}

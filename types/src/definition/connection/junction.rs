@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::definition::error::DefinitionError;
 use crate::definition::{DataType, Id};
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Junction {
     pub block: Id,
     pub id: Id,

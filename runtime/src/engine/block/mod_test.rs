@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use definition::block::code::{CodeBlock as CodeBlockDefinition};
-    use definition::{DataType, Id};
-    use crate::engine::applications::ApplicationId;
+    use types::definition::block::code::{CodeBlock as CodeBlockDefinition};
+    use types::definition::{DataType, Id};
+    use types::deployment::DeploymentId;
     use crate::engine::block;
 
     #[test]
@@ -36,8 +36,8 @@ mod test {
             outputs,
             code,
         };
-        let application_id = ApplicationId("application_id".to_string());
-        let result = block::new_block(application_id, Box::new(definition));
+        let deployment_id: DeploymentId = 1;
+        let result = block::new_block(deployment_id, Box::new(definition));
         assert_eq!(result.is_ok(), true);
     }
 }

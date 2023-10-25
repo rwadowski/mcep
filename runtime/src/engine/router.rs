@@ -1,12 +1,21 @@
 use std::collections::{HashMap, HashSet};
 use crate::engine::BlockId;
 
-pub(crate) struct Router {
+pub struct Router {
     table: HashMap<BlockId, HashSet<BlockId>>,
 }
 
 impl Router {
-    fn targets(&self, id: &BlockId) -> HashSet<BlockId> {
+    pub fn new() -> Router {
+        Router {
+            table: HashMap::new(),
+        }
+    }
+
+    pub fn update(&self) {
+        //TODO - implement me
+    }
+    pub fn targets(&self, id: &BlockId) -> HashSet<BlockId> {
         let result = self.table.get(id);
         match result {
             Some(set) => set.clone(),

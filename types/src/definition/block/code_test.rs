@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
-    use crate::block::{BlockType, CodeBlockType, Input, Output};
-    use crate::{DataType, Id};
-    use crate::block::code::CodeBlock;
+    use crate::definition::block::{BlockType, CodeBlockType, Input, Output};
+    use crate::definition::{DataType, Id};
+    use crate::definition::block::code::CodeBlock;
     #[test]
     fn js_json_serialize() {
         let id = Id::new("js_id");

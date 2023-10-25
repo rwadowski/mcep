@@ -4,23 +4,15 @@ mod mod_test;
 
 use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
-use types::definition::ApplicationId;
 
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
+use types::deployment::DeploymentId;
 
 use crate::{DataFrame, Name, Origin};
 use crate::engine::block::Block;
 use crate::engine::{BlockId, Data};
 type Output = BTreeMap<String, Data>;
 type Input = BTreeMap<String, Data>;
-
-fn new_input() -> Input {
-    let mut m: BTreeMap<String, Data> = BTreeMap::new();
-    m.insert("x".to_string(), Data::Text("txt".to_string()));
-    m.insert("y".to_string(), Data::Boolean(true));
-    m
-}
-
 
 pub(crate) struct CodeBlock {
     pub(crate) id: BlockId,
@@ -62,14 +54,14 @@ impl Block for CodeBlock {
 }
 
 impl CodeBlock {
-    pub(crate) fn new(application_id: &ApplicationId, definition: CodeBlockDefinition) -> CodeBlock {
+    pub(crate) fn new(deployment_id: &DeploymentId, definition: CodeBlockDefinition) -> CodeBlock {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         for output in definition.outputs.iter() {
             let name = Name::from(output.name.clone());
             output_mappings.insert(name.clone(), name.clone());
         }
         CodeBlock {
-            id: BlockId::new(application_id, &definition.id),
+            id: BlockId::new(deployment_id, &definition.id),
             definition,
             output_mappings,
             state: HashMap::new(),

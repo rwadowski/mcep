@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod test {
-    use crate::{DataType, Id};
-    use crate::block::{Block, BlockType, CodeBlockType, Input, Output};
-    use crate::block::code::CodeBlock;
+    use crate::definition::{DataType, Id};
+    use crate::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
+    use crate::definition::block::code::CodeBlock;
 
     #[test]
     fn id_json_serialize() {
-        let id: Id = Id("test_id".to_string());
+        let id: Id = Id::new("test_id");
         let expected = "\"test_id\"".to_string();
         let result = serde_json::to_string(&id);
         assert_eq!(result.is_ok(), true);
@@ -16,7 +16,7 @@ mod test {
     #[test]
     fn id_json_deserialize() {
         let string = "\"test_id\"".to_string();
-        let expected = Id("test_id".to_string());
+        let expected = Id::new("test_id");
         let result = serde_json::from_str::<Id>(string.as_str());
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);

@@ -8,7 +8,8 @@ use std::time::Instant;
 use source::SourceId;
 use std::cmp::{Eq, PartialOrd, PartialEq};
 use serde_derive::{Deserialize, Serialize};
-use crate::engine::{BlockId, Data};
+use types::deployment::BlockId;
+use crate::engine::Data;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InstanceId(pub String);
@@ -20,8 +21,8 @@ impl From<SourceId> for InstanceId {
 }
 
 impl From<BlockId> for InstanceId {
-    fn from(value: BlockId) -> Self {
-        InstanceId(value.0)
+    fn from(block_id: BlockId) -> Self {
+        InstanceId(block_id.value)
     }
 }
 
@@ -35,8 +36,8 @@ impl From<InstanceId> for Origin {
 }
 
 impl From<BlockId> for Origin {
-    fn from(value: BlockId) -> Self {
-       Origin(value.0)
+    fn from(block_id: BlockId) -> Self {
+       Origin(block_id.value)
     }
 }
 
