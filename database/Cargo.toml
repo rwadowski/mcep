@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 dotenvy = "0.15"
 sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres", "migrate" ] }
+log = { version = "0.4.20" }
+log4rs = { version = "1.2.0" }

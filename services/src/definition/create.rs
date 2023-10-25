@@ -1,3 +1,4 @@
+use rocket::log::private::{error, info};
 use rocket::serde::Deserialize;
 use sqlx::{Error, Pool, Postgres};
 use types::definition::Definition;
@@ -23,9 +24,12 @@ pub async fn create_definition(pool: &Pool<Postgres>, def: NewDefinition) -> Opt
         .await;
 
     match result {
-        Ok(created_def) => Some(created_def),
+        Ok(created_def) => {
+            info!("definition {} created", created_def.id.to_string());
+            Some(created_def)
+        },
         Err(err) => {
-            println!("{}", err.to_string());
+            error!("{}", err.to_string());
             None
         }
     }

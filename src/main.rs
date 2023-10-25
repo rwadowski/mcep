@@ -1,6 +1,11 @@
 extern crate rocket;
 
+use std::env;
 use crossbeam_channel::{Receiver, Sender};
+use log4rs::append::console::ConsoleAppender;
+use log4rs::Config;
+use log4rs::config::{Appender, Root};
+use log::{info, LevelFilter};
 use rocket::figment::providers::{Env, Format, Toml};
 use tokio::signal;
 use database;
@@ -11,7 +16,8 @@ use types::deployment::Command;
 
 #[rocket::main]
 async fn main() {
-    println!("Running mcep");
+    configure_logger();
+    info!("Running mcep");
 
     let (command_tx, command_rx): (Sender<Command>, Receiver<Command>) = crossbeam_channel::unbounded();
     let (kafka_tx, kafka_rx): (Sender<DataFrame>, Receiver<DataFrame>) = crossbeam_channel::unbounded();
@@ -48,4 +54,24 @@ fn rocket_config() -> rocket::figment::Figment {
         merge(Toml::file("Rocket.toml").nested()).
         merge(Env::prefixed("MCEP_").global()).
         select(rocket::figment::Profile::from_env_or("MCEP_PROFILE", "default"))
+}
+
+fn configure_logger() {
+    let level = match env::var("DEBUG_ENABLED") {
+        Ok(v) => {
+            let enabled: bool = v.parse().unwrap_or(false);
+            if enabled {
+                LevelFilter::Debug
+            } else {
+                LevelFilter::Info
+            }
+        }
+        _ => LevelFilter::Info
+    };
+    let stdout = ConsoleAppender::builder().build();
+    let config = Config::builder()
+        .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .build(Root::builder().appender("stdout").build(level))
+        .unwrap();
+    let _ = log4rs::init_config(config).expect("logger should run");
 }

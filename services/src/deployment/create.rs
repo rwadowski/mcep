@@ -1,8 +1,8 @@
 use crossbeam_channel::Sender;
+use rocket::log::private::{error, info};
 use rocket::serde::Deserialize;
 use types::deployment::{Command, Deployment};
 use sqlx::{Error, Pool, Postgres};
-use sqlx::types::Json;
 use types::definition::connection::Connection;
 use types::deployment::Command::Deploy;
 
@@ -35,11 +35,14 @@ pub async fn create_deployment(sender: &Sender<Command>, pool: &Pool<Postgres>, 
                     .map(|_| depl)
         });
         match result {
-            Ok(depl) => {
-                let send_result = sender.send(Deploy(depl.clone()));
-                Some(depl)
+            Ok(d) => {
+                info!("deployment {} created", d.id.to_string());
+                Some(d)
+            }
+            Err(err) => {
+                error!("{}", err.to_string());
+                None
             },
-            _ => None,
         }
     } else {
         None

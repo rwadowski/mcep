@@ -15,3 +15,5 @@ serde = { version = "1.0", features = ["derive"] }
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
 crossbeam-channel = { version = "0.5.8" }
+log = { version = "0.4.20" }
+log4rs = { version = "1.2.0" }
