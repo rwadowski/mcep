@@ -2,60 +2,133 @@
 mod junction_test {
     use crate::definition::{DataType, Id};
     use crate::definition::error::DefinitionError;
-    use crate::deployment::connection::junction::Junction;
+    use crate::deployment::connection::junction::{BlockJunction, DefinitionJunction};
 
     #[test]
-    fn create_junction_id_success() {
-        let input = "block_id.input_id";
-        let junction_id = Junction::new(input, DataType::Text);
-        let expected = Junction {
-            block: Id::new("block_id"),
+    fn create_definition_junction_id_success() {
+        let input = "1.input_id";
+        let junction = DefinitionJunction::new(input, DataType::Text);
+        let expected = DefinitionJunction {
+            block: 1,
             id: Id::new("input_id"),
             data_type: DataType::Text,
         };
 
-        assert_eq!(junction_id.unwrap(), expected)
+        assert_eq!(junction.unwrap(), expected)
+    }
+
+    #[test]
+    fn create_block_junction_id_success() {
+        let input = "block_1.input_id";
+        let junction = BlockJunction::new(input, DataType::Text);
+        let expected = BlockJunction {
+            block: Id::new("block_1"),
+            id: Id::new("input_id"),
+            data_type: DataType::Text,
+        };
+
+        assert_eq!(junction.unwrap(), expected)
     }
 
     //TODO - test case for longer chains like 'block_id.block_id.input_id'
     #[test]
-    fn create_junction_id_failure() {
+    fn create_definition_junction_failure() {
         let input = "input_id";
-        let junction_id = Junction::new(input, DataType::Text);
+        let junction = DefinitionJunction::new(input, DataType::Text);
         let expected = DefinitionError::IncorrectJunctionString;
 
-        assert_eq!(junction_id.is_err(), true);
-        assert_eq!(junction_id.err().unwrap(), expected);
+        assert_eq!(junction.is_err(), true);
+        assert_eq!(junction.err().unwrap(), expected);
+    }
+
+    //TODO - test case for longer chains like 'block_id.block_id.input_id'
+    #[test]
+    fn create_block_junction_len_failure() {
+        let input = "input_id";
+        let junction = BlockJunction::new(input, DataType::Text);
+        let expected = DefinitionError::IncorrectJunctionString;
+
+        assert_eq!(junction.is_err(), true);
+        assert_eq!(junction.err().unwrap(), expected);
     }
 
     #[test]
-    fn junction_json_deserialization() {
+    fn create_definition_junction_type_failure() {
+        let input = "block_id.input_id";
+        let junction = DefinitionJunction::new(input, DataType::Text);
+        let expected = DefinitionError::IncorrectJunctionString;
+
+        assert_eq!(junction.is_err(), true);
+        assert_eq!(junction.err().unwrap(), expected);
+    }
+
+    #[test]
+    fn definition_junction_json_deserialization() {
         let payload = r#"
             {
-                "block": "parent_id",
+                "block": 1,
                 "id": "id",
                 "data_type": "Text"
             }"#;
-        let expected = Junction {
-            block: Id::new("parent_id"),
+        let expected = DefinitionJunction {
+            block: 1,
             id: Id::new("id"),
             data_type: DataType::Text,
         };
-        let result = serde_json::from_str::<Junction>(payload);
+        let result = serde_json::from_str::<DefinitionJunction>(payload);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected)
     }
 
     #[test]
-    fn junction_json_serialization() {
-        let junction = Junction {
-            block: Id::new("parent_id"),
+    fn block_junction_json_deserialization() {
+        let payload = r#"
+            {
+                "block": "block_1",
+                "id": "id",
+                "data_type": "Text"
+            }"#;
+        let expected = BlockJunction {
+            block: Id::new("block_1"),
+            id: Id::new("id"),
+            data_type: DataType::Text,
+        };
+        let result = serde_json::from_str::<BlockJunction>(payload);
+        assert_eq!(result.is_ok(), true);
+        assert_eq!(result.unwrap(), expected)
+    }
+
+    #[test]
+    fn definition_junction_json_serialization() {
+        let junction = DefinitionJunction {
+            block: 1,
             id: Id::new("id"),
             data_type: DataType::Text,
         };
         let expected: String = r#"
             {
-                "block": "parent_id",
+                "block": 1,
+                "id": "id",
+                "data_type": "Text"
+            }"#
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
+        let result = serde_json::to_string(&junction);
+        assert_eq!(result.is_ok(), true);
+        assert_eq!(result.unwrap(), expected);
+    }
+
+    #[test]
+    fn block_junction_json_serialization() {
+        let junction = BlockJunction {
+            block: Id::new("block_1"),
+            id: Id::new("id"),
+            data_type: DataType::Text,
+        };
+        let expected: String = r#"
+            {
+                "block": "block_1",
                 "id": "id",
                 "data_type": "Text"
             }"#

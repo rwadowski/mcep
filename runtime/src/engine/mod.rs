@@ -3,10 +3,13 @@ use std::hash::{Hash, Hasher};
 use serde_derive::{Deserialize, Serialize};
 use crossbeam_channel::{Receiver, Sender, select};
 use log::debug;
+use types::definition::block::new_block_from_str;
+use types::definition::Definition;
 use types::deployment::{BlockId, Command, Deployment};
-use types::deployment::connection::junction::Junction;
+use types::deployment::connection::junction::{BlockJunction, DefinitionJunction};
 use crate::DataFrame;
-use crate::engine::block::Block;
+use types::definition::block::{Block as BlockDefinition};
+use crate::engine::block::{Block, new_block};
 use crate::engine::router::Router;
 
 mod router;
@@ -42,7 +45,7 @@ impl Hash for Data {
 
 pub struct Engine {
     blocks: HashMap<BlockId, Box<dyn Block>>,
-    connections: HashMap<Junction, Vec<Junction>>,
+    connections: HashMap<BlockJunction, Vec<BlockJunction>>,
     command_rx: Receiver<Command>,
     data_input: Receiver<DataFrame>,
     data_output: Sender<DataFrame>,
@@ -77,10 +80,10 @@ pub fn run(command_rx: Receiver<Command>,
     }
 }
 
-fn process_command(engine: &mut Engine, command: Command) -> Result<(), String> {
+async fn process_command(engine: &mut Engine, command: Command) -> Result<(), String> {
     debug!("command {:?} received", command);
     match command {
-        Command::Deploy(deployment) => {
+        Command::Deploy(deployment, definitions) => {
             // let code_block = PythonCodeBlock::new(deployment.id, )
         }
         Command::Undeploy(deploymnent_id) => {}
@@ -88,12 +91,14 @@ fn process_command(engine: &mut Engine, command: Command) -> Result<(), String> 
     Ok(())
 }
 
-//TODO deployment needs a list of definition_ids, connection is the right place, it is going to be use only in deployment
-//TODO we need to read the block body from the database so service for that is needed
-fn deploy_blocks(engine: &mut Engine, deployment: &Deployment) -> Result<(), String> {
-    let definition_ids = deployment.definition_ids()?;
-    for definition_id in definition_ids.iter() {
-
+//TODO - update connections / router - decide whether router is needed
+async fn deploy_blocks(engine: &mut Engine,
+                       deployment: &Deployment,
+                       definitions: &Vec<Definition>) -> Result<(), String> {
+    for definition in definitions.iter() {
+        let block_definition: Box<dyn BlockDefinition> = new_block_from_str(definition.body.as_str())?;
+        let block = new_block(deployment.id, block_definition)?;
+        engine.blocks.insert(block.id(), block);
     }
     Ok(())
 }

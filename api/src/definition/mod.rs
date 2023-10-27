@@ -9,7 +9,7 @@ use services::definition::update::UpdateDefinition;
 
 #[get("/definition/<id>")]
 pub async fn get_app_definition_handler(pool: &State<Pool<Postgres>>, id: i32) -> Result<String, NotFound<String>> {
-    let definition = get::get_app_definition(pool.inner(), id).await;
+    let definition = get::get_definition(pool.inner(), id).await;
     match definition {
         Ok(d) => Ok(serde_json::to_string(&d).unwrap()),
         Err(err) => Err(NotFound(err))

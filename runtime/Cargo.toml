@@ -19,6 +19,7 @@ serde_derive = { version = "1.0.164" }
 pyo3 = { version = "0.19.2", features = ["auto-initialize"]}
 log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
+sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
 
 [build-dependencies]
 pyo3-build-config = "0.19.2"

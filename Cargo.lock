@@ -1786,6 +1786,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "services",
+ "sqlx",
  "tokio",
  "toml 0.8.2",
  "types",

@@ -28,7 +28,7 @@ async fn main() {
 
     database::apply_migrations(&database_connection_pool).await.expect("migrations failed");
     tokio::spawn(async move {
-        api::start_rocket(rocket_config(), database_connection_pool, command_tx).launch().await
+        api::start_rocket(rocket_config(), database_connection_pool.clone(), command_tx).launch().await
     });
 
     let engine_data_input = kafka_rx.clone();
@@ -36,7 +36,7 @@ async fn main() {
     let engine_command_rx = command_rx.clone();
     let app_pool = runtime::pool::create_pool(8).expect("app pool should start");
     app_pool.spawn(move || {
-        runtime::engine::run(engine_command_rx, engine_data_input, engine_data_output);
+        runtime::engine::run(engine_command_rx, engine_data_input, engine_data_output)
     });
     app_pool.spawn(move || {
         runtime::source::kafka::run_kafka_source(kafka_tx).expect("kafka source should run");

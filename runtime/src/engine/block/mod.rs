@@ -18,14 +18,14 @@ pub(crate) fn new_block(deployment_id: DeploymentId, definition: Box<dyn BlockDe
     let block_type = definition.block_type();
     match block_type {
         BlockType::Code => {
-            let def = as_js_block_definition(definition)?;
+            let def = as_code_block_definition(definition)?;
             Ok(Box::new(PythonCodeBlock::new(&deployment_id, def)))
         }
         _ => Err("unrecognized definition".to_string()),
     }
 }
 
-fn as_js_block_definition(definition: Box<dyn BlockDefinition>) -> Result<CodeBlockDefinition, String> {
+fn as_code_block_definition(definition: Box<dyn BlockDefinition>) -> Result<CodeBlockDefinition, String> {
     match definition.as_any().downcast_ref::<CodeBlockDefinition>() {
         Some(def) => Ok(def.clone()),
         None => Err("can't cast to js definition".to_string()),

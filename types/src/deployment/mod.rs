@@ -2,8 +2,8 @@ use serde::{Serialize, Deserialize};
 use sqlx::{Error, FromRow, Row};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
-use crate::deployment::connection::Connection;
-use crate::definition::{DefinitionId, Id};
+use crate::deployment::connection::DefinitionConnection;
+use crate::definition::{Definition, Id};
 use crate::deployment::sink::Sink;
 use crate::deployment::source::Source;
 
@@ -16,7 +16,7 @@ mod mod_test;
 
 #[derive(Debug)]
 pub enum Command {
-    Deploy(Deployment),
+    Deploy(Deployment, Vec<Definition>),
     Undeploy(DeploymentId)
 }
 
@@ -27,7 +27,7 @@ pub struct Deployment {
     pub id: DeploymentId,
     pub name: String,
     pub version: String,
-    pub connections: Vec<Connection>,
+    pub connections: Vec<DefinitionConnection>,
     pub sources: Vec<Source>,
     pub sinks: Vec<Sink>,
 }
@@ -38,16 +38,6 @@ impl Deployment {
         let id = Id::new(self.name.as_str());
         BlockId::new(&self.id, &id)
     }
-    pub fn definition_ids(&self) -> Result<Vec<DefinitionId>, String> {
-        let mut result: Vec<DefinitionId> = Vec::new();
-        for connection in self.connections.iter() {
-            let from: DefinitionId = connection.from.block.value.parse::<DefinitionId>().map_err(|err| err.to_string())?;
-            result.push(from);
-            let to: DefinitionId = connection.to.block.value.parse::<DefinitionId>().map_err(|err| err.to_string())?;
-            result.push(to);
-        }
-        Ok(result)
-    }
 }
 
 impl FromRow<'_, PgRow> for Deployment {
@@ -55,7 +45,7 @@ impl FromRow<'_, PgRow> for Deployment {
         let id: DeploymentId = row.try_get("id")?;
         let name: String = row.try_get("name")?;
         let version: String = row.try_get("version")?;
-        let connections_js: Json<Vec<Connection>> = row.try_get("connections")?;
+        let connections_js: Json<Vec<DefinitionConnection>> = row.try_get("connections")?;
         let connections = connections_js.0;
         let sources_js: Json<Vec<Source>> = row.try_get("sources")?;
         let sources = sources_js.0;

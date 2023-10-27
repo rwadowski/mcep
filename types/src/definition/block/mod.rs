@@ -28,6 +28,11 @@ pub trait Block: Send + Debug {
     fn clone_box(&self) -> Box<dyn Block>;
 }
 
+pub fn new_block_from_str(s: &str) -> Result<Box<dyn Block>, String> {
+    serde_json::from_str(&s)
+        .map_err(|err| err.to_string())
+}
+
 impl Clone for Box<dyn Block> {
     fn clone(&self) -> Self {
         self.clone_box()

@@ -35,7 +35,7 @@ impl<'de> Deserialize<'de> for Id {
 
 pub type DefinitionId = i32;
 
-#[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, FromRow)]
+#[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, FromRow, Debug)]
 pub struct Definition {
     pub id: DefinitionId,
     pub name: String,

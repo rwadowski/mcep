@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use crate::definition::{DataType, Id};
-    use crate::deployment::connection::Connection;
-    use crate::deployment::connection::junction::Junction;
+    use crate::deployment::connection::DefinitionConnection;
+    use crate::deployment::connection::junction::DefinitionJunction;
     use crate::deployment::{Deployment, DeploymentId};
     use crate::deployment::sink::Sink;
     use crate::deployment::source::Source;
@@ -22,14 +22,14 @@ mod tests {
             id: Id::new("sink_1_id"),
             data_type: DataType::Text
         });
-        let mut connections: Vec<Connection> = Vec::new();
-        connections.push(Connection {
-            from: Junction::new("app_id.source_1_id", DataType::Text).unwrap(),
-            to: Junction::new("js_1.input_1_id", DataType::Text).unwrap(),
+        let mut connections: Vec<DefinitionConnection> = Vec::new();
+        connections.push(DefinitionConnection {
+            from: DefinitionJunction::new("1.source_1_id", DataType::Text).unwrap(),
+            to: DefinitionJunction::new("2.input_1_id", DataType::Text).unwrap(),
         });
-        connections.push(Connection {
-            from: Junction::new("js_1.output_1_id", DataType::Text).unwrap(),
-            to: Junction::new("app_id.sink_1_id", DataType::Text).unwrap()
+        connections.push(DefinitionConnection {
+            from: DefinitionJunction::new("1.output_1_id", DataType::Text).unwrap(),
+            to: DefinitionJunction::new("2.sink_1_id", DataType::Text).unwrap()
         });
         let body = Deployment {
             id,
@@ -47,24 +47,24 @@ mod tests {
           "connections": [
             {
               "from": {
-                "block": "app_id",
+                "block": 1,
                 "id": "source_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": "js_1",
+                "block": 2,
                 "id": "input_1_id",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": "js_1",
+                "block": 1,
                 "id": "output_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": "app_id",
+                "block": 2,
                 "id": "sink_1_id",
                 "data_type": "Text"
               }
@@ -98,24 +98,24 @@ mod tests {
           "connections": [
             {
               "from": {
-                "block": "app_id",
+                "block": 1,
                 "id": "source_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": "js_1",
+                "block": 2,
                 "id": "input_1_id",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": "js_1",
+                "block": 1,
                 "id": "output_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": "app_id",
+                "block": 2,
                 "id": "sink_1_id",
                 "data_type": "Text"
               }
@@ -149,14 +149,14 @@ mod tests {
             id: Id::new("sink_1_id"),
             data_type: DataType::Text
         });
-        let mut connections: Vec<Connection> = Vec::new();
-        connections.push(Connection {
-            from: Junction::new("app_id.source_1_id", DataType::Text).unwrap(),
-            to: Junction::new("js_1.input_1_id", DataType::Text).unwrap(),
+        let mut connections: Vec<DefinitionConnection> = Vec::new();
+        connections.push(DefinitionConnection {
+            from: DefinitionJunction::new("1.source_1_id", DataType::Text).unwrap(),
+            to: DefinitionJunction::new("2.input_1_id", DataType::Text).unwrap(),
         });
-        connections.push(Connection {
-            from: Junction::new("js_1.output_1_id", DataType::Text).unwrap(),
-            to: Junction::new("app_id.sink_1_id", DataType::Text).unwrap()
+        connections.push(DefinitionConnection {
+            from: DefinitionJunction::new("1.output_1_id", DataType::Text).unwrap(),
+            to: DefinitionJunction::new("2.sink_1_id", DataType::Text).unwrap()
         });
         let expected = Deployment {
             id,
