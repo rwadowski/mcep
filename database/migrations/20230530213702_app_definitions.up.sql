@@ -4,7 +4,7 @@ CREATE TABLE definitions (
     id SERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     version VARCHAR NOT NULL,
-    body TEXT NOT NULL,
+    body JSONB NOT NULL,
     description TEXT,
     help TEXT
 );

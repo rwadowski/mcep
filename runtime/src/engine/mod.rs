@@ -93,12 +93,14 @@ async fn process_command(engine: &mut Engine, command: Command) -> Result<(), St
 
 //TODO - update connections / router - decide whether router is needed
 async fn deploy_blocks(engine: &mut Engine,
+                       router: &mut Router,
                        deployment: &Deployment,
                        definitions: &Vec<Definition>) -> Result<(), String> {
     for definition in definitions.iter() {
-        let block_definition: Box<dyn BlockDefinition> = new_block_from_str(definition.body.as_str())?;
+        let block_definition: Box<dyn BlockDefinition> = new_block_from_str(definition.body.to_string().as_str())?;
         let block = new_block(deployment.id, block_definition)?;
         engine.blocks.insert(block.id(), block);
+        router.update(&deployment.connections);
     }
     Ok(())
 }

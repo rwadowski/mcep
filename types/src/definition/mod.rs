@@ -4,9 +4,10 @@ pub mod mod_test;
 
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use std::cmp::{Ord, Eq, PartialOrd, PartialEq};
-use sqlx::FromRow;
+use serde_json::Value;
+use sqlx::{FromRow, Type};
 
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Type, FromRow)]
 pub struct Id {
     pub value: String
 }
@@ -35,24 +36,22 @@ impl<'de> Deserialize<'de> for Id {
 
 pub type DefinitionId = i32;
 
-#[derive(Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd, FromRow, Debug)]
+#[derive(Serialize, Deserialize, Eq, PartialEq, FromRow, Debug)]
 pub struct Definition {
     pub id: DefinitionId,
     pub name: String,
     pub version: String,
-    pub body: String,
+    pub body: Value,
     pub description: Option<String>,
     pub help: Option<String>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, Type)]
+#[sqlx(rename_all = "snake_case", type_name = "VARCHAR")]
 pub enum DataType {
     Boolean,
     UnsignedInt,
     SignedInt,
     FloatType,
     Text,
-    Array(Box<DataType>),
-    Map(Box<DataType>, Box<DataType>),
 }
-

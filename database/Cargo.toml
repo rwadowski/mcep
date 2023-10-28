@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 dotenvy = "0.15"
+serde_json = { version = "1.0", features = ["raw_value"] }
 sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres", "migrate" ] }
 log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
+postgres-types = {version = "0.1.0", features = ["derive", "with-serde_json-1"]}

@@ -17,7 +17,7 @@ pub async fn get_definition(pool: &Pool<Postgres>, id: DefinitionId) -> Result<D
 }
 
 pub async fn get_definitions(pool: &Pool<Postgres>, ids: Vec<DefinitionId>) -> Result<Vec<Definition>, String> {
-    let definitions_opt = sqlx::query_as::<_, Definition>("SELECT * FROM definitions WHERE id IN ()")
+    let definitions_opt = sqlx::query_as::<_, Definition>("SELECT * FROM definitions WHERE id IN ($1)")
         .bind(ids)
         .fetch_all(pool)
         .await;

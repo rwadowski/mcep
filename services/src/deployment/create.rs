@@ -2,10 +2,13 @@ use crossbeam_channel::Sender;
 use rocket::log::private::{error, info};
 use rocket::serde::Deserialize;
 use types::deployment::{Command, Deployment};
-use sqlx::{Error, Pool, Postgres};
+use sqlx::{Pool, Postgres};
+use sqlx::types::Json;
 use types::definition::{Definition, DefinitionId};
 use types::deployment::Command::Deploy;
 use types::deployment::connection::DefinitionConnection;
+use types::deployment::sink::Sink;
+use types::deployment::source::Source;
 use crate::definition::get::get_definitions;
 
 #[derive(Deserialize)]
@@ -13,10 +16,9 @@ use crate::definition::get::get_definitions;
 pub struct NewDeployment {
     pub name: String,
     pub version: String,
-    pub application_id: i32,
     pub connections: Vec<DefinitionConnection>,
-    pub source: String,
-    pub sink: String
+    pub source: Vec<Source>,
+    pub sink: Vec<Sink>
 }
 
 impl NewDeployment {
@@ -36,10 +38,9 @@ pub async fn create_deployment(sender: &Sender<Command>, pool: &Pool<Postgres>, 
         let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployment (name, version, application_id, connections, source, sink) VALUES ($1, $2, $3, $4, $5, $5) RETURNING *")
             .bind(new_deployment.name)
             .bind(new_deployment.version)
-            .bind(new_deployment.application_id)
             .bind(raw_conn)
-            .bind(new_deployment.source)
-            .bind(new_deployment.sink)
+            .bind(Json::<Vec<Source>>(new_deployment.source))
+            .bind(Json::<Vec<Sink>>(new_deployment.sink))
             .fetch_one(pool)
             .await
             .map_err(|err| err.to_string());

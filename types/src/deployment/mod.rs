@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use sqlx::{Error, FromRow, Row};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
-use crate::deployment::connection::DefinitionConnection;
+use crate::deployment::connection::BlockConnection;
 use crate::definition::{Definition, Id};
 use crate::deployment::sink::Sink;
 use crate::deployment::source::Source;
@@ -27,7 +27,7 @@ pub struct Deployment {
     pub id: DeploymentId,
     pub name: String,
     pub version: String,
-    pub connections: Vec<DefinitionConnection>,
+    pub connections: Vec<BlockConnection>,
     pub sources: Vec<Source>,
     pub sinks: Vec<Sink>,
 }
@@ -45,7 +45,7 @@ impl FromRow<'_, PgRow> for Deployment {
         let id: DeploymentId = row.try_get("id")?;
         let name: String = row.try_get("name")?;
         let version: String = row.try_get("version")?;
-        let connections_js: Json<Vec<DefinitionConnection>> = row.try_get("connections")?;
+        let connections_js: Json<Vec<BlockConnection>> = row.try_get("connections")?;
         let connections = connections_js.0;
         let sources_js: Json<Vec<Source>> = row.try_get("sources")?;
         let sources = sources_js.0;
@@ -59,7 +59,7 @@ impl FromRow<'_, PgRow> for Deployment {
     }
 }
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct BlockId {
     pub value: String
 }
