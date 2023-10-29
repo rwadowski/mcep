@@ -54,4 +54,6 @@ pub enum DataType {
     SignedInt,
     FloatType,
     Text,
+    // Array(Box<DataType>),
+    // Map(Box<DataType>, Box<DataType>),
 }

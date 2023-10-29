@@ -33,44 +33,34 @@ impl NewDeployment {
 }
 
 pub async fn create_deployment(sender: &Sender<Command>, pool: &Pool<Postgres>, new_deployment: NewDeployment) -> Option<Deployment> {
-    if let Ok(raw_conn) = raw_connections(&new_deployment) {
-        let definition_ids: Vec<DefinitionId> = new_deployment.definition_ids();
-        let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployment (name, version, application_id, connections, source, sink) VALUES ($1, $2, $3, $4, $5, $5) RETURNING *")
-            .bind(new_deployment.name)
-            .bind(new_deployment.version)
-            .bind(raw_conn)
-            .bind(Json::<Vec<Source>>(new_deployment.source))
-            .bind(Json::<Vec<Sink>>(new_deployment.sink))
-            .fetch_one(pool)
-            .await
-            .map_err(|err| err.to_string());
-        let definitions = get_definitions(pool, definition_ids).await;
-        let tuple = to_tuple(write_result, definitions);
-        let result = tuple
-            .and_then(|(deployment, definitions)| {
-                sender.send(Deploy(deployment.clone(), definitions))
-                    .map_err(|err| err.to_string())
-                    .map(|_| deployment)
+    let definition_ids: Vec<DefinitionId> = new_deployment.definition_ids();
+    let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployment (name, version, application_id, connections, source, sink) VALUES ($1, $2, $3, $4, $5, $5) RETURNING *")
+        .bind(new_deployment.name)
+        .bind(new_deployment.version)
+        .bind(Json::<Vec<DefinitionConnection>>(new_deployment.connections))
+        .bind(Json::<Vec<Source>>(new_deployment.source))
+        .bind(Json::<Vec<Sink>>(new_deployment.sink))
+        .fetch_one(pool)
+        .await
+        .map_err(|err| err.to_string());
+    let definitions = get_definitions(pool, definition_ids).await;
+    let tuple = to_tuple(write_result, definitions);
+    let result = tuple
+        .and_then(|(deployment, definitions)| {
+            sender.send(Deploy(deployment.clone(), definitions))
+                .map_err(|err| err.to_string())
+                .map(|_| deployment)
         });
-        match result {
-            Ok(d) => {
-                info!("deployment {} created", d.id.to_string());
-                Some(d)
-            }
-            Err(err) => {
-                error!("{}", err.to_string());
-                None
-            },
+    match result {
+        Ok(d) => {
+            info!("deployment {} created", d.id.to_string());
+            Some(d)
         }
-    } else {
-        None
+        Err(err) => {
+            error!("{}", err.to_string());
+            None
+        },
     }
-}
-
-fn raw_connections(new_deployment: &NewDeployment) -> Result<String, String> {
-    let connections: String = serde_json::to_string(&new_deployment.connections)
-        .map_err(|err| err.to_string())?;
-    Ok(connections)
 }
 
 fn to_tuple(deployment_opt: Result<Deployment, String>, definitions_opt: Result<Vec<Definition>, String>) -> Result<(Deployment, Vec<Definition>), String> {

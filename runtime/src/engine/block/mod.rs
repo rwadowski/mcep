@@ -28,7 +28,7 @@ pub(crate) fn new_block(deployment_id: DeploymentId, definition: Box<dyn BlockDe
 fn as_code_block_definition(definition: Box<dyn BlockDefinition>) -> Result<CodeBlockDefinition, String> {
     match definition.as_any().downcast_ref::<CodeBlockDefinition>() {
         Some(def) => Ok(def.clone()),
-        None => Err("can't cast to js definition".to_string()),
+        None => Err("can't cast to code block definition".to_string()),
     }
 }
 

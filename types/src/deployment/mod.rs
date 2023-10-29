@@ -64,6 +64,21 @@ pub struct BlockId {
     pub value: String
 }
 
+impl TryFrom<&str> for BlockId {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let elements: Vec<&str> = value.split(".").collect();
+        if elements.len() == 2 {
+            Ok(
+                BlockId{ value: value.to_string() }
+            )
+        } else {
+            Err(())
+        }
+    }
+}
+
 impl BlockId {
     pub fn new(deployment_id: &DeploymentId, id: &Id) -> BlockId {
         BlockId {

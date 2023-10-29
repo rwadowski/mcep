@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
     use crate::definition::{DataType, Id};
-    use crate::deployment::connection::DefinitionConnection;
-    use crate::deployment::connection::junction::DefinitionJunction;
-    use crate::deployment::{Deployment, DeploymentId};
+    use crate::deployment::connection::BlockConnection;
+    use crate::deployment::connection::junction::BlockJunction;
+    use crate::deployment::{BlockId, Deployment, DeploymentId};
     use crate::deployment::sink::Sink;
     use crate::deployment::source::Source;
 
@@ -22,20 +22,11 @@ mod tests {
             id: Id::new("sink_1_id"),
             data_type: DataType::Text
         });
-        let mut connections: Vec<DefinitionConnection> = Vec::new();
-        connections.push(DefinitionConnection {
-            from: DefinitionJunction::new("1.source_1_id", DataType::Text).unwrap(),
-            to: DefinitionJunction::new("2.input_1_id", DataType::Text).unwrap(),
-        });
-        connections.push(DefinitionConnection {
-            from: DefinitionJunction::new("1.output_1_id", DataType::Text).unwrap(),
-            to: DefinitionJunction::new("2.sink_1_id", DataType::Text).unwrap()
-        });
         let body = Deployment {
             id,
             name,
             version,
-            connections,
+            connections: connections(),
             sources,
             sinks,
         };
@@ -47,25 +38,21 @@ mod tests {
           "connections": [
             {
               "from": {
-                "block": 1,
-                "id": "source_1_id",
+                "block": "1.source_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": 2,
-                "id": "input_1_id",
+                "block": "2.input_1_id",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": 1,
-                "id": "output_1_id",
+                "block": "1.output_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": 2,
-                "id": "sink_1_id",
+                "block": "2.sink_1_id",
                 "data_type": "Text"
               }
             }
@@ -149,20 +136,11 @@ mod tests {
             id: Id::new("sink_1_id"),
             data_type: DataType::Text
         });
-        let mut connections: Vec<DefinitionConnection> = Vec::new();
-        connections.push(DefinitionConnection {
-            from: DefinitionJunction::new("1.source_1_id", DataType::Text).unwrap(),
-            to: DefinitionJunction::new("2.input_1_id", DataType::Text).unwrap(),
-        });
-        connections.push(DefinitionConnection {
-            from: DefinitionJunction::new("1.output_1_id", DataType::Text).unwrap(),
-            to: DefinitionJunction::new("2.sink_1_id", DataType::Text).unwrap()
-        });
         let expected = Deployment {
             id,
             name,
             version,
-            connections,
+            connections: connections(),
             sources,
             sinks,
         };
@@ -174,5 +152,18 @@ mod tests {
         assert_eq!(result.version, expected.version);
         assert_eq!(result.sinks, expected.sinks);
         assert_eq!(result.sources, expected.sources);
+    }
+
+    fn connections() -> Vec<BlockConnection> {
+        let mut connections: Vec<BlockConnection> = Vec::new();
+        connections.push(BlockConnection {
+            from: BlockJunction::new(BlockId::try_from("1.source_1_id").unwrap(), DataType::Text),
+            to: BlockJunction::new(BlockId::try_from("2.input_1_id").unwrap(), DataType::Text),
+        });
+        connections.push(BlockConnection {
+            from: BlockJunction::new(BlockId::try_from("1.output_1_id").unwrap(), DataType::Text),
+            to: BlockJunction::new(BlockId::try_from("2.sink_1_id").unwrap(), DataType::Text)
+        });
+        connections
     }
 }

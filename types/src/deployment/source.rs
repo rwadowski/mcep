@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{Encode, FromRow, Type};
+use sqlx::{FromRow, Type};
 use crate::definition::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type, FromRow)]
