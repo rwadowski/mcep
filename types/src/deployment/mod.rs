@@ -1,4 +1,5 @@
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde::de::{Error as SerdeError};
 use sqlx::{Error, FromRow, Row};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
@@ -59,13 +60,13 @@ impl FromRow<'_, PgRow> for Deployment {
     }
 }
 
-#[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
 pub struct BlockId {
     pub value: String
 }
 
 impl TryFrom<&str> for BlockId {
-    type Error = ();
+    type Error = String;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let elements: Vec<&str> = value.split(".").collect();
@@ -74,7 +75,7 @@ impl TryFrom<&str> for BlockId {
                 BlockId{ value: value.to_string() }
             )
         } else {
-            Err(())
+            Err(format!("block id '{}' must contain two elements delimited by '.'", value))
         }
     }
 }
@@ -84,5 +85,21 @@ impl BlockId {
         BlockId {
             value: deployment_id.to_string() + "." + id.value.as_str(),
         }
+    }
+}
+
+impl Serialize for BlockId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(self.value.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for BlockId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+        let str: String = String::deserialize(deserializer)?;
+        BlockId::try_from(str.as_str()).map_err(|err| {
+            D::Error::custom(err)
+        })
     }
 }

@@ -86,7 +86,7 @@ async fn process_command(engine: &mut Engine, command: Command) -> Result<(), St
         Command::Deploy(deployment, definitions) => {
             // let code_block = PythonCodeBlock::new(deployment.id, )
         }
-        Command::Undeploy(deploymnent_id) => {}
+        Command::Undeploy(deployment_id) => {}
     }
     Ok(())
 }

@@ -1,27 +1,10 @@
 use serde::{Deserialize, Serialize};
 use crate::definition::error::DefinitionError;
-use crate::deployment::connection::junction::{BlockJunction, DefinitionJunction};
+use crate::deployment::connection::junction::BlockJunction;
 
 pub mod junction;
 mod junction_test;
 mod mod_test;
-
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct DefinitionConnection {
-    pub from: DefinitionJunction,
-    pub to: DefinitionJunction,
-}
-
-impl DefinitionConnection {
-    fn new(from: DefinitionJunction, to: DefinitionJunction) -> Result<DefinitionConnection, DefinitionError> {
-        if from.data_type != to.data_type {
-            return Err(DefinitionError::IncorrectJunctionDataTypes);
-        }
-        Ok(
-            DefinitionConnection { from, to }
-        )
-    }
-}
 
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct BlockConnection {

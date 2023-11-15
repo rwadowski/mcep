@@ -85,25 +85,21 @@ mod tests {
           "connections": [
             {
               "from": {
-                "block": 1,
-                "id": "source_1_id",
+                "block": "1.source_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": 2,
-                "id": "input_1_id",
+                "block": "2.input_1_id",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": 1,
-                "id": "output_1_id",
+                "block": "1.output_1_id",
                 "data_type": "Text"
               },
               "to": {
-                "block": 2,
-                "id": "sink_1_id",
+                "block": "2.sink_1_id",
                 "data_type": "Text"
               }
             }

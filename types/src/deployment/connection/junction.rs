@@ -39,4 +39,17 @@ impl BlockJunction {
             data_type,
         }
     }
+
+    pub fn definition_id_opt(&self) -> Option<DefinitionId> {
+        let elements: Vec<&str> = self.block.value.split(".").collect();
+        if elements.len() != 2 {
+            return None
+        }
+        let result = elements[0].parse::<DefinitionId>();
+        if let Ok(id) = result {
+            return Some(id)
+        }
+        return None
+
+    }
 }
