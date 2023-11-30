@@ -82,6 +82,17 @@ pub fn run(
                     .flat_map(|command| process_command(engine, router, command))
                     .collect()
             }
+            recv(engine.data_input) -> data_opt => {
+                let result: Vec<DataFrame> = data_opt
+                    .map_err(|err| err.to_string())
+                    .iter()
+                    .flat_map(process_data)
+                    .collect();
+                let sent: Result<(), String> = result.into_iter().map(|frame| {
+                    engine.data_output.send(frame).map_err(|err| err.to_string())
+                }).collect();
+                sent.unwrap()
+            }
         }
     }
 }
@@ -117,10 +128,16 @@ fn deploy_blocks(
     Ok(())
 }
 
+//TODO - implement me
 fn undeploy_blocks(
     engine: &mut Engine,
     router: &mut Router,
     deployment: &Deployment,
 ) -> Result<(), String> {
     Ok(())
+}
+
+//TODO - implement me
+fn process_data(data: &DataFrame) -> Result<DataFrame, String> {
+    Err("not_implemented".to_string())
 }
