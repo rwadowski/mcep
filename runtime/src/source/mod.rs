@@ -9,6 +9,3 @@ pub(crate) trait Source: std::fmt::Debug {
     fn id(&self) -> SourceId;
     fn run(&self) -> Result<(), String>;
 }
-
-
-

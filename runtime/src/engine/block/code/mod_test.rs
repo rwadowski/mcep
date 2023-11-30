@@ -1,23 +1,24 @@
 #[cfg(test)]
 mod test {
+    use crate::engine::block::code::PythonCodeBlock;
+    use crate::engine::block::Block;
+    use crate::engine::Data;
+    use crate::{DataFrame, InstanceId, Name, Origin};
+    use pyo3::prelude::*;
     use std::collections::HashMap;
     use std::time::Instant;
-    use pyo3::prelude::*;
+    use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::block::code::{CodeBlock as CodeBlockDefinition};
     use types::definition::{DataType, Id};
     use types::deployment::{Deployment, DeploymentId};
-    use crate::{DataFrame, InstanceId, Name, Origin};
-    use crate::engine::block::Block;
-    use crate::engine::block::code::PythonCodeBlock;
-    use crate::engine::Data;
     #[test]
     fn run_code_block() {
         let script = "def logic(v):
     r = {
         \"z\": v[\"x\"] + \" \" + v[\"y\"]
     }
-    return r".to_string();
+    return r"
+            .to_string();
         let deployment_id: DeploymentId = 0;
         let id = Id::new("definition_id");
         let x_input = "x".to_string();
@@ -27,7 +28,7 @@ mod test {
             id,
             code_block_type: CodeBlockType::Python,
             block_type: BlockType::Code,
-            inputs: vec!(
+            inputs: vec![
                 Input {
                     name: x_input,
                     data_type: DataType::Text,
@@ -35,14 +36,12 @@ mod test {
                 Input {
                     name: y_input,
                     data_type: DataType::Text,
-                }
-            ),
-            outputs: vec!(
-                Output {
-                    name: output,
-                    data_type: DataType::Text,
-                }
-            ),
+                },
+            ],
+            outputs: vec![Output {
+                name: output,
+                data_type: DataType::Text,
+            }],
             code: script,
         };
         let input_x_frame_name = Name::from("x".to_string());
@@ -51,10 +50,7 @@ mod test {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         println!("{:}", serde_json::to_string(&definition).unwrap());
-        let mut block = PythonCodeBlock::new(
-            &deployment_id,
-            definition,
-        );
+        let mut block = PythonCodeBlock::new(&deployment_id, definition);
         let input_x = DataFrame::new(
             Origin::from(InstanceId("src".to_string())),
             Instant::now(),

@@ -12,15 +12,19 @@ pub async fn get_definition(pool: &Pool<Postgres>, id: DefinitionId) -> Result<D
         Err(err) => {
             error!("{}", err);
             Err(err.to_string())
-        },
+        }
     }
 }
 
-pub async fn get_definitions(pool: &Pool<Postgres>, ids: Vec<DefinitionId>) -> Result<Vec<Definition>, String> {
-    let definitions_opt = sqlx::query_as::<_, Definition>("SELECT * FROM definitions WHERE id IN ($1)")
-        .bind(ids)
-        .fetch_all(pool)
-        .await;
+pub async fn get_definitions(
+    pool: &Pool<Postgres>,
+    ids: Vec<DefinitionId>,
+) -> Result<Vec<Definition>, String> {
+    let definitions_opt =
+        sqlx::query_as::<_, Definition>("SELECT * FROM definitions WHERE id IN ($1)")
+            .bind(ids)
+            .fetch_all(pool)
+            .await;
     match definitions_opt {
         Ok(list) => Ok(list),
         Err(err) => {

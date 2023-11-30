@@ -1,5 +1,5 @@
-use sqlx::{Error, Pool, Postgres};
 use rocket::serde::Deserialize;
+use sqlx::{Error, Pool, Postgres};
 use types::definition::Definition;
 
 #[derive(Deserialize)]
@@ -14,7 +14,10 @@ pub struct UpdateDefinition {
     pub help: Option<String>,
 }
 
-pub async fn update_definition<'a>(pool: &Pool<Postgres>, def: UpdateDefinition) -> Option<Definition> {
+pub async fn update_definition<'a>(
+    pool: &Pool<Postgres>,
+    def: UpdateDefinition,
+) -> Option<Definition> {
     let id = def.id;
     let (query_str, values) = query_data(def);
     let mut query = sqlx::query_as::<_, Definition>(query_str.as_str());
@@ -25,7 +28,7 @@ pub async fn update_definition<'a>(pool: &Pool<Postgres>, def: UpdateDefinition)
     let result: Result<Definition, Error> = query.fetch_one(pool).await;
     match result {
         Ok(definition) => Some(definition),
-        Err(_) => None
+        Err(_) => None,
     }
 }
 

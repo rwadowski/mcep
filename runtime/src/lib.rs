@@ -1,15 +1,15 @@
-pub mod pool;
-pub mod source;
-pub mod sink;
-mod util;
 pub mod engine;
+pub mod pool;
+pub mod sink;
+pub mod source;
+mod util;
 
-use std::time::Instant;
-use source::SourceId;
-use std::cmp::{Eq, PartialOrd, PartialEq};
-use serde_derive::{Deserialize, Serialize};
-use types::deployment::BlockId;
 use crate::engine::Data;
+use serde_derive::{Deserialize, Serialize};
+use source::SourceId;
+use std::cmp::{Eq, PartialEq, PartialOrd};
+use std::time::Instant;
+use types::deployment::BlockId;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InstanceId(pub String);
@@ -37,18 +37,18 @@ impl From<InstanceId> for Origin {
 
 impl From<BlockId> for Origin {
     fn from(block_id: BlockId) -> Self {
-       Origin(block_id.value)
+        Origin(block_id.value)
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
 pub struct Name {
-    pub value: String
+    pub value: String,
 }
 
 impl From<String> for Name {
     fn from(value: String) -> Self {
-        Name{ value }
+        Name { value }
     }
 }
 

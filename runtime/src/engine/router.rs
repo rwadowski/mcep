@@ -1,6 +1,6 @@
+use crate::engine::BlockId;
 use std::collections::{HashMap, HashSet};
 use types::deployment::connection::BlockConnection;
-use crate::engine::BlockId;
 
 pub struct Router {
     table: HashMap<BlockId, HashSet<BlockId>>,
@@ -16,7 +16,8 @@ impl Router {
     pub fn update(&mut self, connections: &Vec<BlockConnection>) {
         for connection in connections {
             let key = connection.from.block.clone();
-            let mut targets: HashSet<BlockId> = self.table.get(&key).unwrap_or(&HashSet::new()).clone();
+            let mut targets: HashSet<BlockId> =
+                self.table.get(&key).unwrap_or(&HashSet::new()).clone();
             targets.insert(connection.to.block.clone());
             self.table.insert(key, targets);
         }

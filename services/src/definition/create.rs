@@ -1,10 +1,10 @@
-use std::hash::Hash;
 use rocket::log::private::{error, info};
 use rocket::serde::{Deserialize, Serialize};
 use serde::Deserializer;
 use serde_json::Value;
-use sqlx::{Encode, Error, Pool, Postgres, Type};
 use sqlx::types::JsonValue;
+use sqlx::{Encode, Error, Pool, Postgres, Type};
+use std::hash::Hash;
 use types::definition::Definition;
 
 #[derive(Deserialize)]
@@ -35,7 +35,7 @@ pub async fn create_definition(pool: &Pool<Postgres>, def: NewDefinition) -> Opt
         Ok(created_def) => {
             info!("definition {} created", created_def.id.to_string());
             Some(created_def)
-        },
+        }
         Err(err) => {
             error!("{}", err.to_string());
             None

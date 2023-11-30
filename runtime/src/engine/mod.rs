@@ -1,19 +1,19 @@
+use crate::engine::block::{new_block, Block};
+use crate::engine::router::Router;
+use crate::DataFrame;
+use crossbeam_channel::{select, Receiver, Sender};
+use log::debug;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use serde_derive::{Deserialize, Serialize};
-use crossbeam_channel::{Receiver, Sender, select};
-use log::debug;
 use types::definition::block::new_block_from_str;
+use types::definition::block::Block as BlockDefinition;
 use types::definition::Definition;
-use types::deployment::{BlockId, Command, Deployment};
 use types::deployment::connection::junction::{BlockJunction, DefinitionJunction};
-use crate::DataFrame;
-use types::definition::block::{Block as BlockDefinition};
-use crate::engine::block::{Block, new_block};
-use crate::engine::router::Router;
+use types::deployment::{BlockId, Command, Deployment};
 
-mod router;
 mod block;
+mod router;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Data {
@@ -27,7 +27,7 @@ pub enum Data {
 
 impl AsRef<Data> for Data {
     fn as_ref(&self) -> &Data {
-        return &self
+        return &self;
     }
 }
 impl Hash for Data {
@@ -52,9 +52,11 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn new(command_rx: Receiver<Command>,
-               data_input: Receiver<DataFrame>,
-               data_output: Sender<DataFrame>) -> Engine {
+    pub fn new(
+        command_rx: Receiver<Command>,
+        data_input: Receiver<DataFrame>,
+        data_output: Sender<DataFrame>,
+    ) -> Engine {
         Engine {
             blocks: HashMap::new(),
             connections: HashMap::new(),
@@ -64,14 +66,12 @@ impl Engine {
         }
     }
 }
-pub fn run(command_rx: Receiver<Command>,
-           data_input:Receiver<DataFrame>,
-           data_output: Sender<DataFrame>){
-    let engine = Engine::new(
-        command_rx,
-        data_input,
-        data_output,
-    );
+pub fn run(
+    command_rx: Receiver<Command>,
+    data_input: Receiver<DataFrame>,
+    data_output: Sender<DataFrame>,
+) {
+    let engine = Engine::new(command_rx, data_input, data_output);
     let mut router = Router::new();
     loop {
         select! {
@@ -92,12 +92,15 @@ async fn process_command(engine: &mut Engine, command: Command) -> Result<(), St
 }
 
 //TODO - update connections / router - decide whether router is needed
-async fn deploy_blocks(engine: &mut Engine,
-                       router: &mut Router,
-                       deployment: &Deployment,
-                       definitions: &Vec<Definition>) -> Result<(), String> {
+async fn deploy_blocks(
+    engine: &mut Engine,
+    router: &mut Router,
+    deployment: &Deployment,
+    definitions: &Vec<Definition>,
+) -> Result<(), String> {
     for definition in definitions.iter() {
-        let block_definition: Box<dyn BlockDefinition> = new_block_from_str(definition.body.to_string().as_str())?;
+        let block_definition: Box<dyn BlockDefinition> =
+            new_block_from_str(definition.body.to_string().as_str())?;
         let block = new_block(deployment.id, block_definition)?;
         engine.blocks.insert(block.id(), block);
         router.update(&deployment.connections);

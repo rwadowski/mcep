@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod python {
-    use pyo3::prelude::*;
     use crate::engine::Data;
+    use pyo3::prelude::*;
     #[test]
     fn bool_conversion() {
         Python::with_gil(|py| {
@@ -55,10 +55,8 @@ mod python {
         Python::with_gil(|py| {
             let element_1 = "element_1".to_string();
             let element_2 = "element_2".to_string();
-            let expected: Vec<Data> = vec!(
-                Data::Text(element_1.clone()),
-                Data::Text(element_2.clone()),
-            );
+            let expected: Vec<Data> =
+                vec![Data::Text(element_1.clone()), Data::Text(element_2.clone())];
             let result = expected.to_object(py);
             let value: PyResult<Vec<Data>> = result.extract(py);
             assert_eq!(true, value.is_ok());

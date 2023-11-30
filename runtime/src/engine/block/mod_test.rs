@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
+    use crate::engine::block;
+    use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::block::code::{CodeBlock as CodeBlockDefinition};
     use types::definition::{DataType, Id};
     use types::deployment::DeploymentId;
-    use crate::engine::block;
 
     #[test]
     fn create_from_correct_definition() {
@@ -15,18 +15,14 @@ mod test {
         let output_1_name = "output_1_name".to_string();
         let output_1_data_type = DataType::Text;
         let lang = CodeBlockType::Python;
-        let inputs = vec!(
-            Input {
-                name: input_1_name,
-                data_type: input_1_data_type,
-            }
-        );
-        let outputs = vec!(
-            Output {
-                name: output_1_name,
-                data_type: output_1_data_type,
-            }
-        );
+        let inputs = vec![Input {
+            name: input_1_name,
+            data_type: input_1_data_type,
+        }];
+        let outputs = vec![Output {
+            name: output_1_name,
+            data_type: output_1_data_type,
+        }];
         let code = "function logic(x) { return x + '_' + x; }".to_string();
         let definition = CodeBlockDefinition {
             id: definition_id,
