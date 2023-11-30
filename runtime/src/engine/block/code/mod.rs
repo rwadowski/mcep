@@ -1,15 +1,15 @@
+mod mod_test;
 pub mod python;
 mod python_test;
-mod mod_test;
 
+use crate::engine::block::code::python::PythonBlock;
+use crate::engine::block::Block;
+use crate::engine::{BlockId, Data};
+use crate::{DataFrame, Name, Origin};
 use std::collections::HashMap;
 use std::time::Instant;
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use types::deployment::DeploymentId;
-use crate::{DataFrame, Name, Origin};
-use crate::engine::block::Block;
-use crate::engine::{BlockId, Data};
-use crate::engine::block::code::python::PythonBlock;
 
 pub struct PythonCodeBlock {
     pub(crate) id: BlockId,
@@ -26,7 +26,7 @@ impl Block for PythonCodeBlock {
     fn run(&mut self, df: DataFrame) -> Result<Vec<DataFrame>, String> {
         self.state.insert(df.name, df.payload);
         if self.state.len() != self.definition.inputs.len() {
-            return Ok(Vec::new())
+            return Ok(Vec::new());
         }
         // let mut script = Script::from_string(self.definition.code.as_str()).map_err(|e| e.to_string())?;
         let mut input: HashMap<String, Data> = HashMap::new();
@@ -35,14 +35,17 @@ impl Block for PythonCodeBlock {
         }
         let result = self.python_block.run(input)?;
         let origin = Origin::from(self.id());
-        let frames: Vec<DataFrame> = result.iter().map(|tuple| {
-            DataFrame::new(
-                origin.clone(),
-                Instant::now(),
-                Name::from(tuple.0.clone()),
-                tuple.1.clone(),
-            )
-        }).collect();
+        let frames: Vec<DataFrame> = result
+            .iter()
+            .map(|tuple| {
+                DataFrame::new(
+                    origin.clone(),
+                    Instant::now(),
+                    Name::from(tuple.0.clone()),
+                    tuple.1.clone(),
+                )
+            })
+            .collect();
         Ok(frames)
     }
 }
@@ -54,7 +57,7 @@ impl PythonCodeBlock {
             id: BlockId::new(deployment_id, &definition.id),
             definition,
             state: HashMap::new(),
-            python_block: PythonBlock{ code }
+            python_block: PythonBlock { code },
         }
     }
 }
