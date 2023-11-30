@@ -1,6 +1,6 @@
+use crate::definition::{DataType, Id};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};
-use crate::definition::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type, FromRow)]
 pub struct Source {
@@ -10,10 +10,6 @@ pub struct Source {
 
 impl Source {
     pub fn new(id: Id, data_type: DataType) -> Source {
-        Source {
-            id,
-            data_type,
-        }
+        Source { id, data_type }
     }
 }
-

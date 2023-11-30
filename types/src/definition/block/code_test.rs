@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
+    use crate::definition::block::code::CodeBlock;
     use crate::definition::block::{BlockType, CodeBlockType, Input, Output};
     use crate::definition::{DataType, Id};
-    use crate::definition::block::code::CodeBlock;
     #[test]
     fn js_json_serialize() {
         let id = Id::new("js_id");
@@ -17,7 +17,7 @@ mod test {
             block_type,
             inputs,
             outputs,
-            code
+            code,
         };
         let js_string: String = r#"
             {
@@ -38,7 +38,10 @@ mod test {
                 ],
                 "code": "function f(x){return x+x}"
             }
-        "#.chars().filter(|c| !c.is_whitespace()).collect();
+        "#
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
         let expected = js_string.replace("functionf(x){returnx+x}", "function f(x){return x+x}");
         let result = serde_json::to_string(&js);
         assert_eq!(result.is_ok(), true);
@@ -59,7 +62,7 @@ mod test {
             code_block_type,
             inputs,
             outputs,
-            code
+            code,
         };
         let payload: String = r#"
             {
@@ -80,7 +83,8 @@ mod test {
                 ],
                 "code": "function f(x){return x+x}"
             }
-        "#.to_string();
+        "#
+        .to_string();
         let result = serde_json::from_str::<CodeBlock>(&payload);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);

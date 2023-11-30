@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::DataType;
     use crate::definition::error::DefinitionError;
-    use crate::deployment::BlockId;
-    use crate::deployment::connection::BlockConnection;
+    use crate::definition::DataType;
     use crate::deployment::connection::junction::BlockJunction;
+    use crate::deployment::connection::BlockConnection;
+    use crate::deployment::BlockId;
 
     #[test]
     fn create_block_connection_success() {
@@ -50,7 +50,10 @@ mod test {
                     "block": "block_2.j2",
                     "data_type": "Text"
                 }
-            }"#.chars().filter(|c| !c.is_whitespace()).collect();
+            }"#
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
         let result = serde_json::to_string(&connection);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);

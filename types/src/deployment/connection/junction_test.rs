@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod junction_test {
     use crate::definition::DataType;
-    use crate::deployment::BlockId;
     use crate::deployment::connection::junction::BlockJunction;
+    use crate::deployment::BlockId;
 
     #[test]
     fn create_block_junction_id_success() {
@@ -43,9 +43,9 @@ mod junction_test {
                 "block": "block_1.input_1",
                 "data_type": "Text"
             }"#
-            .chars()
-            .filter(|c| !c.is_whitespace())
-            .collect();
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
         let result = serde_json::to_string(&junction);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);

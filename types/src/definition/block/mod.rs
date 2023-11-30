@@ -1,11 +1,11 @@
 pub mod code;
-mod mod_test;
 mod code_test;
+mod mod_test;
 
+use crate::definition::{DataType, Id};
+use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::fmt::Debug;
-use serde::{Deserialize, Serialize};
-use crate::definition::{DataType, Id};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BlockType {
@@ -29,8 +29,7 @@ pub trait Block: Send + Debug {
 }
 
 pub fn new_block_from_str(s: &str) -> Result<Box<dyn Block>, String> {
-    serde_json::from_str(&s)
-        .map_err(|err| err.to_string())
+    serde_json::from_str(&s).map_err(|err| err.to_string())
 }
 
 impl Clone for Box<dyn Block> {

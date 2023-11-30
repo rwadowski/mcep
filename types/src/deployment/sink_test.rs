@@ -28,7 +28,10 @@ mod test {
                 "id": "sink_id",
                 "data_type": "Text"
             }
-        "#.chars().filter(|c| !c.is_whitespace()).collect();
+        "#
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
         let result = serde_json::to_string(&sink);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);

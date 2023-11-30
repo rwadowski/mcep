@@ -1,7 +1,7 @@
-use std::any::Any;
-use serde::{Deserialize, Serialize};
 use crate::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
 use crate::definition::Id;
+use serde::{Deserialize, Serialize};
+use std::any::Any;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CodeBlock {
@@ -31,7 +31,9 @@ impl Block for CodeBlock {
         self.outputs.clone()
     }
 
-    fn as_any(&self) -> &dyn Any { self }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 
     fn clone_box(&self) -> Box<dyn Block> {
         let block = CodeBlock {

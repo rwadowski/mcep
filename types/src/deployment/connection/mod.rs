@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
 use crate::definition::error::DefinitionError;
 use crate::deployment::connection::junction::BlockJunction;
+use serde::{Deserialize, Serialize};
 
 pub mod junction;
 mod junction_test;
@@ -17,8 +17,6 @@ impl BlockConnection {
         if from.data_type != to.data_type {
             return Err(DefinitionError::IncorrectJunctionDataTypes);
         }
-        Ok(
-            BlockConnection { from, to }
-        )
+        Ok(BlockConnection { from, to })
     }
 }

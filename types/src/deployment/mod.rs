@@ -1,24 +1,24 @@
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::de::{Error as SerdeError};
-use sqlx::{Error, FromRow, Row};
-use sqlx::postgres::PgRow;
-use sqlx::types::Json;
-use crate::deployment::connection::BlockConnection;
 use crate::definition::{Definition, Id};
+use crate::deployment::connection::BlockConnection;
 use crate::deployment::sink::Sink;
 use crate::deployment::source::Source;
+use serde::de::Error as SerdeError;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use sqlx::postgres::PgRow;
+use sqlx::types::Json;
+use sqlx::{Error, FromRow, Row};
 
-pub mod sink;
-pub mod source;
-mod sink_test;
-mod source_test;
 pub mod connection;
 mod mod_test;
+pub mod sink;
+mod sink_test;
+pub mod source;
+mod source_test;
 
 #[derive(Debug)]
 pub enum Command {
     Deploy(Deployment, Vec<Definition>),
-    Undeploy(DeploymentId)
+    Undeploy(DeploymentId),
 }
 
 pub type DeploymentId = i32;
@@ -34,7 +34,6 @@ pub struct Deployment {
 }
 
 impl Deployment {
-
     pub fn block_id(&self) -> BlockId {
         let id = Id::new(self.name.as_str());
         BlockId::new(&self.id, &id)
@@ -52,17 +51,20 @@ impl FromRow<'_, PgRow> for Deployment {
         let sources = sources_js.0;
         let sinks_js: Json<Vec<Sink>> = row.try_get("sinks")?;
         let sinks = sinks_js.0;
-        Ok(
-            Deployment {
-                id, name, version, connections, sources, sinks,
-            }
-        )
+        Ok(Deployment {
+            id,
+            name,
+            version,
+            connections,
+            sources,
+            sinks,
+        })
     }
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
 pub struct BlockId {
-    pub value: String
+    pub value: String,
 }
 
 impl TryFrom<&str> for BlockId {
@@ -71,11 +73,14 @@ impl TryFrom<&str> for BlockId {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let elements: Vec<&str> = value.split(".").collect();
         if elements.len() == 2 {
-            Ok(
-                BlockId{ value: value.to_string() }
-            )
+            Ok(BlockId {
+                value: value.to_string(),
+            })
         } else {
-            Err(format!("block id '{}' must contain two elements delimited by '.'", value))
+            Err(format!(
+                "block id '{}' must contain two elements delimited by '.'",
+                value
+            ))
         }
     }
 }
@@ -89,17 +94,20 @@ impl BlockId {
 }
 
 impl Serialize for BlockId {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(self.value.as_str())
     }
 }
 
 impl<'de> Deserialize<'de> for BlockId {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
+    where
+        D: Deserializer<'de>,
+    {
         let str: String = String::deserialize(deserializer)?;
-        BlockId::try_from(str.as_str()).map_err(|err| {
-            D::Error::custom(err)
-        })
+        BlockId::try_from(str.as_str()).map_err(|err| D::Error::custom(err))
     }
 }

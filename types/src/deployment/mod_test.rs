@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests {
     use crate::definition::{DataType, Id};
-    use crate::deployment::connection::BlockConnection;
     use crate::deployment::connection::junction::BlockJunction;
-    use crate::deployment::{BlockId, Deployment, DeploymentId};
+    use crate::deployment::connection::BlockConnection;
     use crate::deployment::sink::Sink;
     use crate::deployment::source::Source;
+    use crate::deployment::{BlockId, Deployment, DeploymentId};
 
     #[test]
     fn test_serialize_body() {
@@ -13,14 +13,14 @@ mod tests {
         let name = "title".to_string();
         let version = "1.0.0".to_string();
         let mut sources: Vec<Source> = Vec::new();
-        sources.push(Source{
+        sources.push(Source {
             id: Id::new("source_1_id"),
-            data_type: DataType::Text
+            data_type: DataType::Text,
         });
         let mut sinks: Vec<Sink> = Vec::new();
         sinks.push(Sink {
             id: Id::new("sink_1_id"),
-            data_type: DataType::Text
+            data_type: DataType::Text,
         });
         let body = Deployment {
             id,
@@ -30,8 +30,7 @@ mod tests {
             sources,
             sinks,
         };
-        let expected: String =
-            r#"{
+        let expected: String = r#"{
           "id": 0,
           "name": "title",
           "version": "1.0.0",
@@ -69,10 +68,17 @@ mod tests {
               "data_type": "Text"
             }
           ]
-        }"#.chars().filter(|c| !c.is_whitespace()).collect();
+        }"#
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
         let result = serde_json::to_string_pretty(&body);
         assert_eq!(result.is_ok(), true);
-        let result_str: String = result.unwrap().chars().filter(|c| !c.is_whitespace()).collect();
+        let result_str: String = result
+            .unwrap()
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
         assert_eq!(result_str, expected);
     }
 
@@ -123,14 +129,14 @@ mod tests {
         let name = "title".to_string();
         let version = "1.0.0".to_string();
         let mut sources: Vec<Source> = Vec::new();
-        sources.push(Source{
+        sources.push(Source {
             id: Id::new("source_1_id"),
-            data_type: DataType::Text
+            data_type: DataType::Text,
         });
         let mut sinks: Vec<Sink> = Vec::new();
         sinks.push(Sink {
             id: Id::new("sink_1_id"),
-            data_type: DataType::Text
+            data_type: DataType::Text,
         });
         let expected = Deployment {
             id,
@@ -158,7 +164,7 @@ mod tests {
         });
         connections.push(BlockConnection {
             from: BlockJunction::new(BlockId::try_from("1.output_1_id").unwrap(), DataType::Text),
-            to: BlockJunction::new(BlockId::try_from("2.sink_1_id").unwrap(), DataType::Text)
+            to: BlockJunction::new(BlockId::try_from("2.sink_1_id").unwrap(), DataType::Text),
         });
         connections
     }

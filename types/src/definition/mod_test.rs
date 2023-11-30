@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use test_case::test_case;
     use crate::definition::DataType;
+    use test_case::test_case;
 
     #[test_case(DataType::Boolean, "\"Boolean\""; "serialization of boolean is correct")]
     #[test_case(DataType::UnsignedInt, "\"UnsignedInt\""; "serialization of unsigned int is correct")]
