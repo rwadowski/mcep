@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use types::definition::block::new_block_from_str;
 use types::definition::block::Block as BlockDefinition;
-use types::definition::Definition;
+use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::junction::{BlockJunction, DefinitionJunction};
 use types::deployment::{BlockId, Command, Deployment};
 
@@ -71,28 +71,37 @@ pub fn run(
     data_input: Receiver<DataFrame>,
     data_output: Sender<DataFrame>,
 ) {
-    let engine = Engine::new(command_rx, data_input, data_output);
-    let mut router = Router::new();
+    let engine: &mut Engine = &mut Engine::new(command_rx, data_input, data_output);
+    let router: &mut Router = &mut Router::new();
     loop {
         select! {
-            recv(engine.command_rx) -> cmd => println!("{:?}", cmd.unwrap())
+            recv(engine.command_rx) -> cmd => {
+                cmd
+                    .map_err(|err| err.to_string())
+                    .iter()
+                    .flat_map(|command| process_command(engine, router, command))
+                    .collect()
+            }
         }
     }
 }
 
-async fn process_command(engine: &mut Engine, command: Command) -> Result<(), String> {
+fn process_command(
+    engine: &mut Engine,
+    router: &mut Router,
+    command: &Command,
+) -> Result<(), String> {
     debug!("command {:?} received", command);
     match command {
         Command::Deploy(deployment, definitions) => {
-            // let code_block = PythonCodeBlock::new(deployment.id, )
+            deploy_blocks(engine, router, &deployment, &definitions)
         }
-        Command::Undeploy(deployment_id) => {}
+        Command::Undeploy(deployment) => undeploy_blocks(engine, router, deployment),
     }
-    Ok(())
 }
 
 //TODO - update connections / router - decide whether router is needed
-async fn deploy_blocks(
+fn deploy_blocks(
     engine: &mut Engine,
     router: &mut Router,
     deployment: &Deployment,
@@ -105,5 +114,13 @@ async fn deploy_blocks(
         engine.blocks.insert(block.id(), block);
         router.update(&deployment.connections);
     }
+    Ok(())
+}
+
+fn undeploy_blocks(
+    engine: &mut Engine,
+    router: &mut Router,
+    deployment: &Deployment,
+) -> Result<(), String> {
     Ok(())
 }

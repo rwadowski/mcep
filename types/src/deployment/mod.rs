@@ -18,7 +18,7 @@ mod source_test;
 #[derive(Debug)]
 pub enum Command {
     Deploy(Deployment, Vec<Definition>),
-    Undeploy(DeploymentId),
+    Undeploy(Deployment),
 }
 
 pub type DeploymentId = i32;
