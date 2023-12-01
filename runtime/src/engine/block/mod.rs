@@ -11,7 +11,7 @@ mod mod_test;
 
 pub(crate) trait Block {
     fn id(&self) -> BlockId;
-    fn run(&mut self, df: DataFrame) -> Result<Vec<DataFrame>, String>;
+    fn run(&mut self, df: &DataFrame) -> Result<Vec<DataFrame>, String>;
 }
 
 pub(crate) fn new_block(

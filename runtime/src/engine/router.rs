@@ -56,8 +56,8 @@ impl Router {
         self.connections = updated;
     }
 
-    pub fn targets(&self, id: &BlockId) -> HashSet<BlockId> {
-        let result = self.connections.get(id);
+    pub fn targets(&self, source_id: &BlockId) -> HashSet<BlockId> {
+        let result = self.connections.get(source_id);
         match result {
             Some(set) => set.clone(),
             None => HashSet::new(),

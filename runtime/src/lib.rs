@@ -26,21 +26,6 @@ impl From<BlockId> for InstanceId {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Origin(String);
-
-impl From<InstanceId> for Origin {
-    fn from(value: InstanceId) -> Self {
-        Origin(value.0)
-    }
-}
-
-impl From<BlockId> for Origin {
-    fn from(block_id: BlockId) -> Self {
-        Origin(block_id.value)
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
 pub struct Name {
     pub value: String,
@@ -54,14 +39,14 @@ impl From<String> for Name {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DataFrame {
-    origin: Origin,
+    origin: BlockId,
     ts: Instant,
     name: Name,
     payload: Data,
 }
 
 impl DataFrame {
-    pub fn new(origin: Origin, ts: Instant, name: Name, payload: Data) -> DataFrame {
+    pub fn new(origin: BlockId, ts: Instant, name: Name, payload: Data) -> DataFrame {
         DataFrame {
             origin,
             ts,

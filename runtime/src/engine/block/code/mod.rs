@@ -5,7 +5,7 @@ mod python_test;
 use crate::engine::block::code::python::PythonBlock;
 use crate::engine::block::Block;
 use crate::engine::{BlockId, Data};
-use crate::{DataFrame, Name, Origin};
+use crate::{DataFrame, Name};
 use std::collections::HashMap;
 use std::time::Instant;
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
@@ -23,8 +23,8 @@ impl Block for PythonCodeBlock {
         self.id.clone()
     }
 
-    fn run(&mut self, df: DataFrame) -> Result<Vec<DataFrame>, String> {
-        self.state.insert(df.name, df.payload);
+    fn run(&mut self, df: &DataFrame) -> Result<Vec<DataFrame>, String> {
+        self.state.insert(df.name.clone(), df.payload.clone());
         if self.state.len() != self.definition.inputs.len() {
             return Ok(Vec::new());
         }
@@ -34,7 +34,7 @@ impl Block for PythonCodeBlock {
             input.insert(name.value.clone(), value.clone());
         }
         let result = self.python_block.run(input)?;
-        let origin = Origin::from(self.id());
+        let origin = self.id.clone();
         let frames: Vec<DataFrame> = result
             .iter()
             .map(|tuple| {

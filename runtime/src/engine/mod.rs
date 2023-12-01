@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use types::definition::block::new_block_from_str;
 use types::definition::block::Block as BlockDefinition;
-use types::definition::{Definition, DefinitionId};
-use types::deployment::connection::junction::{BlockJunction, DefinitionJunction};
+use types::definition::Definition;
+use types::deployment::connection::junction::BlockJunction;
 use types::deployment::{BlockId, Command, Deployment, DeploymentId};
 
 mod block;
@@ -52,7 +52,8 @@ pub struct Engine {
     command_rx: Receiver<Command>,
     data_input: Receiver<DataFrame>,
     data_output: Sender<DataFrame>,
-    blocks: HashMap<DeploymentId, EngineItem>,
+    blocks_by_deployment: HashMap<DeploymentId, EngineItem>,
+    blocks: HashMap<BlockId, Box<dyn Block>>,
 }
 
 impl Engine {
@@ -62,6 +63,7 @@ impl Engine {
         data_output: Sender<DataFrame>,
     ) -> Engine {
         Engine {
+            blocks_by_deployment: HashMap::new(),
             blocks: HashMap::new(),
             connections: HashMap::new(),
             command_rx,
@@ -75,11 +77,19 @@ impl Engine {
         deployment_id: DeploymentId,
         blocks: HashMap<BlockId, Box<dyn Block>>,
     ) {
-        self.blocks.insert(deployment_id, EngineItem { blocks });
+        self.blocks_by_deployment
+            .insert(deployment_id, EngineItem { blocks });
+        for (block_id, block) in blocks {
+            self.blocks.insert(block_id, block);
+        }
     }
 
     fn remove_blocks(&mut self, deployment_id: &DeploymentId) {
-        self.blocks.remove(&deployment_id);
+        let item = self.blocks_by_deployment.get(deployment_id).unwrap(); //TODO - remove unrwap
+        self.blocks_by_deployment.remove(&deployment_id);
+        for (block_id, _) in item.blocks {
+            self.blocks.remove(&block_id);
+        }
     }
 }
 pub fn run(
@@ -102,7 +112,7 @@ pub fn run(
                 let result: Vec<DataFrame> = data_opt
                     .map_err(|err| err.to_string())
                     .iter()
-                    .flat_map(process_data)
+                    .flat_map(|frame| process_data(engine, router, frame))
                     .collect();
                 let sent: Result<(), String> = result.into_iter().map(|frame| {
                     engine.data_output.send(frame).map_err(|err| err.to_string())
@@ -157,6 +167,18 @@ fn undeploy_blocks(
 }
 
 //TODO - implement me
-fn process_data(data: &DataFrame) -> Result<DataFrame, String> {
-    Err("not_implemented".to_string())
+fn process_data(
+    engine: &mut Engine,
+    router: &mut Router,
+    data: &DataFrame,
+) -> Result<DataFrame, String> {
+    let targets = router.targets(&data.origin);
+}
+
+fn exec(engine: &mut Engine, router: &mut Router, frame: &DataFrame) -> Vec<DataFrame> {
+    let next = router.targets(&frame.origin);
+    for block_id in next {
+        let block = engine.blocks.get_mut(&block_id)?;
+        let result = block.run(frame)?;
+    }
 }

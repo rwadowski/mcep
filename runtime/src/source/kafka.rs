@@ -1,6 +1,6 @@
 use crate::engine::Data;
 use crate::source::SourceId;
-use crate::{util, DataFrame, InstanceId, Name, Origin};
+use crate::{util, DataFrame, InstanceId, Name};
 use crossbeam_channel::Sender;
 use kafka::client::FetchOffset;
 use kafka::consumer::Consumer;

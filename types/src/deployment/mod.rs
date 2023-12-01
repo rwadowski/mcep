@@ -1,12 +1,13 @@
-use crate::definition::{Definition, Id};
-use crate::deployment::connection::BlockConnection;
-use crate::deployment::sink::Sink;
-use crate::deployment::source::Source;
 use serde::de::Error as SerdeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
 use sqlx::{Error, FromRow, Row};
+
+use crate::definition::{Definition, Id};
+use crate::deployment::connection::BlockConnection;
+use crate::deployment::sink::Sink;
+use crate::deployment::source::Source;
 
 pub mod connection;
 mod mod_test;
