@@ -10,7 +10,7 @@ use types::definition::block::new_block_from_str;
 use types::definition::block::Block as BlockDefinition;
 use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::junction::{BlockJunction, DefinitionJunction};
-use types::deployment::{BlockId, Command, Deployment};
+use types::deployment::{BlockId, Command, Deployment, DeploymentId};
 
 mod block;
 mod router;
@@ -43,12 +43,16 @@ impl Hash for Data {
     }
 }
 
-pub struct Engine {
+struct EngineItem {
     blocks: HashMap<BlockId, Box<dyn Block>>,
+}
+
+pub struct Engine {
     connections: HashMap<BlockJunction, Vec<BlockJunction>>,
     command_rx: Receiver<Command>,
     data_input: Receiver<DataFrame>,
     data_output: Sender<DataFrame>,
+    blocks: HashMap<DeploymentId, EngineItem>,
 }
 
 impl Engine {
@@ -64,6 +68,18 @@ impl Engine {
             data_input,
             data_output,
         }
+    }
+
+    fn add_blocks(
+        &mut self,
+        deployment_id: DeploymentId,
+        blocks: HashMap<BlockId, Box<dyn Block>>,
+    ) {
+        self.blocks.insert(deployment_id, EngineItem { blocks });
+    }
+
+    fn remove_blocks(&mut self, deployment_id: &DeploymentId) {
+        self.blocks.remove(&deployment_id);
     }
 }
 pub fn run(
@@ -118,22 +134,25 @@ fn deploy_blocks(
     deployment: &Deployment,
     definitions: &Vec<Definition>,
 ) -> Result<(), String> {
+    let mut blocks: HashMap<BlockId, Box<dyn Block>> = HashMap::new();
     for definition in definitions.iter() {
         let block_definition: Box<dyn BlockDefinition> =
             new_block_from_str(definition.body.to_string().as_str())?;
         let block = new_block(deployment.id, block_definition)?;
-        engine.blocks.insert(block.id(), block);
-        router.update(&deployment.connections);
+        blocks.insert(block.id(), block);
     }
+    engine.add_blocks(deployment.id, blocks);
+    router.add_connections(deployment.id, &deployment.connections);
     Ok(())
 }
 
-//TODO - implement me
 fn undeploy_blocks(
     engine: &mut Engine,
     router: &mut Router,
     deployment: &Deployment,
 ) -> Result<(), String> {
+    engine.remove_blocks(&deployment.id);
+    router.remove_connections(&deployment.id);
     Ok(())
 }
 
