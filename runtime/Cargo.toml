@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 types = { path = "../types"}
-services = { path = "../services" }
+
+
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 kafka = { version = "0.10.0" }
 rayon = { version = "1.7.0" }
@@ -20,6 +21,7 @@ pyo3 = { version = "0.19.2", features = ["auto-initialize"]}
 log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
 sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
+actix = { version = "0.13.1" }
 
 [build-dependencies]
 pyo3-build-config = "0.19.2"

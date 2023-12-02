@@ -3,6 +3,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
 use sqlx::{Error, FromRow, Row};
+use std::fmt;
+use std::fmt::Formatter;
 
 use crate::definition::{Definition, Id};
 use crate::deployment::connection::BlockConnection;
@@ -15,12 +17,6 @@ pub mod sink;
 mod sink_test;
 pub mod source;
 mod source_test;
-
-#[derive(Debug)]
-pub enum Command {
-    Deploy(Deployment, Vec<Definition>),
-    Undeploy(Deployment),
-}
 
 pub type DeploymentId = i32;
 
@@ -66,6 +62,12 @@ impl FromRow<'_, PgRow> for Deployment {
 #[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
 pub struct BlockId {
     pub value: String,
+}
+
+impl fmt::Display for BlockId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "BlockId({})", self.value)
+    }
 }
 
 impl TryFrom<&str> for BlockId {

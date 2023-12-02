@@ -3,7 +3,6 @@ pub mod pool;
 pub mod sink;
 pub mod source;
 mod util;
-
 use crate::engine::Data;
 use serde_derive::{Deserialize, Serialize};
 use source::SourceId;
@@ -56,7 +55,7 @@ impl DataFrame {
     }
 
     pub fn key(&self) -> String {
-        self.origin.0.clone()
+        self.origin.value.clone()
     }
 
     pub fn as_json(&self) -> String {

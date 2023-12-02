@@ -1,33 +1,33 @@
 extern crate rocket;
 
-use api;
-use crossbeam_channel::{Receiver, Sender};
-use database;
+use std::env;
+
+use actix::prelude::*;
 use log::{info, LevelFilter};
 use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Root};
 use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
-use runtime;
-use runtime::DataFrame;
-use std::env;
 use tokio::signal;
-use types::deployment::Command;
 
-#[rocket::main]
+use api;
+use database;
+use runtime;
+use runtime::engine::engine::EngineActor;
+use runtime::sink::kafka::KafkaSinkActor;
+use runtime::source::kafka;
+
+#[actix::main]
 async fn main() {
     configure_logger();
     info!("Running mcep");
 
-    let (command_tx, command_rx): (Sender<Command>, Receiver<Command>) =
-        crossbeam_channel::unbounded();
-    let (kafka_tx, kafka_rx): (Sender<DataFrame>, Receiver<DataFrame>) =
-        crossbeam_channel::unbounded();
-
     runtime::init();
 
     let database_connection_pool = database::init_connection_pool().await;
-
+    let sink = KafkaSinkActor::new().unwrap();
+    let engine = EngineActor::new(sink).start();
+    let source_target = engine.clone();
     database::apply_migrations(&database_connection_pool)
         .await
         .expect("migrations failed");
@@ -35,27 +35,21 @@ async fn main() {
         api::start_rocket(
             rocket_config(),
             database_connection_pool.clone(),
-            command_tx,
+            engine.clone(),
         )
         .launch()
         .await
     });
 
-    let engine_data_input = kafka_rx.clone();
-    let engine_data_output = kafka_tx.clone();
-    let engine_command_rx = command_rx.clone();
     let app_pool = runtime::pool::create_pool(8).expect("app pool should start");
     app_pool.spawn(move || {
-        runtime::engine::run(engine_command_rx, engine_data_input, engine_data_output)
+        let _ = kafka::run_kafka_actor_source(source_target).unwrap();
     });
     app_pool.spawn(move || {
-        runtime::source::kafka::run_kafka_source(kafka_tx).expect("kafka source should run");
-    });
-    app_pool.spawn(move || {
-        runtime::sink::kafka::run_kafka_sink(kafka_rx).expect("kafka sink should run");
+        let system = System::new();
+        system.run().unwrap();
     });
     signal::ctrl_c().await.expect("failed to listen for event");
-
     println!("Closing mcep");
 }
 

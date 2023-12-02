@@ -1,5 +1,6 @@
 use log::error;
-use sqlx::{Error, Pool, Postgres};
+use sqlx::{Pool, Postgres};
+
 use types::definition::{Definition, DefinitionId};
 
 pub async fn get_definition(pool: &Pool<Postgres>, id: DefinitionId) -> Result<Definition, String> {

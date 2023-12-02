@@ -18,10 +18,11 @@ api = { path = "api"}
 database = { path = "database" }
 runtime = { path = "runtime" }
 crossbeam-channel = { version = "0.5.8" }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "rt"] }
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 toml = { version = "0.8.2" }
 serde = { version = "1.0.164" }
 serde_derive = { version = "1.0.164" }
 log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
+actix = { version = "0.13.1" }

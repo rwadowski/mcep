@@ -3,14 +3,14 @@ mod test {
     use crate::engine::block::code::PythonCodeBlock;
     use crate::engine::block::Block;
     use crate::engine::Data;
-    use crate::{DataFrame, InstanceId, Name, Origin};
+    use crate::{DataFrame, Name};
     use pyo3::prelude::*;
     use std::collections::HashMap;
     use std::time::Instant;
     use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
     use types::definition::{DataType, Id};
-    use types::deployment::{Deployment, DeploymentId};
+    use types::deployment::{BlockId, DeploymentId};
     #[test]
     fn run_code_block() {
         let script = "def logic(v):
@@ -52,21 +52,27 @@ mod test {
         println!("{:}", serde_json::to_string(&definition).unwrap());
         let mut block = PythonCodeBlock::new(&deployment_id, definition);
         let input_x = DataFrame::new(
-            Origin::from(InstanceId("src".to_string())),
+            BlockId {
+                value: "src".to_string(),
+            },
             Instant::now(),
             input_x_frame_name.clone(),
             Data::Text("hello".to_string()),
         );
         let input_y = DataFrame::new(
-            Origin::from(InstanceId("src".to_string())),
+            BlockId {
+                value: "src".to_string(),
+            },
             Instant::now(),
             input_y_frame_name.clone(),
             Data::Text("world".to_string()),
         );
-        let mut result = block.run(input_x);
-        result = block.run(input_y);
+        let mut input: HashMap<Name, Data> = HashMap::new();
+        input.insert(input_x.name, input_x.payload);
+        input.insert(input_y.name, input_y.payload);
+        let result = block.run(&input);
         let expected = DataFrame::new(
-            Origin::from(block.id),
+            block.id,
             Instant::now(),
             output_frame_name.clone(),
             Data::Text("hello world".to_string()),

@@ -1,15 +1,17 @@
-use crate::definition::get::get_definitions;
-use crossbeam_channel::Sender;
+use actix::Addr;
 use rocket::log::private::{error, info};
 use rocket::serde::Deserialize;
 use sqlx::types::Json;
 use sqlx::{Pool, Postgres};
+
+use runtime::engine::engine::{EngineActor, EngineActorMessage};
 use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::BlockConnection;
 use types::deployment::sink::Sink;
 use types::deployment::source::Source;
-use types::deployment::Command::Deploy;
-use types::deployment::{Command, Deployment};
+use types::deployment::Deployment;
+
+use crate::definition::get::get_definitions;
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -37,7 +39,7 @@ impl NewDeployment {
 }
 
 pub async fn create_deployment(
-    sender: &Sender<Command>,
+    sender: &Addr<EngineActor>,
     pool: &Pool<Postgres>,
     new_deployment: NewDeployment,
 ) -> Option<Deployment> {
@@ -52,17 +54,15 @@ pub async fn create_deployment(
         .await
         .map_err(|err| err.to_string());
     let definitions = get_definitions(pool, definition_ids).await;
-    let tuple = to_tuple(write_result, definitions);
-    let result = tuple.and_then(|(deployment, definitions)| {
-        sender
-            .send(Deploy(deployment.clone(), definitions))
-            .map_err(|err| err.to_string())
-            .map(|_| deployment)
-    });
+    let result = to_tuple(write_result, definitions);
     match result {
-        Ok(d) => {
-            info!("deployment {} created", d.id.to_string());
-            Some(d)
+        Ok((deployment, definitions)) => {
+            info!("deployment {} created", deployment.id.to_string());
+            sender
+                .send(EngineActorMessage::Deploy(deployment.clone(), definitions))
+                .await
+                .expect("TODO: panic message");
+            Some(deployment)
         }
         Err(err) => {
             error!("{}", err.to_string());

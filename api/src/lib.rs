@@ -1,19 +1,19 @@
-mod definition;
-mod deployment;
-
 #[macro_use]
 extern crate rocket;
 
-use crossbeam_channel::Sender;
+use actix::Addr;
 use rocket::figment::Figment;
 use rocket::{Build, Rocket};
+use runtime::engine::engine::EngineActor;
 use sqlx::{Pool, Postgres};
-use types::deployment::Command;
+
+mod definition;
+mod deployment;
 
 pub fn start_rocket(
     config: Figment,
     pool: Pool<Postgres>,
-    sender: Sender<Command>,
+    sender: Addr<EngineActor>,
 ) -> Rocket<Build> {
     rocket::custom(config).manage(pool).manage(sender).mount(
         "/api",
