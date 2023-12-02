@@ -1,7 +1,7 @@
-use std::ops::Add;
 use std::time::Instant;
 
-use actix::{Actor, Addr, Context, System};
+use actix::prelude::*;
+use actix::{Actor, Addr};
 use crossbeam_channel::Sender;
 use kafka::client::FetchOffset;
 use kafka::consumer::Consumer;
@@ -9,11 +9,10 @@ use serde_derive::{Deserialize, Serialize};
 
 use types::deployment::BlockId;
 
-use crate::engine::engine::{EngineActor, EngineActorMessage};
 use crate::engine::Data;
+use crate::engine::{EngineActor, EngineActorMessage};
 use crate::source::SourceId;
 use crate::{util, DataFrame, Name};
-use actix::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct KafkaSourceConfig {

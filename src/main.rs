@@ -13,7 +13,7 @@ use tokio::signal;
 use api;
 use database;
 use runtime;
-use runtime::engine::engine::EngineActor;
+use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::kafka;
 

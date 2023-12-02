@@ -1,7 +1,7 @@
 use actix::Addr;
 use sqlx::{Error, Pool, Postgres};
 
-use runtime::engine::engine::{EngineActor, EngineActorMessage};
+use runtime::engine::{EngineActor, EngineActorMessage};
 use types::deployment::Deployment;
 
 pub async fn delete_deployment(

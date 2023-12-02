@@ -4,7 +4,7 @@ extern crate rocket;
 use actix::Addr;
 use rocket::figment::Figment;
 use rocket::{Build, Rocket};
-use runtime::engine::engine::EngineActor;
+use runtime::engine::EngineActor;
 use sqlx::{Pool, Postgres};
 
 mod definition;

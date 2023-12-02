@@ -5,7 +5,7 @@ use rocket::serde::json::Json;
 use rocket::State;
 use sqlx::{Pool, Postgres};
 
-use runtime::engine::engine::EngineActor;
+use runtime::engine::EngineActor;
 use services::deployment::create::NewDeployment;
 use services::deployment::{create, delete, get};
 

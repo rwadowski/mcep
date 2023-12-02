@@ -4,7 +4,7 @@ use rocket::serde::Deserialize;
 use sqlx::types::Json;
 use sqlx::{Pool, Postgres};
 
-use runtime::engine::engine::{EngineActor, EngineActorMessage};
+use runtime::engine::{EngineActor, EngineActorMessage};
 use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::BlockConnection;
 use types::deployment::sink::Sink;
