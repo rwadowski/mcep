@@ -1,10 +1,10 @@
-use std::collections::{HashMap, HashSet};
-
 use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
 use log::{debug, error};
+use std::collections::{HashMap, HashSet};
 
 use crate::engine::block::code::PythonCodeBlock;
 use crate::engine::Data;
+use crate::sink::kafka::{KafkaSinkActor, KafkaSinkActorMessage};
 use crate::{DataFrame, Name};
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use types::definition::block::{Block as BlockDefinition, BlockType};
@@ -21,14 +21,14 @@ pub trait Block {
 pub(crate) fn new_block(
     deployment_id: DeploymentId,
     definition: Box<dyn BlockDefinition>,
+    id: i32,
 ) -> Result<Box<dyn Block>, String> {
     let block_type = definition.block_type();
     match block_type {
         BlockType::Code => {
             let def = as_code_block_definition(definition)?;
-            Ok(Box::new(PythonCodeBlock::new(&deployment_id, def)))
-        }
-        _ => Err("unrecognized definition".to_string()),
+            Ok(Box::new(PythonCodeBlock::new(deployment_id, def, id)))
+        } //_ => Err("unrecognized definition".to_string()),
     }
 }
 
@@ -45,14 +45,15 @@ fn as_code_block_definition(
 #[rtype(result = "()")]
 pub enum BlockActorMessage {
     Process(Vec<DataFrame>),
-    AddTargets(HashSet<Addr<BlockActor>>),
+    AddTargets(HashSet<Addr<BlockActor>>, HashSet<Addr<KafkaSinkActor>>),
     Stop,
 }
 
 pub struct BlockActor {
     state: HashMap<Name, Data>,
     block: Box<dyn Block>,
-    targets: HashSet<Addr<BlockActor>>,
+    blocks: HashSet<Addr<BlockActor>>,
+    sinks: HashSet<Addr<KafkaSinkActor>>,
 }
 
 impl BlockActor {
@@ -60,12 +61,18 @@ impl BlockActor {
         BlockActor {
             state: HashMap::new(),
             block,
-            targets: HashSet::new(),
+            blocks: HashSet::new(),
+            sinks: HashSet::new(),
         }
     }
 
-    pub fn add_targets(&mut self, addresses: HashSet<Addr<BlockActor>>) {
-        self.targets.extend(addresses);
+    pub fn add_targets(
+        &mut self,
+        blocks: HashSet<Addr<BlockActor>>,
+        sinks: HashSet<Addr<KafkaSinkActor>>,
+    ) {
+        self.blocks.extend(blocks);
+        self.sinks.extend(sinks);
     }
 
     fn process(&mut self, data: Vec<DataFrame>) {
@@ -81,9 +88,12 @@ impl BlockActor {
                     count,
                     self.block.id()
                 );
-                for addr in self.targets.clone() {
+                self.blocks.iter().for_each(|addr| {
                     let _ = addr.send(BlockActorMessage::Process(list.clone()));
-                }
+                });
+                self.sinks.iter().for_each(|addr| {
+                    let _ = addr.send(KafkaSinkActorMessage::Send(list.clone()));
+                })
             }
             Err(err_string) => error!("failed to process message {}", err_string),
         }
@@ -100,7 +110,7 @@ impl Handler<BlockActorMessage> for BlockActor {
     fn handle(&mut self, msg: BlockActorMessage, ctx: &mut Self::Context) -> Self::Result {
         match msg {
             BlockActorMessage::Process(data) => self.process(data),
-            BlockActorMessage::AddTargets(targets) => self.add_targets(targets),
+            BlockActorMessage::AddTargets(blocks, sinks) => self.add_targets(blocks, sinks),
             BlockActorMessage::Stop => ctx.stop(),
         }
     }

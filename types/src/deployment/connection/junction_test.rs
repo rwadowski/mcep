@@ -6,10 +6,12 @@ mod junction_test {
 
     #[test]
     fn create_block_junction_id_success() {
-        let input = BlockId::try_from("block_1.input_id").unwrap();
-        let junction = BlockJunction::new(input, DataType::Text);
+        let input = BlockId::try_from("1.2.3").unwrap();
+        let junction = BlockJunction::from_block_id(input, DataType::Text);
         let expected = BlockJunction {
-            block: BlockId::try_from("block_1.input_id").unwrap(),
+            block: Some(BlockId::try_from("1.2.3").unwrap()),
+            sink: None,
+            source: None,
             data_type: DataType::Text,
         };
 
@@ -20,11 +22,13 @@ mod junction_test {
     fn block_junction_json_deserialization() {
         let payload = r#"
             {
-                "block": "block_1.input_1",
+                "block": "1.2.3",
                 "data_type": "Text"
             }"#;
         let expected = BlockJunction {
-            block: BlockId::try_from("block_1.input_1").unwrap(),
+            block: Some(BlockId::try_from("1.2.3").unwrap()),
+            sink: None,
+            source: None,
             data_type: DataType::Text,
         };
         let result = serde_json::from_str::<BlockJunction>(payload);
@@ -35,12 +39,14 @@ mod junction_test {
     #[test]
     fn block_junction_json_serialization() {
         let junction = BlockJunction {
-            block: BlockId::try_from("block_1.input_1").unwrap(),
+            block: Some(BlockId::try_from("1.2.3").unwrap()),
+            sink: None,
+            source: None,
             data_type: DataType::Text,
         };
         let expected: String = r#"
             {
-                "block": "block_1.input_1",
+                "block": "1.2.3",
                 "data_type": "Text"
             }"#
         .chars()

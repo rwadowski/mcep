@@ -3,13 +3,12 @@ mod test {
     use crate::engine::block::code::PythonCodeBlock;
     use crate::engine::block::Block;
     use crate::engine::Data;
-    use crate::{DataFrame, Name};
-    use pyo3::prelude::*;
+    use crate::{DataFrame, Name, Origin};
     use std::collections::HashMap;
     use std::time::Instant;
     use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::{DataType, Id};
+    use types::definition::{DataType, DefinitionId};
     use types::deployment::{BlockId, DeploymentId};
     #[test]
     fn run_code_block() {
@@ -20,7 +19,7 @@ mod test {
     return r"
             .to_string();
         let deployment_id: DeploymentId = 0;
-        let id = Id::new("definition_id");
+        let id: DefinitionId = 1;
         let x_input = "x".to_string();
         let y_input = "y".to_string();
         let output = "z".to_string();
@@ -50,19 +49,24 @@ mod test {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         println!("{:}", serde_json::to_string(&definition).unwrap());
-        let mut block = PythonCodeBlock::new(&deployment_id, definition);
+        let block_id: i32 = 1;
+        let mut block = PythonCodeBlock::new(deployment_id, definition.clone(), block_id);
         let input_x = DataFrame::new(
-            BlockId {
-                value: "src".to_string(),
-            },
+            Origin::from(BlockId::new(
+                deployment_id,
+                definition.clone().id.clone(),
+                block_id,
+            )),
             Instant::now(),
             input_x_frame_name.clone(),
             Data::Text("hello".to_string()),
         );
         let input_y = DataFrame::new(
-            BlockId {
-                value: "src".to_string(),
-            },
+            Origin::from(BlockId::new(
+                deployment_id,
+                definition.clone().id.clone(),
+                block_id,
+            )),
             Instant::now(),
             input_y_frame_name.clone(),
             Data::Text("world".to_string()),
@@ -72,7 +76,7 @@ mod test {
         input.insert(input_y.name, input_y.payload);
         let result = block.run(&input);
         let expected = DataFrame::new(
-            block.id,
+            Origin::from(block.id),
             Instant::now(),
             output_frame_name.clone(),
             Data::Text("hello world".to_string()),

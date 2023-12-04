@@ -3,11 +3,12 @@ use std::fmt::Formatter;
 
 use serde::de::Error as SerdeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::from_str;
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
 use sqlx::{Error, FromRow, Row};
 
-use crate::definition::Id;
+use crate::definition::DefinitionId;
 use crate::deployment::connection::BlockConnection;
 use crate::deployment::sink::Sink;
 use crate::deployment::source::Source;
@@ -29,13 +30,6 @@ pub struct Deployment {
     pub connections: Vec<BlockConnection>,
     pub sources: Vec<Source>,
     pub sinks: Vec<Sink>,
-}
-
-impl Deployment {
-    pub fn block_id(&self) -> BlockId {
-        let id = Id::new(self.name.as_str());
-        BlockId::new(&self.id, &id)
-    }
 }
 
 impl FromRow<'_, PgRow> for Deployment {
@@ -62,12 +56,18 @@ impl FromRow<'_, PgRow> for Deployment {
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
 pub struct BlockId {
-    pub value: String,
+    pub definition_id: DefinitionId,
+    pub deployment_id: DeploymentId,
+    pub id: i32,
 }
 
 impl fmt::Display for BlockId {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "BlockId({})", self.value)
+        write!(
+            f,
+            "BlockId({}.{}.{})",
+            self.deployment_id, self.definition_id, self.id
+        )
     }
 }
 
@@ -76,13 +76,17 @@ impl TryFrom<&str> for BlockId {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let elements: Vec<&str> = value.split(".").collect();
-        if elements.len() == 2 {
+        if elements.len() == 3 {
             Ok(BlockId {
-                value: value.to_string(),
+                deployment_id: from_str::<DeploymentId>(elements[0])
+                    .map_err(|err| err.to_string())?,
+                definition_id: from_str::<DefinitionId>(elements[1])
+                    .map_err(|err| err.to_string())?,
+                id: from_str::<i32>(elements[2]).map_err(|err| err.to_string())?,
             })
         } else {
             Err(format!(
-                "block id '{}' must contain two elements delimited by '.'",
+                "block id '{}' must contain three elements delimited by '.'",
                 value
             ))
         }
@@ -90,10 +94,16 @@ impl TryFrom<&str> for BlockId {
 }
 
 impl BlockId {
-    pub fn new(deployment_id: &DeploymentId, id: &Id) -> BlockId {
+    pub fn new(deployment_id: DeploymentId, definition_id: DefinitionId, id: i32) -> BlockId {
         BlockId {
-            value: deployment_id.to_string() + "." + id.value.as_str(),
+            deployment_id,
+            definition_id,
+            id,
         }
+    }
+
+    pub fn to_string(self) -> String {
+        format!("{}.{}", self.deployment_id, self.definition_id)
     }
 }
 
@@ -102,7 +112,8 @@ impl Serialize for BlockId {
     where
         S: Serializer,
     {
-        serializer.serialize_str(self.value.as_str())
+        let str = format!("{}.{}.{}", self.deployment_id, self.definition_id, self.id);
+        serializer.serialize_str(str.as_str())
     }
 }
 
@@ -113,5 +124,29 @@ impl<'de> Deserialize<'de> for BlockId {
     {
         let str: String = String::deserialize(deserializer)?;
         BlockId::try_from(str.as_str()).map_err(|err| D::Error::custom(err))
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
+pub struct BlockInput {
+    value: String,
+}
+
+impl Serialize for BlockInput {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.value.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for BlockInput {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value: String = String::deserialize(deserializer)?;
+        Ok(BlockInput { value })
     }
 }

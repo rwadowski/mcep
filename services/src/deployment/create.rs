@@ -3,6 +3,7 @@ use rocket::log::private::{error, info};
 use rocket::serde::Deserialize;
 use sqlx::types::Json;
 use sqlx::{Pool, Postgres};
+use std::collections::HashSet;
 
 use runtime::engine::{EngineActor, EngineActorMessage};
 use types::definition::{Definition, DefinitionId};
@@ -24,14 +25,14 @@ pub struct NewDeployment {
 }
 
 impl NewDeployment {
-    pub fn definition_ids(&self) -> Vec<DefinitionId> {
-        let mut result: Vec<DefinitionId> = Vec::new();
+    pub fn definition_ids(&self) -> HashSet<DefinitionId> {
+        let mut result: HashSet<DefinitionId> = HashSet::new();
         for connection in self.connections.iter() {
             if let Some(id) = connection.from.definition_id_opt() {
-                result.push(id);
+                result.insert(id);
             }
             if let Some(id) = connection.to.definition_id_opt() {
-                result.push(id);
+                result.insert(id);
             }
         }
         result
@@ -43,7 +44,7 @@ pub async fn create_deployment(
     pool: &Pool<Postgres>,
     new_deployment: NewDeployment,
 ) -> Option<Deployment> {
-    let definition_ids: Vec<DefinitionId> = new_deployment.definition_ids();
+    let definition_ids: HashSet<DefinitionId> = new_deployment.definition_ids();
     let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployment (name, version, application_id, connections, source, sink) VALUES ($1, $2, $3, $4, $5, $5) RETURNING *")
         .bind(new_deployment.name)
         .bind(new_deployment.version)

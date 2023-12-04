@@ -1,11 +1,13 @@
-use crate::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
-use crate::definition::Id;
-use serde::{Deserialize, Serialize};
 use std::any::Any;
+
+use serde::{Deserialize, Serialize};
+
+use crate::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
+use crate::definition::DefinitionId;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CodeBlock {
-    pub id: Id,
+    pub id: DefinitionId,
     pub block_type: BlockType,
     pub code_block_type: CodeBlockType,
     pub inputs: Vec<Input>,
@@ -15,7 +17,7 @@ pub struct CodeBlock {
 
 #[typetag::serde]
 impl Block for CodeBlock {
-    fn id(&self) -> Id {
+    fn id(&self) -> DefinitionId {
         self.id.clone()
     }
 

@@ -1,14 +1,16 @@
 #[cfg(test)]
 mod test {
-    use crate::engine::block;
     use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::{DataType, Id};
+    use types::definition::{DataType, DefinitionId};
     use types::deployment::DeploymentId;
+
+    use crate::engine::block;
 
     #[test]
     fn create_from_correct_definition() {
-        let definition_id = Id::new("definition_id");
+        let block_id: i32 = 1;
+        let definition_id: DefinitionId = 1;
         let block_type = BlockType::Code;
         let input_1_name = "input_1_name".to_string();
         let input_1_data_type = DataType::Text;
@@ -33,7 +35,7 @@ mod test {
             code,
         };
         let deployment_id: DeploymentId = 1;
-        let result = block::new_block(deployment_id, Box::new(definition));
+        let result = block::new_block(deployment_id, Box::new(definition), block_id);
         assert_eq!(result.is_ok(), true);
     }
 }

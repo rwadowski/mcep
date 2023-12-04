@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::{DataType, Id};
-    use crate::deployment::source::Source;
+    use crate::definition::DataType;
+    use crate::deployment::source::{Source, SourceId};
 
     #[test]
     fn source_json_serialization() {
-        let id = Id::new("source_id");
+        let id = SourceId::from("source_id");
         let dt = DataType::Text;
         let source = Source::new(id, dt);
         let expected: String = r#"
@@ -23,7 +23,7 @@ mod test {
 
     #[test]
     fn source_json_deserialization() {
-        let id = Id::new("source_id");
+        let id = SourceId::from("source_id");
         let dt = DataType::Text;
         let expected = Source::new(id, dt);
         let payload = r#"

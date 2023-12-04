@@ -1,29 +1,16 @@
+use serde_derive::{Deserialize, Serialize};
+use std::cmp::{Eq, PartialEq, PartialOrd};
+use std::time::Instant;
+use types::deployment::source::SourceId;
+use types::deployment::BlockId;
+
+use crate::engine::Data;
+
 pub mod engine;
 pub mod pool;
 pub mod sink;
 pub mod source;
 mod util;
-use crate::engine::Data;
-use serde_derive::{Deserialize, Serialize};
-use source::SourceId;
-use std::cmp::{Eq, PartialEq, PartialOrd};
-use std::time::Instant;
-use types::deployment::BlockId;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct InstanceId(pub String);
-
-impl From<SourceId> for InstanceId {
-    fn from(value: SourceId) -> Self {
-        InstanceId(value.0)
-    }
-}
-
-impl From<BlockId> for InstanceId {
-    fn from(block_id: BlockId) -> Self {
-        InstanceId(block_id.value)
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, PartialOrd, Ord)]
 pub struct Name {
@@ -38,14 +25,14 @@ impl From<String> for Name {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DataFrame {
-    origin: BlockId,
+    origin: Origin,
     ts: Instant,
     name: Name,
     payload: Data,
 }
 
 impl DataFrame {
-    pub fn new(origin: BlockId, ts: Instant, name: Name, payload: Data) -> DataFrame {
+    pub fn new(origin: Origin, ts: Instant, name: Name, payload: Data) -> DataFrame {
         DataFrame {
             origin,
             ts,
@@ -55,11 +42,44 @@ impl DataFrame {
     }
 
     pub fn key(&self) -> String {
-        self.origin.value.clone()
+        self.origin.clone().to_string()
     }
 
     pub fn as_json(&self) -> String {
         String::new()
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Origin {
+    block: Option<BlockId>,
+    source: Option<SourceId>,
+}
+
+impl From<BlockId> for Origin {
+    fn from(value: BlockId) -> Self {
+        Origin {
+            block: Some(value),
+            source: None,
+        }
+    }
+}
+
+impl From<SourceId> for Origin {
+    fn from(value: SourceId) -> Self {
+        Origin {
+            block: None,
+            source: Some(value),
+        }
+    }
+}
+
+impl Origin {
+    fn to_string(self) -> String {
+        if self.block.is_some() {
+            return self.block.unwrap().to_string();
+        }
+        return self.source.unwrap().value;
     }
 }
 

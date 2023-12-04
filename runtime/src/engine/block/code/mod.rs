@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::time::Instant;
 
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
@@ -8,7 +7,7 @@ use types::deployment::{BlockId, DeploymentId};
 use crate::engine::block::code::python::PythonBlock;
 use crate::engine::block::Block;
 use crate::engine::Data;
-use crate::{DataFrame, Name};
+use crate::{DataFrame, Name, Origin};
 
 mod mod_test;
 pub mod python;
@@ -35,12 +34,11 @@ impl Block for PythonCodeBlock {
             input.insert(name.value.clone(), value.clone());
         }
         let result = self.python_block.run(input)?;
-        let origin = self.id.clone();
         let frames: Vec<DataFrame> = result
             .iter()
             .map(|(name, data)| {
                 DataFrame::new(
-                    origin.clone(),
+                    Origin::from(self.id.clone()),
                     Instant::now(),
                     Name::from(name.clone()),
                     data.clone(),
@@ -52,10 +50,14 @@ impl Block for PythonCodeBlock {
 }
 
 impl PythonCodeBlock {
-    pub fn new(deployment_id: &DeploymentId, definition: CodeBlockDefinition) -> PythonCodeBlock {
+    pub fn new(
+        deployment_id: DeploymentId,
+        definition: CodeBlockDefinition,
+        id: i32,
+    ) -> PythonCodeBlock {
         let code = definition.code.clone();
         PythonCodeBlock {
-            id: BlockId::new(deployment_id, &definition.id),
+            id: BlockId::new(deployment_id, definition.id, id),
             definition,
             python_block: PythonBlock { code },
         }

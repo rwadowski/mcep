@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use crate::definition::{DataType, Id};
+    use crate::definition::DataType;
     use crate::deployment::connection::junction::BlockJunction;
     use crate::deployment::connection::BlockConnection;
-    use crate::deployment::sink::Sink;
-    use crate::deployment::source::Source;
+    use crate::deployment::sink::{Sink, SinkId};
+    use crate::deployment::source::{Source, SourceId};
     use crate::deployment::{BlockId, Deployment, DeploymentId};
 
     #[test]
@@ -14,12 +14,12 @@ mod tests {
         let version = "1.0.0".to_string();
         let mut sources: Vec<Source> = Vec::new();
         sources.push(Source {
-            id: Id::new("source_1_id"),
+            id: SourceId::from("source_1"),
             data_type: DataType::Text,
         });
         let mut sinks: Vec<Sink> = Vec::new();
         sinks.push(Sink {
-            id: Id::new("sink_1_id"),
+            id: SinkId::from("sink_1"),
             data_type: DataType::Text,
         });
         let body = Deployment {
@@ -37,34 +37,34 @@ mod tests {
           "connections": [
             {
               "from": {
-                "block": "1.source_1_id",
+                "source": "source_1",
                 "data_type": "Text"
               },
               "to": {
-                "block": "2.input_1_id",
+                "block": "1.2.1",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": "1.output_1_id",
+                "block": "1.2.1",
                 "data_type": "Text"
               },
               "to": {
-                "block": "2.sink_1_id",
+                "sink": "sink_1",
                 "data_type": "Text"
               }
             }
           ],
           "sources": [
             {
-              "id": "source_1_id",
+              "id": "source_1",
               "data_type": "Text"
             }
           ],
           "sinks": [
             {
-              "id": "sink_1_id",
+              "id": "sink_1",
               "data_type": "Text"
             }
           ]
@@ -91,34 +91,34 @@ mod tests {
           "connections": [
             {
               "from": {
-                "block": "1.source_1_id",
+                "source": "source_1",
                 "data_type": "Text"
               },
               "to": {
-                "block": "2.input_1_id",
+                "block": "1.2.1",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": "1.output_1_id",
+                "block": "1.2.1",
                 "data_type": "Text"
               },
               "to": {
-                "block": "2.sink_1_id",
+                "sink": "sink_1",
                 "data_type": "Text"
               }
             }
           ],
           "sources": [
             {
-              "id": "source_1_id",
+              "id": "source_1",
               "data_type": "Text"
             }
           ],
           "sinks": [
             {
-              "id": "sink_1_id",
+              "id": "sink_1",
               "data_type": "Text"
             }
           ],
@@ -130,12 +130,12 @@ mod tests {
         let version = "1.0.0".to_string();
         let mut sources: Vec<Source> = Vec::new();
         sources.push(Source {
-            id: Id::new("source_1_id"),
+            id: SourceId::from("source_1"),
             data_type: DataType::Text,
         });
         let mut sinks: Vec<Sink> = Vec::new();
         sinks.push(Sink {
-            id: Id::new("sink_1_id"),
+            id: SinkId::from("sink_1"),
             data_type: DataType::Text,
         });
         let expected = Deployment {
@@ -159,12 +159,12 @@ mod tests {
     fn connections() -> Vec<BlockConnection> {
         let mut connections: Vec<BlockConnection> = Vec::new();
         connections.push(BlockConnection {
-            from: BlockJunction::new(BlockId::try_from("1.source_1_id").unwrap(), DataType::Text),
-            to: BlockJunction::new(BlockId::try_from("2.input_1_id").unwrap(), DataType::Text),
+            from: BlockJunction::from_source_id(SourceId::from("source_1"), DataType::Text),
+            to: BlockJunction::from_block_id(BlockId::try_from("1.2.1").unwrap(), DataType::Text),
         });
         connections.push(BlockConnection {
-            from: BlockJunction::new(BlockId::try_from("1.output_1_id").unwrap(), DataType::Text),
-            to: BlockJunction::new(BlockId::try_from("2.sink_1_id").unwrap(), DataType::Text),
+            from: BlockJunction::from_block_id(BlockId::try_from("1.2.1").unwrap(), DataType::Text),
+            to: BlockJunction::from_sink_id(SinkId::from("sink_1"), DataType::Text),
         });
         connections
     }

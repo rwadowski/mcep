@@ -8,13 +8,13 @@ mod test {
 
     #[test]
     fn create_block_connection_success() {
-        let out = BlockId::try_from("block_1.output_1").unwrap();
-        let inp = BlockId::try_from("block_2.input_1").unwrap();
-        let output = BlockJunction::new(out.clone(), DataType::Text);
-        let input = BlockJunction::new(inp.clone(), DataType::Text);
+        let out = BlockId::try_from("1.2.1").unwrap();
+        let inp = BlockId::try_from("1.2.2").unwrap();
+        let output = BlockJunction::from_block_id(out.clone(), DataType::Text);
+        let input = BlockJunction::from_block_id(inp.clone(), DataType::Text);
         let expected = BlockConnection {
-            from: BlockJunction::new(out, DataType::Text),
-            to: BlockJunction::new(inp, DataType::Text),
+            from: BlockJunction::from_block_id(out, DataType::Text),
+            to: BlockJunction::from_block_id(inp, DataType::Text),
         };
 
         let connection = BlockConnection::new(output, input);
@@ -24,10 +24,10 @@ mod test {
 
     #[test]
     fn create_block_connection_not_matching_types() {
-        let out = BlockId::try_from("block_1.output_1").unwrap();
-        let inp = BlockId::try_from("block_2.input_1").unwrap();
-        let output = BlockJunction::new(out, DataType::Text);
-        let input = BlockJunction::new(inp, DataType::Boolean);
+        let out = BlockId::try_from("1.2.1").unwrap();
+        let inp = BlockId::try_from("1.2.2").unwrap();
+        let output = BlockJunction::from_block_id(out, DataType::Text);
+        let input = BlockJunction::from_block_id(inp, DataType::Boolean);
         let expected = DefinitionError::IncorrectJunctionDataTypes;
 
         let connection = BlockConnection::new(output, input);
@@ -37,17 +37,18 @@ mod test {
 
     #[test]
     fn block_connection_json_serialization() {
-        let from = BlockJunction::new(BlockId::try_from("block_1.j1").unwrap(), DataType::Text);
-        let to = BlockJunction::new(BlockId::try_from("block_2.j2").unwrap(), DataType::Text);
+        let from =
+            BlockJunction::from_block_id(BlockId::try_from("1.2.1").unwrap(), DataType::Text);
+        let to = BlockJunction::from_block_id(BlockId::try_from("1.2.2").unwrap(), DataType::Text);
         let connection = BlockConnection::new(from, to).unwrap();
         let expected: String = r#"
             {
                 "from": {
-                    "block": "block_1.j1",
+                    "block": "1.2.1",
                     "data_type": "Text"
                 },
                 "to": {
-                    "block": "block_2.j2",
+                    "block": "1.2.2",
                     "data_type": "Text"
                 }
             }"#
@@ -61,17 +62,18 @@ mod test {
 
     #[test]
     fn block_connection_json_deserialization() {
-        let from = BlockJunction::new(BlockId::try_from("block_1.j1").unwrap(), DataType::Text);
-        let to = BlockJunction::new(BlockId::try_from("block_2.j2").unwrap(), DataType::Text);
+        let from =
+            BlockJunction::from_block_id(BlockId::try_from("1.2.1").unwrap(), DataType::Text);
+        let to = BlockJunction::from_block_id(BlockId::try_from("1.2.2").unwrap(), DataType::Text);
         let expected = BlockConnection::new(from, to).unwrap();
         let payload = r#"
             {
                 "from": {
-                    "block": "block_1.j1",
+                    "block": "1.2.1",
                     "data_type": "Text"
                 },
                 "to": {
-                    "block": "block_2.j2",
+                    "block": "1.2.2",
                     "data_type": "Text"
                 }
             }"#;

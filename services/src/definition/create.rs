@@ -1,10 +1,10 @@
 use rocket::log::private::{error, info};
 use rocket::serde::{Deserialize, Serialize};
-use serde::Deserializer;
+
 use serde_json::Value;
 use sqlx::types::JsonValue;
-use sqlx::{Encode, Error, Pool, Postgres, Type};
-use std::hash::Hash;
+use sqlx::{Error, Pool, Postgres, Type};
+
 use types::definition::Definition;
 
 #[derive(Deserialize)]

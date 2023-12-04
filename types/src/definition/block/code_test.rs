@@ -2,10 +2,10 @@
 mod test {
     use crate::definition::block::code::CodeBlock;
     use crate::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use crate::definition::{DataType, Id};
+    use crate::definition::{DataType, DefinitionId};
     #[test]
     fn js_json_serialize() {
-        let id = Id::new("js_id");
+        let id: DefinitionId = 1;
         let block_type = BlockType::Code;
         let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
@@ -21,7 +21,7 @@ mod test {
         };
         let js_string: String = r#"
             {
-                "id": "js_id",
+                "id": 1,
                 "block_type": "Code",
                 "code_block_type": "Js",
                 "inputs": [
@@ -50,7 +50,7 @@ mod test {
 
     #[test]
     fn js_json_deserialize() {
-        let id = Id::new("js_id");
+        let id: DefinitionId = 1;
         let block_type = BlockType::Code;
         let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
@@ -66,7 +66,7 @@ mod test {
         };
         let payload: String = r#"
             {
-                "id": "js_id",
+                "id": 1,
                 "block_type": "Code",
                 "code_block_type": "Js",
                 "inputs": [

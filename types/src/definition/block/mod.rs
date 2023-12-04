@@ -2,7 +2,7 @@ pub mod code;
 mod code_test;
 mod mod_test;
 
-use crate::definition::{DataType, Id};
+use crate::definition::{DataType, DefinitionId};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::fmt::Debug;
@@ -20,7 +20,7 @@ pub enum CodeBlockType {
 
 #[typetag::serde(tag = "type")]
 pub trait Block: Send + Debug {
-    fn id(&self) -> Id;
+    fn id(&self) -> DefinitionId;
     fn block_type(&self) -> BlockType;
     fn inputs(&self) -> Vec<Input>;
     fn outputs(&self) -> Vec<Output>;

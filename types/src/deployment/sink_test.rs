@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::{DataType, Id};
-    use crate::deployment::sink::Sink;
+    use crate::definition::DataType;
+    use crate::deployment::sink::{Sink, SinkId};
 
     #[test]
     fn sink_json_deserialization() {
-        let id = Id::new("sink_id");
+        let id = SinkId::from("sink_id");
         let dt = DataType::Text;
         let payload = r#"
             {
@@ -20,7 +20,7 @@ mod test {
 
     #[test]
     fn sink_json_serialization() {
-        let id = Id::new("sink_id");
+        let id = SinkId::from("sink_id");
         let dt = DataType::Text;
         let sink = Sink::new(id, dt);
         let expected: String = r#"
