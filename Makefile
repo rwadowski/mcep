@@ -1,5 +1,10 @@
+.PHONY: test build release
 
-.PHONY: test
+release:
+	cargo build --release
+
+build:
+	cargo build
 
 test:
 	cd types && cargo test && cd ..
