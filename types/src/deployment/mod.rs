@@ -58,7 +58,7 @@ impl FromRow<'_, PgRow> for Deployment {
 pub struct BlockId {
     pub definition_id: DefinitionId,
     pub deployment_id: DeploymentId,
-    pub id: i32,
+    pub id: BlockInstanceId,
 }
 
 impl fmt::Display for BlockId {
@@ -93,8 +93,14 @@ impl TryFrom<&str> for BlockId {
     }
 }
 
+pub type BlockInstanceId = i32;
+
 impl BlockId {
-    pub fn new(deployment_id: DeploymentId, definition_id: DefinitionId, id: i32) -> BlockId {
+    pub fn new(
+        deployment_id: DeploymentId,
+        definition_id: DefinitionId,
+        id: BlockInstanceId,
+    ) -> BlockId {
         BlockId {
             deployment_id,
             definition_id,

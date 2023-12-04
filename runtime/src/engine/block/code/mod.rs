@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::time::Instant;
 
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
-use types::deployment::{BlockId, DeploymentId};
+use types::deployment::{BlockId, BlockInstanceId, DeploymentId};
 
 use crate::engine::block::code::python::PythonBlock;
 use crate::engine::block::Block;
@@ -53,7 +53,7 @@ impl PythonCodeBlock {
     pub fn new(
         deployment_id: DeploymentId,
         definition: CodeBlockDefinition,
-        id: i32,
+        id: BlockInstanceId,
     ) -> PythonCodeBlock {
         let code = definition.code.clone();
         PythonCodeBlock {

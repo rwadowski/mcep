@@ -9,7 +9,7 @@ mod test {
     use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
     use types::definition::{DataType, DefinitionId};
-    use types::deployment::{BlockId, DeploymentId};
+    use types::deployment::{BlockId, BlockInstanceId, DeploymentId};
     #[test]
     fn run_code_block() {
         let script = "def logic(v):
@@ -49,7 +49,7 @@ mod test {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         println!("{:}", serde_json::to_string(&definition).unwrap());
-        let block_id: i32 = 1;
+        let block_id: BlockInstanceId = 1;
         let mut block = PythonCodeBlock::new(deployment_id, definition.clone(), block_id);
         let input_x = DataFrame::new(
             Origin::from(BlockId::new(

@@ -3,13 +3,13 @@ mod test {
     use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
     use types::definition::{DataType, DefinitionId};
-    use types::deployment::DeploymentId;
+    use types::deployment::{BlockInstanceId, DeploymentId};
 
     use crate::engine::block;
 
     #[test]
     fn create_from_correct_definition() {
-        let block_id: i32 = 1;
+        let block_id: BlockInstanceId = 1;
         let definition_id: DefinitionId = 1;
         let block_type = BlockType::Code;
         let input_1_name = "input_1_name".to_string();
