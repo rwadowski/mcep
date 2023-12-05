@@ -24,7 +24,7 @@ pub async fn get_definitions(
 ) -> Result<Vec<Definition>, String> {
     let list: Vec<DefinitionId> = ids.into_iter().collect();
     let definitions_opt =
-        sqlx::query_as::<_, Definition>("SELECT * FROM definitions WHERE id IN ($1)")
+        sqlx::query_as::<_, Definition>("SELECT * FROM definitions WHERE id = ANY($1)")
             .bind(list)
             .fetch_all(pool)
             .await;

@@ -10,7 +10,7 @@ pub async fn delete_deployment(
     id: i32,
 ) -> Result<(), String> {
     let result: Result<Deployment, Error> =
-        sqlx::query_as::<_, Deployment>("DELETE FROM deployment WHERE id = $1")
+        sqlx::query_as::<_, Deployment>("DELETE FROM deployments WHERE id = $1")
             .bind(id)
             .fetch_one(pool)
             .await;

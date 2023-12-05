@@ -5,9 +5,10 @@ use std::env;
 use actix::prelude::*;
 use log::{info, LevelFilter};
 use log4rs::append::console::ConsoleAppender;
-use log4rs::config::{Appender, Root};
+use log4rs::config::{Appender, Logger, Root};
 use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
+use rocket::log::LogLevel;
 use tokio::signal;
 
 use api;
@@ -78,6 +79,7 @@ fn configure_logger() {
     let stdout = ConsoleAppender::builder().build();
     let config = Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .logger(Logger::builder().build("kafka::consumer", LevelFilter::Info))
         .build(Root::builder().appender("stdout").build(level))
         .unwrap();
     let _ = log4rs::init_config(config).expect("logger should run");

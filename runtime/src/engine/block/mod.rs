@@ -8,7 +8,7 @@ use crate::sink::kafka::{KafkaSinkActor, KafkaSinkActorMessage};
 use crate::{DataFrame, Name};
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use types::definition::block::{Block as BlockDefinition, BlockType};
-use types::deployment::{BlockId, DeploymentId};
+use types::deployment::BlockId;
 
 pub(crate) mod code;
 mod mod_test;

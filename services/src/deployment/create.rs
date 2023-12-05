@@ -37,12 +37,13 @@ pub async fn create_deployment(
     new_deployment: NewDeployment,
 ) -> Option<Deployment> {
     let definition_ids: HashSet<DefinitionId> = new_deployment.definition_ids();
-    let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployment (name, version, application_id, connections, source, sink) VALUES ($1, $2, $3, $4, $5, $5) RETURNING *")
+    let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployments (name, version, connections, sources, sinks, blocks) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
         .bind(new_deployment.name)
         .bind(new_deployment.version)
         .bind(Json::<Vec<BlockConnection>>(new_deployment.connections))
         .bind(Json::<Vec<Source>>(new_deployment.sources))
         .bind(Json::<Vec<Sink>>(new_deployment.sinks))
+        .bind(Json::<Vec<DeployedBlock>>(new_deployment.blocks))
         .fetch_one(pool)
         .await
         .map_err(|err| err.to_string());
