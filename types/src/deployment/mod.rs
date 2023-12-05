@@ -30,6 +30,7 @@ pub struct Deployment {
     pub connections: Vec<BlockConnection>,
     pub sources: Vec<Source>,
     pub sinks: Vec<Sink>,
+    pub blocks: Vec<DeployedBlock>,
 }
 
 impl FromRow<'_, PgRow> for Deployment {
@@ -43,6 +44,8 @@ impl FromRow<'_, PgRow> for Deployment {
         let sources = sources_js.0;
         let sinks_js: Json<Vec<Sink>> = row.try_get("sinks")?;
         let sinks = sinks_js.0;
+        let blocks_js: Json<Vec<DeployedBlock>> = row.try_get("blocks")?;
+        let blocks = blocks_js.0;
         Ok(Deployment {
             id,
             name,
@@ -50,6 +53,7 @@ impl FromRow<'_, PgRow> for Deployment {
             connections,
             sources,
             sinks,
+            blocks,
         })
     }
 }
@@ -57,17 +61,12 @@ impl FromRow<'_, PgRow> for Deployment {
 #[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
 pub struct BlockId {
     pub definition_id: DefinitionId,
-    pub deployment_id: DeploymentId,
     pub id: BlockInstanceId,
 }
 
 impl fmt::Display for BlockId {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "BlockId({}.{}.{})",
-            self.deployment_id, self.definition_id, self.id
-        )
+        write!(f, "BlockId({}.{})", self.definition_id, self.id)
     }
 }
 
@@ -76,17 +75,15 @@ impl TryFrom<&str> for BlockId {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let elements: Vec<&str> = value.split(".").collect();
-        if elements.len() == 3 {
+        if elements.len() == 2 {
             Ok(BlockId {
-                deployment_id: from_str::<DeploymentId>(elements[0])
+                definition_id: from_str::<DefinitionId>(elements[0])
                     .map_err(|err| err.to_string())?,
-                definition_id: from_str::<DefinitionId>(elements[1])
-                    .map_err(|err| err.to_string())?,
-                id: from_str::<i32>(elements[2]).map_err(|err| err.to_string())?,
+                id: from_str::<i32>(elements[1]).map_err(|err| err.to_string())?,
             })
         } else {
             Err(format!(
-                "block id '{}' must contain three elements delimited by '.'",
+                "block id '{}' must contain two elements delimited by '.'",
                 value
             ))
         }
@@ -96,20 +93,12 @@ impl TryFrom<&str> for BlockId {
 pub type BlockInstanceId = i32;
 
 impl BlockId {
-    pub fn new(
-        deployment_id: DeploymentId,
-        definition_id: DefinitionId,
-        id: BlockInstanceId,
-    ) -> BlockId {
-        BlockId {
-            deployment_id,
-            definition_id,
-            id,
-        }
+    pub fn new(definition_id: DefinitionId, id: BlockInstanceId) -> BlockId {
+        BlockId { definition_id, id }
     }
 
     pub fn to_string(self) -> String {
-        format!("{}.{}", self.deployment_id, self.definition_id)
+        format!("{}.{}", self.definition_id, self.id)
     }
 }
 
@@ -118,7 +107,7 @@ impl Serialize for BlockId {
     where
         S: Serializer,
     {
-        let str = format!("{}.{}.{}", self.deployment_id, self.definition_id, self.id);
+        let str = format!("{}.{}", self.definition_id, self.id);
         serializer.serialize_str(str.as_str())
     }
 }
@@ -154,5 +143,20 @@ impl<'de> Deserialize<'de> for BlockInput {
     {
         let value: String = String::deserialize(deserializer)?;
         Ok(BlockInput { value })
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+pub struct DeployedBlock {
+    pub definition_id: DefinitionId,
+    pub id: BlockInstanceId,
+}
+
+impl DeployedBlock {
+    pub fn new(definition_id: DefinitionId, id: BlockInstanceId) -> DeployedBlock {
+        DeployedBlock { definition_id, id }
+    }
+    pub fn id(&self) -> BlockId {
+        BlockId::new(self.definition_id, self.id)
     }
 }

@@ -1,3 +1,5 @@
+mod mod_test;
+
 use actix::Addr;
 use rocket::http::Status;
 use rocket::response::status::NotFound;

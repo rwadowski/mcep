@@ -4,7 +4,7 @@ use std::hash::{Hash, Hasher};
 use actix::{Actor, Addr, Context, Handler, Message};
 use serde_derive::{Deserialize, Serialize};
 
-use types::definition::Definition;
+use types::definition::{Definition, DefinitionId};
 use types::deployment::sink::SinkId;
 use types::deployment::{Deployment, DeploymentId};
 
@@ -67,7 +67,7 @@ impl EngineActor {
     fn deploy(
         &mut self,
         deployment: &Deployment,
-        definitions: &Vec<Definition>,
+        definitions: &HashMap<DefinitionId, Definition>,
     ) -> Result<(), String> {
         let flow_actor = FlowActor::new(deployment, definitions, self.sinks.clone())?;
         self.flows.insert(deployment.id, flow_actor);
@@ -98,8 +98,10 @@ impl Handler<EngineActorMessage> for EngineActor {
     fn handle(&mut self, msg: EngineActorMessage, _ctx: &mut Self::Context) -> Self::Result {
         match msg {
             EngineActorMessage::Process(df) => self.process(df),
-            EngineActorMessage::Deploy(deployment, connections) => {
-                let _ = self.deploy(&deployment, &connections);
+            EngineActorMessage::Deploy(deployment, definitions) => {
+                let definition_map: HashMap<DefinitionId, Definition> =
+                    definitions.into_iter().map(|def| (def.id, def)).collect();
+                let _ = self.deploy(&deployment, &definition_map);
             }
             EngineActorMessage::Undeploy(deployment) => self.undeploy(&deployment),
         }

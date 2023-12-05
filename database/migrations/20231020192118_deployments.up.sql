@@ -6,5 +6,6 @@ CREATE TABLE deployments (
     version VARCHAR NOT NULL,
     connections JSONB NOT NULL,
     sources JSONB NOT NULL,
-    sinks JSONB NOT NULL
+    sinks JSONB NOT NULL,
+    blocks JSONB NOT NULL
 );

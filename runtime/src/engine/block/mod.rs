@@ -19,7 +19,6 @@ pub trait Block {
 }
 
 pub(crate) fn new_block(
-    deployment_id: DeploymentId,
     definition: Box<dyn BlockDefinition>,
     id: i32,
 ) -> Result<Box<dyn Block>, String> {
@@ -27,7 +26,7 @@ pub(crate) fn new_block(
     match block_type {
         BlockType::Code => {
             let def = as_code_block_definition(definition)?;
-            Ok(Box::new(PythonCodeBlock::new(deployment_id, def, id)))
+            Ok(Box::new(PythonCodeBlock::new(def, id)))
         } //_ => Err("unrecognized definition".to_string()),
     }
 }

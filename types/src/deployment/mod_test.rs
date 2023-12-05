@@ -5,7 +5,7 @@ mod tests {
     use crate::deployment::connection::BlockConnection;
     use crate::deployment::sink::{Sink, SinkId};
     use crate::deployment::source::{Source, SourceId};
-    use crate::deployment::{BlockId, Deployment, DeploymentId};
+    use crate::deployment::{BlockId, DeployedBlock, Deployment, DeploymentId};
 
     #[test]
     fn test_serialize_body() {
@@ -22,6 +22,10 @@ mod tests {
             id: SinkId::from("sink_1"),
             data_type: DataType::Text,
         });
+        let blocks: Vec<DeployedBlock> = Vec::from([DeployedBlock {
+            definition_id: 1,
+            id: 1,
+        }]);
         let body = Deployment {
             id,
             name,
@@ -29,6 +33,7 @@ mod tests {
             connections: connections(),
             sources,
             sinks,
+            blocks,
         };
         let expected: String = r#"{
           "id": 0,
@@ -41,13 +46,13 @@ mod tests {
                 "data_type": "Text"
               },
               "to": {
-                "block": "1.2.1",
+                "block": "1.1",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": "1.2.1",
+                "block": "1.1",
                 "data_type": "Text"
               },
               "to": {
@@ -66,6 +71,12 @@ mod tests {
             {
               "id": "sink_1",
               "data_type": "Text"
+            }
+          ],
+          "blocks": [
+            {
+                "definition_id": 1,
+                "id": 1
             }
           ]
         }"#
@@ -95,13 +106,13 @@ mod tests {
                 "data_type": "Text"
               },
               "to": {
-                "block": "1.2.1",
+                "block": "1.1",
                 "data_type": "Text"
               }
             },
             {
               "from": {
-                "block": "1.2.1",
+                "block": "1.1",
                 "data_type": "Text"
               },
               "to": {
@@ -123,7 +134,13 @@ mod tests {
             }
           ],
           "description": "description",
-          "help": "help"
+          "help": "help",
+          "blocks": [
+            {
+                "definition_id": 1,
+                "id": 1
+            }
+          ]
         }"#;
         let id: DeploymentId = 0;
         let name = "title".to_string();
@@ -138,6 +155,10 @@ mod tests {
             id: SinkId::from("sink_1"),
             data_type: DataType::Text,
         });
+        let blocks = Vec::from([DeployedBlock {
+            definition_id: 1,
+            id: 1,
+        }]);
         let expected = Deployment {
             id,
             name,
@@ -145,6 +166,7 @@ mod tests {
             connections: connections(),
             sources,
             sinks,
+            blocks,
         };
 
         let result = serde_json::from_str::<Deployment>(payload).unwrap();
@@ -154,16 +176,17 @@ mod tests {
         assert_eq!(result.version, expected.version);
         assert_eq!(result.sinks, expected.sinks);
         assert_eq!(result.sources, expected.sources);
+        assert_eq!(result.blocks, expected.blocks);
     }
 
     fn connections() -> Vec<BlockConnection> {
         let mut connections: Vec<BlockConnection> = Vec::new();
         connections.push(BlockConnection {
             from: BlockJunction::from_source_id(SourceId::from("source_1"), DataType::Text),
-            to: BlockJunction::from_block_id(BlockId::try_from("1.2.1").unwrap(), DataType::Text),
+            to: BlockJunction::from_block_id(BlockId::try_from("1.1").unwrap(), DataType::Text),
         });
         connections.push(BlockConnection {
-            from: BlockJunction::from_block_id(BlockId::try_from("1.2.1").unwrap(), DataType::Text),
+            from: BlockJunction::from_block_id(BlockId::try_from("1.1").unwrap(), DataType::Text),
             to: BlockJunction::from_sink_id(SinkId::from("sink_1"), DataType::Text),
         });
         connections

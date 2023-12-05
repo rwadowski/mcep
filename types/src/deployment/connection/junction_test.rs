@@ -6,10 +6,10 @@ mod junction_test {
 
     #[test]
     fn create_block_junction_id_success() {
-        let input = BlockId::try_from("1.2.3").unwrap();
+        let input = BlockId::try_from("1.2").unwrap();
         let junction = BlockJunction::from_block_id(input, DataType::Text);
         let expected = BlockJunction {
-            block: Some(BlockId::try_from("1.2.3").unwrap()),
+            block: Some(BlockId::try_from("1.2").unwrap()),
             sink: None,
             source: None,
             data_type: DataType::Text,
@@ -22,11 +22,11 @@ mod junction_test {
     fn block_junction_json_deserialization() {
         let payload = r#"
             {
-                "block": "1.2.3",
+                "block": "1.2",
                 "data_type": "Text"
             }"#;
         let expected = BlockJunction {
-            block: Some(BlockId::try_from("1.2.3").unwrap()),
+            block: Some(BlockId::try_from("1.2").unwrap()),
             sink: None,
             source: None,
             data_type: DataType::Text,
@@ -39,14 +39,14 @@ mod junction_test {
     #[test]
     fn block_junction_json_serialization() {
         let junction = BlockJunction {
-            block: Some(BlockId::try_from("1.2.3").unwrap()),
+            block: Some(BlockId::try_from("1.2").unwrap()),
             sink: None,
             source: None,
             data_type: DataType::Text,
         };
         let expected: String = r#"
             {
-                "block": "1.2.3",
+                "block": "1.2",
                 "data_type": "Text"
             }"#
         .chars()

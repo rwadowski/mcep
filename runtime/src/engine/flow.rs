@@ -4,7 +4,7 @@ use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
 
 use types::definition::block::new_block_from_str;
 use types::definition::block::Block as BlockDefinition;
-use types::definition::Definition;
+use types::definition::{Definition, DefinitionId};
 use types::deployment::sink::SinkId;
 use types::deployment::source::SourceId;
 use types::deployment::{BlockId, Deployment};
@@ -29,7 +29,7 @@ pub struct FlowActor {
 impl FlowActor {
     pub fn new(
         deployment: &Deployment,
-        definitions: &Vec<Definition>,
+        definitions: &HashMap<DefinitionId, Definition>,
         sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
     ) -> Result<Addr<FlowActor>, String> {
         let router = Router::new(&deployment.connections);
@@ -84,18 +84,18 @@ fn option_to_set<T: Actor>(opt: Option<&Addr<T>>) -> HashSet<Addr<T>> {
 
 fn create_block_actors(
     deployment: &Deployment,
-    definitions: &Vec<Definition>,
+    definitions: &HashMap<DefinitionId, Definition>,
 ) -> Result<HashMap<BlockId, Addr<BlockActor>>, String> {
     let mut blocks: HashMap<BlockId, Addr<BlockActor>> = HashMap::new();
-    let mut def_id: i32 = 0;
-    for definition in definitions.iter() {
+    for deployed_block in deployment.blocks.iter() {
+        let definition = definitions
+            .get(&deployed_block.definition_id)
+            .ok_or("no definition provided")?;
         let block_definition: Box<dyn BlockDefinition> =
             new_block_from_str(definition.body.to_string().as_str())?;
-        let block = new_block(deployment.id, block_definition, def_id)?;
-        def_id = def_id + 1;
-        let block_id = block.id();
+        let block = new_block(block_definition, deployed_block.id)?;
         let block_actor = BlockActor::new(block);
-        blocks.insert(block_id, block_actor.start());
+        blocks.insert(deployed_block.id(), block_actor.start());
     }
     Ok(blocks)
 }

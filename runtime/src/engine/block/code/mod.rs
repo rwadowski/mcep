@@ -50,14 +50,10 @@ impl Block for PythonCodeBlock {
 }
 
 impl PythonCodeBlock {
-    pub fn new(
-        deployment_id: DeploymentId,
-        definition: CodeBlockDefinition,
-        id: BlockInstanceId,
-    ) -> PythonCodeBlock {
+    pub fn new(definition: CodeBlockDefinition, id: BlockInstanceId) -> PythonCodeBlock {
         let code = definition.code.clone();
         PythonCodeBlock {
-            id: BlockId::new(deployment_id, definition.id, id),
+            id: BlockId::new(definition.id, id),
             definition,
             python_block: PythonBlock { code },
         }

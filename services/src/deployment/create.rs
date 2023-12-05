@@ -10,7 +10,7 @@ use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::BlockConnection;
 use types::deployment::sink::Sink;
 use types::deployment::source::Source;
-use types::deployment::Deployment;
+use types::deployment::{BlockId, DeployedBlock, Deployment};
 
 use crate::definition::get::get_definitions;
 
@@ -20,22 +20,14 @@ pub struct NewDeployment {
     pub name: String,
     pub version: String,
     pub connections: Vec<BlockConnection>,
-    pub source: Vec<Source>,
-    pub sink: Vec<Sink>,
+    pub sources: Vec<Source>,
+    pub sinks: Vec<Sink>,
+    pub blocks: Vec<DeployedBlock>,
 }
 
 impl NewDeployment {
     pub fn definition_ids(&self) -> HashSet<DefinitionId> {
-        let mut result: HashSet<DefinitionId> = HashSet::new();
-        for connection in self.connections.iter() {
-            if let Some(id) = connection.from.definition_id_opt() {
-                result.insert(id);
-            }
-            if let Some(id) = connection.to.definition_id_opt() {
-                result.insert(id);
-            }
-        }
-        result
+        HashSet::from_iter(self.blocks.iter().map(|block| block.definition_id))
     }
 }
 
@@ -49,8 +41,8 @@ pub async fn create_deployment(
         .bind(new_deployment.name)
         .bind(new_deployment.version)
         .bind(Json::<Vec<BlockConnection>>(new_deployment.connections))
-        .bind(Json::<Vec<Source>>(new_deployment.source))
-        .bind(Json::<Vec<Sink>>(new_deployment.sink))
+        .bind(Json::<Vec<Source>>(new_deployment.sources))
+        .bind(Json::<Vec<Sink>>(new_deployment.sinks))
         .fetch_one(pool)
         .await
         .map_err(|err| err.to_string());
