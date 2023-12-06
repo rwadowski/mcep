@@ -77,7 +77,7 @@ impl BlockActor {
     fn process(&mut self, data: Vec<DataFrame>) {
         let count = data.len();
         for frame in data {
-            self.state.insert(frame.name, frame.payload);
+            self.state.insert(frame.name, frame.value);
         }
         let result = self.block.run(&self.state);
         match result {

@@ -287,6 +287,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
+ "serde",
  "wasm-bindgen",
  "windows-targets 0.48.0",
 ]
@@ -2170,6 +2171,7 @@ name = "runtime"
 version = "0.1.0"
 dependencies = [
  "actix",
+ "chrono",
  "crossbeam-channel",
  "kafka",
  "log",
@@ -2180,6 +2182,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "serde_millis",
  "sqlx",
  "tokio",
  "toml 0.8.2",
@@ -2294,6 +2297,15 @@ checksum = "d721eca97ac802aa7777b701877c8004d950fc142651367300d21c1cc0194744"
 dependencies = [
  "itoa",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serde_millis"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6e2dc780ca5ee2c369d1d01d100270203c4ff923d2a4264812d723766434d00"
+dependencies = [
  "serde",
 ]
 

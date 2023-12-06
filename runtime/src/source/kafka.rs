@@ -1,15 +1,10 @@
-use std::time::Instant;
-
-use actix::Addr;
+use crate::engine::{EngineActor, EngineActorMessage};
+use crate::{util, DataFrame, Message, Origin};
+use actix::{Actor, Addr};
 use kafka::client::FetchOffset;
 use kafka::consumer::Consumer;
 use serde_derive::{Deserialize, Serialize};
-
 use types::deployment::source::SourceId;
-
-use crate::engine::Data;
-use crate::engine::{EngineActor, EngineActorMessage};
-use crate::{util, DataFrame, Name, Origin};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct KafkaSourceConfig {
@@ -17,6 +12,12 @@ pub struct KafkaSourceConfig {
     hosts: Vec<String>,
     topic: String,
     client_id: String,
+}
+
+pub struct KafkaSourceActor {}
+
+impl Actor for KafkaSourceActor {
+    type Context = Context<Self>;
 }
 
 pub fn run_kafka_actor_source(addr: Addr<EngineActor>) -> Result<(), String> {
@@ -31,12 +32,21 @@ pub fn run_kafka_actor_source(addr: Addr<EngineActor>) -> Result<(), String> {
         for ms in consumer.poll().unwrap().iter() {
             for m in ms.messages() {
                 let origin = Origin::from(config.id.clone());
-                let payload = std::str::from_utf8(m.value).unwrap().to_string();
-                //TODO - fix me - recognize which message is which
-                let name = Name::from("fix_me".to_string());
-                let df = DataFrame::new(origin, Instant::now(), name, Data::Text(payload));
+                let payload = std::str::from_utf8(m.value).unwrap();
+                let decoded =
+                    serde_json::from_str::<Message>(payload).map_err(|err| err.to_string())?;
+                let df = to_data_frame(origin, decoded);
                 let _ = addr.send(EngineActorMessage::Process(df));
             }
         }
+    }
+}
+
+fn to_data_frame(origin: Origin, msg: Message) -> DataFrame {
+    DataFrame {
+        origin,
+        ts: msg.ts,
+        name: msg.name,
+        value: msg.value,
     }
 }

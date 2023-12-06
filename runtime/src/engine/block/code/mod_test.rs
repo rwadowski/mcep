@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use chrono::{DateTime, Utc};
     use std::collections::HashMap;
     use std::time::Instant;
 
@@ -46,9 +47,9 @@ mod test {
             }],
             code: script,
         };
-        let input_x_frame_name = Name::from("x".to_string());
-        let input_y_frame_name = Name::from("y".to_string());
-        let output_frame_name = Name::from("z".to_string());
+        let input_x_frame_name = Name::from("x");
+        let input_y_frame_name = Name::from("y");
+        let output_frame_name = Name::from("z");
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         println!("{:}", serde_json::to_string(&definition).unwrap());
@@ -56,23 +57,23 @@ mod test {
         let mut block = PythonCodeBlock::new(definition.clone(), block_id);
         let input_x = DataFrame::new(
             Origin::from(BlockId::new(definition.clone().id.clone(), block_id)),
-            Instant::now(),
+            Utc::now(),
             input_x_frame_name.clone(),
             Data::Text("hello".to_string()),
         );
         let input_y = DataFrame::new(
             Origin::from(BlockId::new(definition.clone().id.clone(), block_id)),
-            Instant::now(),
+            Utc::now(),
             input_y_frame_name.clone(),
             Data::Text("world".to_string()),
         );
         let mut input: HashMap<Name, Data> = HashMap::new();
-        input.insert(input_x.name, input_x.payload);
-        input.insert(input_y.name, input_y.payload);
+        input.insert(input_x.name, input_x.value);
+        input.insert(input_y.name, input_y.value);
         let result = block.run(&input);
         let expected = DataFrame::new(
             Origin::from(block.id),
-            Instant::now(),
+            Utc::now(),
             output_frame_name.clone(),
             Data::Text("hello world".to_string()),
         );
@@ -81,6 +82,6 @@ mod test {
         assert_eq!(res.len(), 1);
         let df = res.get(0).unwrap();
         assert_eq!(df.origin, expected.origin);
-        assert_eq!(df.payload, expected.payload);
+        assert_eq!(df.value, expected.value);
     }
 }

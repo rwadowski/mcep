@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use actix::{Actor, Addr, Context, Handler, Message};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use types::definition::{Definition, DefinitionId};
 use types::deployment::sink::SinkId;

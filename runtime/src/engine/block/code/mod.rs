@@ -1,3 +1,4 @@
+use chrono::Utc;
 use std::collections::HashMap;
 use std::time::Instant;
 
@@ -39,8 +40,8 @@ impl Block for PythonCodeBlock {
             .map(|(name, data)| {
                 DataFrame::new(
                     Origin::from(self.id.clone()),
-                    Instant::now(),
-                    Name::from(name.clone()),
+                    Utc::now(),
+                    Name::from(name.as_str()),
                     data.clone(),
                 )
             })

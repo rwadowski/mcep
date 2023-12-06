@@ -1,6 +1,5 @@
-use crate::{util, DataFrame};
+use crate::{util, DataFrame, Message as DataMessage};
 use actix::{Actor, Addr, Context, Handler, Message};
-use crossbeam_channel::Receiver;
 use kafka::producer::{Producer, Record};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -12,19 +11,6 @@ pub struct KafkaSinkConfig {
     hosts: Vec<String>,
     topic: String,
     client_id: String,
-}
-
-pub fn run_kafka_sink(receiver: Receiver<DataFrame>) -> Result<(), String> {
-    let config: KafkaSinkConfig = util::load("kafka.sink.toml".to_string())?;
-    let mut producer = Producer::from_hosts(config.hosts)
-        .with_client_id(config.client_id)
-        .create()
-        .map_err(|e| e.to_string())?;
-    loop {
-        let df = receiver.recv().unwrap();
-        let payload = Record::from_key_value(config.topic.as_str(), df.key(), df.as_json());
-        producer.send(&payload).expect("should end");
-    }
 }
 
 #[derive(Message)]
@@ -68,11 +54,22 @@ impl Handler<KafkaSinkActorMessage> for KafkaSinkActor {
                 let records: Vec<Record<String, String>> = frames
                     .iter()
                     .map(|frame| {
-                        Record::from_key_value(self.topic.as_str(), frame.key(), frame.as_json())
+                        let msg = frame_to_message(&frame);
+                        let key = msg.key();
+                        let value = msg.as_json().expect("msg should be serialized");
+                        Record::from_key_value(self.topic.as_str(), key, value)
                     })
                     .collect();
                 let _ = self.producer.send_all(&records); // todo - evaluate result
             }
         }
+    }
+}
+
+fn frame_to_message(frame: &DataFrame) -> DataMessage {
+    DataMessage {
+        ts: frame.ts,
+        name: frame.name.clone(),
+        value: frame.value.clone(),
     }
 }
