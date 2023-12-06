@@ -8,7 +8,6 @@ use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Logger, Root};
 use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
-use rocket::log::LogLevel;
 use tokio::signal;
 
 use api;

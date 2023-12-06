@@ -10,7 +10,7 @@ use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::BlockConnection;
 use types::deployment::sink::Sink;
 use types::deployment::source::Source;
-use types::deployment::{BlockId, DeployedBlock, Deployment};
+use types::deployment::{DeployedBlock, Deployment};
 
 use crate::definition::get::get_definitions;
 

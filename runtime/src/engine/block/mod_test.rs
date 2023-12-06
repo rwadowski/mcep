@@ -34,7 +34,6 @@ mod test {
             outputs,
             code,
         };
-        let deployment_id: DeploymentId = 1;
         let result = block::new_block(Box::new(definition), block_id);
         assert_eq!(result.is_ok(), true);
     }
