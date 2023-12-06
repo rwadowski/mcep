@@ -23,6 +23,7 @@ log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
 sqlx = { version = "0.7.2", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
 actix = { version = "0.13.1" }
+actix-rt = { version = "2.9.0" }
 chrono = { version = "0.4.31", features = ["serde"]}
 
 [build-dependencies]

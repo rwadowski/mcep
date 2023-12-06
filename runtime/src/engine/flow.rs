@@ -59,14 +59,14 @@ impl FlowActor {
         block_ids.iter().for_each(|block_id| {
             self.blocks.get(block_id).iter().for_each(|addr| {
                 let frames = Vec::from([df.clone()]);
-                let _ = addr.send(BlockActorMessage::Process(frames));
+                addr.do_send(BlockActorMessage::Process(frames));
             })
         });
     }
 
     fn stop_workers(&mut self) {
         self.blocks.iter().for_each(|(_, addr)| {
-            let _ = addr.send(BlockActorMessage::Stop);
+            let _ = addr.do_send(BlockActorMessage::Stop);
         });
     }
 }
@@ -91,8 +91,8 @@ fn create_block_actors(
         let definition = definitions
             .get(&deployed_block.definition_id)
             .ok_or("no definition provided")?;
-        let block_definition: Box<dyn BlockDefinition> =
-            new_block_from_str(definition.body.to_string().as_str())?;
+        let body = definition.body.to_string();
+        let block_definition: Box<dyn BlockDefinition> = new_block_from_str(body.as_str())?;
         let block = new_block(block_definition, deployed_block.id)?;
         let block_actor = BlockActor::new(block);
         blocks.insert(deployed_block.id(), block_actor.start());

@@ -52,10 +52,10 @@ pub async fn create_deployment(
     match result {
         Ok((deployment, definitions)) => {
             info!("deployment {} created", deployment.id.to_string());
+            //TODO - check reponse
             sender
                 .send(EngineActorMessage::Deploy(deployment.clone(), definitions))
-                .await
-                .expect("TODO: panic message");
+                .await;
             Some(deployment)
         }
         Err(err) => {

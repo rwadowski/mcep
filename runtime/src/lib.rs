@@ -8,7 +8,6 @@ use types::deployment::BlockId;
 
 pub mod engine;
 mod lib_test;
-pub mod pool;
 pub mod sink;
 pub mod source;
 mod util;

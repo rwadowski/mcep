@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use actix::{Actor, Addr, Context, Handler, Message};
+use log::error;
 use serde::{Deserialize, Serialize};
 
 use types::definition::{Definition, DefinitionId};
@@ -52,6 +53,8 @@ pub enum EngineActorMessage {
     Process(DataFrame),
 }
 
+//TODO - missing engine actor response about deployment
+
 pub struct EngineActor {
     flows: HashMap<DeploymentId, Addr<FlowActor>>,
     sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
@@ -83,7 +86,7 @@ impl EngineActor {
 
     fn process(&mut self, df: DataFrame) {
         self.flows.iter().for_each(|(_, addr)| {
-            let _ = addr.send(FlowActorMessages::Process(df.clone()));
+            addr.do_send(FlowActorMessages::Process(df.clone()));
         })
     }
 }
@@ -101,7 +104,13 @@ impl Handler<EngineActorMessage> for EngineActor {
             EngineActorMessage::Deploy(deployment, definitions) => {
                 let definition_map: HashMap<DefinitionId, Definition> =
                     definitions.into_iter().map(|def| (def.id, def)).collect();
-                let _ = self.deploy(&deployment, &definition_map);
+                let result = self.deploy(&deployment, &definition_map);
+                match result {
+                    Ok(()) => (),
+                    Err(err) => {
+                        error!("error occured {}", err)
+                    }
+                }
             }
             EngineActorMessage::Undeploy(deployment) => self.undeploy(&deployment),
         }

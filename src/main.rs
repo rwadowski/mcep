@@ -8,6 +8,7 @@ use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Logger, Root};
 use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
+use tokio::runtime::Runtime;
 use tokio::signal;
 
 use api;
@@ -15,7 +16,7 @@ use database;
 use runtime;
 use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
-use runtime::source::kafka;
+use runtime::source::{kafka, SourceActor};
 
 #[actix::main]
 async fn main() {
@@ -27,7 +28,8 @@ async fn main() {
     let database_connection_pool = database::init_connection_pool().await;
     let sink = KafkaSinkActor::new().unwrap();
     let engine = EngineActor::new(sink).start();
-    let source_target = engine.clone();
+    let engine_actor = engine.clone();
+    SourceActor::new(engine_actor).unwrap().start();
     database::apply_migrations(&database_connection_pool)
         .await
         .expect("migrations failed");
@@ -39,15 +41,6 @@ async fn main() {
         )
         .launch()
         .await
-    });
-
-    let app_pool = runtime::pool::create_pool(8).expect("app pool should start");
-    app_pool.spawn(move || {
-        let _ = kafka::run_kafka_actor_source(source_target).unwrap();
-    });
-    app_pool.spawn(move || {
-        let system = System::new();
-        system.run().unwrap();
     });
     signal::ctrl_c().await.expect("failed to listen for event");
     println!("Closing mcep");

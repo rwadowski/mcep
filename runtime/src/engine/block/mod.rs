@@ -88,10 +88,10 @@ impl BlockActor {
                     self.block.id()
                 );
                 self.blocks.iter().for_each(|addr| {
-                    let _ = addr.send(BlockActorMessage::Process(list.clone()));
+                    addr.do_send(BlockActorMessage::Process(list.clone()));
                 });
                 self.sinks.iter().for_each(|addr| {
-                    let _ = addr.send(KafkaSinkActorMessage::Send(list.clone()));
+                    addr.do_send(KafkaSinkActorMessage::Send(list.clone()));
                 })
             }
             Err(err_string) => error!("failed to process message {}", err_string),
