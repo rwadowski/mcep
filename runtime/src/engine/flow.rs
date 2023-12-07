@@ -93,7 +93,7 @@ fn create_block_actors(
             .ok_or("no definition provided")?;
         let body = definition.body.to_string();
         let block_definition: Box<dyn BlockDefinition> = new_block_from_str(body.as_str())?;
-        let block = new_block(block_definition, deployed_block.id)?;
+        let block = new_block(block_definition, deployment.id, deployed_block.id)?;
         let block_actor = BlockActor::new(block);
         blocks.insert(deployed_block.id(), block_actor.start());
     }

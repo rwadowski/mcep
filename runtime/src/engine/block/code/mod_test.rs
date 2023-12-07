@@ -6,7 +6,7 @@ mod test {
 
     use types::definition::block::code::CodeBlock as CodeBlockDefinition;
     use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::{DataType, DefinitionId};
+    use types::definition::DataType;
     use types::deployment::{BlockId, BlockInstanceId, DeploymentId};
 
     use crate::engine::block::code::PythonCodeBlock;
@@ -23,12 +23,10 @@ mod test {
     return r"
             .to_string();
         let deployment_id: DeploymentId = 0;
-        let id: DefinitionId = 1;
         let x_input = "x".to_string();
         let y_input = "y".to_string();
         let output = "z".to_string();
         let definition = CodeBlockDefinition {
-            id,
             code_block_type: CodeBlockType::Python,
             block_type: BlockType::Code,
             inputs: vec![
@@ -54,15 +52,15 @@ mod test {
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         println!("{:}", serde_json::to_string(&definition).unwrap());
         let block_id: BlockInstanceId = 1;
-        let mut block = PythonCodeBlock::new(definition.clone(), block_id);
+        let mut block = PythonCodeBlock::new(definition.clone(), deployment_id, block_id);
         let input_x = DataFrame::new(
-            Origin::from(BlockId::new(definition.clone().id.clone(), block_id)),
+            Origin::from(BlockId::new(deployment_id, block_id)),
             Utc::now(),
             input_x_frame_name.clone(),
             Data::Text("hello".to_string()),
         );
         let input_y = DataFrame::new(
-            Origin::from(BlockId::new(definition.clone().id.clone(), block_id)),
+            Origin::from(BlockId::new(deployment_id, block_id)),
             Utc::now(),
             input_y_frame_name.clone(),
             Data::Text("world".to_string()),

@@ -1,7 +1,7 @@
 use chrono::Utc;
 use std::collections::HashMap;
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
-use types::deployment::{BlockId, BlockInstanceId};
+use types::deployment::{BlockId, BlockInstanceId, DeploymentId};
 
 use crate::engine::block::code::python::PythonBlock;
 use crate::engine::block::Block;
@@ -49,10 +49,14 @@ impl Block for PythonCodeBlock {
 }
 
 impl PythonCodeBlock {
-    pub fn new(definition: CodeBlockDefinition, id: BlockInstanceId) -> PythonCodeBlock {
+    pub fn new(
+        definition: CodeBlockDefinition,
+        deployment_id: DeploymentId,
+        id: BlockInstanceId,
+    ) -> PythonCodeBlock {
         let code = definition.code.clone();
         PythonCodeBlock {
-            id: BlockId::new(definition.id, id),
+            id: BlockId::new(deployment_id, id),
             definition,
             python_block: PythonBlock { code },
         }

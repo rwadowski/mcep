@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use actix::dev::{MessageResponse, OneshotSender};
-use actix::prelude::*;
 use actix::{Actor, Addr, Context, Handler, Message};
 use log::error;
 use serde::{Deserialize, Serialize};
@@ -115,7 +114,7 @@ impl Actor for EngineActor {
 impl Handler<EngineActorMessage> for EngineActor {
     type Result = EngineActorResponse;
 
-    fn handle(&mut self, msg: EngineActorMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: EngineActorMessage, _ctx: &mut Self::Context) -> Self::Result {
         match msg {
             EngineActorMessage::Process(df) => {
                 self.process(df);

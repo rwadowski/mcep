@@ -5,7 +5,7 @@ use sqlx::types::Json;
 use sqlx::{Pool, Postgres};
 use std::collections::HashSet;
 
-use runtime::engine::{EngineActor, EngineActorMessage};
+use runtime::engine::{EngineActor, EngineActorMessage, EngineActorResponse};
 use types::definition::{Definition, DefinitionId};
 use types::deployment::connection::BlockConnection;
 use types::deployment::sink::Sink;
@@ -52,11 +52,23 @@ pub async fn create_deployment(
     match result {
         Ok((deployment, definitions)) => {
             info!("deployment {} created", deployment.id.to_string());
-            //TODO - check reponse
-            sender
+            let actor_result = sender
                 .send(EngineActorMessage::Deploy(deployment.clone(), definitions))
                 .await;
-            Some(deployment)
+            actor_result.ok().and_then(|response| match response {
+                EngineActorResponse::Succeed => {
+                    info!("deployment {} deployed", deployment.id.to_string());
+                    Some(deployment)
+                }
+                EngineActorResponse::Failed(err) => {
+                    error!(
+                        "deployment {} not deployed due to {}",
+                        deployment.id.to_string(),
+                        err
+                    );
+                    None
+                }
+            })
         }
         Err(err) => {
             error!("{}", err.to_string());

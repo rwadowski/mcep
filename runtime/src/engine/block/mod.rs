@@ -8,7 +8,7 @@ use crate::sink::kafka::{KafkaSinkActor, KafkaSinkActorMessage};
 use crate::{DataFrame, Name};
 use types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use types::definition::block::{Block as BlockDefinition, BlockType};
-use types::deployment::BlockId;
+use types::deployment::{BlockId, BlockInstanceId, DeploymentId};
 
 pub(crate) mod code;
 mod mod_test;
@@ -20,13 +20,14 @@ pub trait Block {
 
 pub(crate) fn new_block(
     definition: Box<dyn BlockDefinition>,
-    id: i32,
+    deployment_id: DeploymentId,
+    id: BlockInstanceId,
 ) -> Result<Box<dyn Block>, String> {
     let block_type = definition.block_type();
     match block_type {
         BlockType::Code => {
             let def = as_code_block_definition(definition)?;
-            Ok(Box::new(PythonCodeBlock::new(def, id)))
+            Ok(Box::new(PythonCodeBlock::new(def, deployment_id, id)))
         } //_ => Err("unrecognized definition".to_string()),
     }
 }

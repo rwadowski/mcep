@@ -11,8 +11,6 @@ types = { path = "../types"}
 
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 kafka = { version = "0.10.0" }
-rayon = { version = "1.7.0" }
-crossbeam-channel = { version = "0.5.8" }
 toml = { version = "0.8.2" }
 serde = { version = "1.0.164" }
 serde_json = "1.0"
