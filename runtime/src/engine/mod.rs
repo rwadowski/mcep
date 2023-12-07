@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
+use actix::dev::{MessageResponse, OneshotSender};
+use actix::prelude::*;
 use actix::{Actor, Addr, Context, Handler, Message};
 use log::error;
 use serde::{Deserialize, Serialize};
@@ -46,14 +48,29 @@ impl Hash for Data {
 }
 
 #[derive(Message)]
-#[rtype(result = "()")]
+#[rtype(result = "EngineActorResponse")]
 pub enum EngineActorMessage {
     Deploy(Deployment, Vec<Definition>),
     Undeploy(Deployment),
     Process(DataFrame),
 }
 
-//TODO - missing engine actor response about deployment
+pub enum EngineActorResponse {
+    Succeed,
+    Failed(String),
+}
+
+impl<A, M> MessageResponse<A, M> for EngineActorResponse
+where
+    A: Actor,
+    M: Message<Result = EngineActorResponse>,
+{
+    fn handle(self, _ctx: &mut A::Context, tx: Option<OneshotSender<M::Result>>) {
+        if let Some(tx) = tx {
+            let _ = tx.send(self);
+        }
+    }
+}
 
 pub struct EngineActor {
     flows: HashMap<DeploymentId, Addr<FlowActor>>,
@@ -96,23 +113,60 @@ impl Actor for EngineActor {
 }
 
 impl Handler<EngineActorMessage> for EngineActor {
-    type Result = ();
+    type Result = EngineActorResponse;
 
-    fn handle(&mut self, msg: EngineActorMessage, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: EngineActorMessage, ctx: &mut Self::Context) -> Self::Result {
         match msg {
-            EngineActorMessage::Process(df) => self.process(df),
+            EngineActorMessage::Process(df) => {
+                self.process(df);
+                EngineActorResponse::Succeed
+            }
             EngineActorMessage::Deploy(deployment, definitions) => {
                 let definition_map: HashMap<DefinitionId, Definition> =
                     definitions.into_iter().map(|def| (def.id, def)).collect();
                 let result = self.deploy(&deployment, &definition_map);
                 match result {
-                    Ok(()) => (),
+                    Ok(()) => EngineActorResponse::Succeed,
                     Err(err) => {
-                        error!("error occured {}", err)
+                        error!("engine actor error {}", err);
+                        EngineActorResponse::Failed(err)
                     }
                 }
             }
-            EngineActorMessage::Undeploy(deployment) => self.undeploy(&deployment),
+            EngineActorMessage::Undeploy(deployment) => {
+                self.undeploy(&deployment);
+                EngineActorResponse::Succeed
+            }
         }
     }
 }
+/*
+impl Handler<EngineActorMessage> for EngineActor {
+    type Result = EngineActorResponse;
+
+    fn handle(&mut self, msg: EngineActorMessage, _ctx: &mut Self::Context) -> Self::Result {
+        match msg {
+            EngineActorMessage::Process(df) => {
+                self.process(df);
+                EngineActorResponse::Succeed
+            }
+            EngineActorMessage::Deploy(deployment, definitions) => {
+                let definition_map: HashMap<DefinitionId, Definition> =
+                    definitions.into_iter().map(|def| (def.id, def)).collect();
+                let result = self.deploy(&deployment, &definition_map);
+                match result {
+                    Ok(()) => EngineActorResponse::Succeed,
+                    Err(err) => {
+                        error!("engine actor error {}", err);
+                        EngineActorResponse::Failed(err)
+                    }
+                }
+            }
+            EngineActorMessage::Undeploy(deployment) => {
+                self.undeploy(&deployment);
+                EngineActorResponse::Succeed
+            }
+        }
+    }
+}
+*/

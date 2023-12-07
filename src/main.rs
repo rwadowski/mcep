@@ -8,7 +8,6 @@ use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Logger, Root};
 use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
-use tokio::runtime::Runtime;
 use tokio::signal;
 
 use api;
@@ -16,7 +15,7 @@ use database;
 use runtime;
 use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
-use runtime::source::{kafka, SourceActor};
+use runtime::source::SourceActor;
 
 #[actix::main]
 async fn main() {

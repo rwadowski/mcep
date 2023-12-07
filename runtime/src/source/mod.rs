@@ -1,7 +1,7 @@
 use crate::engine::{EngineActor, EngineActorMessage};
 use crate::source::kafka::KafkaSource;
 use crate::DataFrame;
-use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, WrapFuture};
+use actix::{Actor, Addr, AsyncContext, Context, Handler, Message};
 use std::time::Duration;
 
 pub mod kafka;
@@ -44,7 +44,7 @@ impl Actor for SourceActor {
 impl Handler<SourceActorMessage> for SourceActor {
     type Result = ();
 
-    fn handle(&mut self, msg: SourceActorMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: SourceActorMessage, _ctx: &mut Self::Context) -> Self::Result {
         match msg {
             SourceActorMessage::Poll => {
                 let frames = self.source.fetch().unwrap();
