@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
+use std::future::IntoFuture;
 
-use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
+use actix::{Actor, ActorContext, Addr, AsyncContext, Context, Handler, Message, WrapFuture};
 
 use types::definition::block::new_block_from_str;
 use types::definition::block::Block as BlockDefinition;
@@ -24,6 +25,8 @@ pub enum FlowActorMessages {
 pub struct FlowActor {
     blocks: HashMap<BlockId, Addr<BlockActor>>,
     sources: HashMap<SourceId, HashSet<BlockId>>,
+    sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
+    router: Router,
 }
 
 impl FlowActor {
@@ -35,10 +38,11 @@ impl FlowActor {
         let router = Router::new(&deployment.connections);
         let blocks: HashMap<BlockId, Addr<BlockActor>> =
             create_block_actors(deployment, definitions)?;
-        init_actors(&blocks, &router, sinks);
         let flow_actor = FlowActor {
             blocks,
             sources: router.source_targets(),
+            sinks,
+            router,
         };
         Ok(flow_actor.start())
     }
@@ -103,7 +107,7 @@ fn create_block_actors(
 fn init_actors(
     blocks: &HashMap<BlockId, Addr<BlockActor>>,
     router: &Router,
-    sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
+    sinks: &HashMap<SinkId, Addr<KafkaSinkActor>>,
 ) {
     for (block_id, block) in blocks.iter() {
         let target_blocks: HashSet<Addr<BlockActor>> = router
@@ -117,11 +121,15 @@ fn init_actors(
             .flat_map(|target| option_to_set(sinks.get(target)))
             .collect();
         let msg = BlockActorMessage::AddTargets(target_blocks, sink_blocks);
-        let _ = block.send(msg);
+        block.do_send(msg);
     }
 }
 impl Actor for FlowActor {
     type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        init_actors(&self.blocks, &self.router, &self.sinks);
+    }
 }
 
 impl Handler<FlowActorMessages> for FlowActor {
