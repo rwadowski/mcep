@@ -1,13 +1,13 @@
 use sqlx::migrate::MigrateError;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
-use std::env;
 
-pub async fn init_connection_pool() -> Pool<Postgres> {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
+use types::config::Database as DatabaseConfig;
+
+pub async fn init_connection_pool(cfg: &DatabaseConfig) -> Pool<Postgres> {
     PgPoolOptions::new()
         .max_connections(10)
-        .connect(&database_url)
+        .connect(cfg.url().as_str())
         .await
         .expect("Unable to connect to postgres")
 }

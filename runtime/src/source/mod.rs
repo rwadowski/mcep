@@ -3,6 +3,7 @@ use crate::source::kafka::KafkaSource;
 use crate::DataFrame;
 use actix::{Actor, Addr, AsyncContext, Context, Handler, Message};
 use std::time::Duration;
+use types::config::Kafka;
 
 pub mod kafka;
 
@@ -22,8 +23,8 @@ pub struct SourceActor {
 }
 
 impl SourceActor {
-    pub fn new(engine: Addr<EngineActor>) -> Result<SourceActor, String> {
-        let source = KafkaSource::new()?;
+    pub fn new(cfg: &Kafka, engine: Addr<EngineActor>) -> Result<SourceActor, String> {
+        let source = KafkaSource::new(cfg)?;
         Ok(SourceActor { source, engine })
     }
 }

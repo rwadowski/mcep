@@ -3,15 +3,8 @@ use actix::{Actor, Addr, Context, Handler, Message};
 use kafka::producer::{Producer, Record};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use types::config::Kafka;
 use types::deployment::sink::SinkId;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct KafkaSinkConfig {
-    id: SinkId,
-    hosts: Vec<String>,
-    topic: String,
-    client_id: String,
-}
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -25,18 +18,17 @@ pub struct KafkaSinkActor {
 }
 
 impl KafkaSinkActor {
-    pub fn new() -> Result<HashMap<SinkId, Addr<KafkaSinkActor>>, String> {
-        let config: KafkaSinkConfig = util::load("kafka.sink.toml".to_string())?;
-        let producer = Producer::from_hosts(config.hosts)
-            .with_client_id(config.client_id)
+    pub fn new(cfg: &Kafka) -> Result<HashMap<SinkId, Addr<KafkaSinkActor>>, String> {
+        let producer = Producer::from_hosts(cfg.hosts.clone())
+            .with_client_id(cfg.client_id.clone())
             .create()
             .map_err(|e| e.to_string())?;
         let actor = KafkaSinkActor {
-            topic: config.topic,
+            topic: cfg.topics.output.clone(),
             producer,
         };
         let as_map: HashMap<SinkId, Addr<KafkaSinkActor>> =
-            HashMap::from([(config.id, actor.start())]);
+            HashMap::from([(cfg.sink_id(), actor.start())]);
         Ok(as_map)
     }
 }

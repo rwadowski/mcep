@@ -1,7 +1,5 @@
 extern crate rocket;
 
-use std::env;
-
 use actix::prelude::*;
 use log::{info, LevelFilter};
 use log4rs::append::console::ConsoleAppender;
@@ -16,22 +14,29 @@ use runtime;
 use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::SourceActor;
+use types::config;
+use types::config::Logging;
 
 #[actix::main]
 async fn main() {
-    configure_logger();
+    let config = config::load().expect("config should be loaded");
+    configure_logger(&config.logging);
     info!("Running mcep");
 
     runtime::init();
 
-    let database_connection_pool = database::init_connection_pool().await;
-    let sink = KafkaSinkActor::new().unwrap();
-    let engine = EngineActor::new(sink).start();
-    let engine_actor = engine.clone();
-    SourceActor::new(engine_actor).unwrap().start();
+    let database_connection_pool = database::init_connection_pool(&config.database).await;
     database::apply_migrations(&database_connection_pool)
         .await
         .expect("migrations failed");
+
+    let sink = KafkaSinkActor::new(&config.kafka).unwrap();
+    let engine = EngineActor::new(sink).start();
+    let engine_actor = engine.clone();
+    SourceActor::new(&config.kafka, engine_actor)
+        .unwrap()
+        .start();
+
     tokio::spawn(async move {
         api::start_rocket(
             rocket_config(),
@@ -55,17 +60,11 @@ fn rocket_config() -> rocket::figment::Figment {
         ))
 }
 
-fn configure_logger() {
-    let level = match env::var("DEBUG_ENABLED") {
-        Ok(v) => {
-            let enabled: bool = v.parse().unwrap_or(false);
-            if enabled {
-                LevelFilter::Debug
-            } else {
-                LevelFilter::Info
-            }
-        }
-        _ => LevelFilter::Info,
+fn configure_logger(logging: &Logging) {
+    let level = if logging.debug {
+        LevelFilter::Debug
+    } else {
+        LevelFilter::Info
     };
     let stdout = ConsoleAppender::builder().build();
     let config = Config::builder()

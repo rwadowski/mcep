@@ -13,6 +13,8 @@ rocket = { version = "0.5.0-rc.2", features = ["json"] }
 sqlx = { version = "0.7.2", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
 log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
+viperus = { version = "0.1.10" }
+toml = { version = "0.8.8" }
 
 [dev-dependencies]
 test-case = "3.1.0"

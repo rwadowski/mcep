@@ -127,7 +127,7 @@ fn init_actors(
 impl Actor for FlowActor {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
+    fn started(&mut self, _ctx: &mut Self::Context) {
         init_actors(&self.blocks, &self.router, &self.sinks);
     }
 }

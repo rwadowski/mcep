@@ -106,15 +106,6 @@ impl From<SourceId> for Origin {
     }
 }
 
-impl Origin {
-    fn to_string(self) -> String {
-        if self.block.is_some() {
-            return self.block.unwrap().to_string();
-        }
-        return self.source.unwrap().value;
-    }
-}
-
 pub fn init() {
     pyo3::prepare_freethreaded_python();
 }
