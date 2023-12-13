@@ -1,12 +1,12 @@
 use crate::deployment::sink::SinkId;
 use crate::deployment::source::SourceId;
+use log::info;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::str::FromStr;
+use std::string::ToString;
 use viperus::{Viperus, ViperusValue};
 
-//TODO - use simply toml create instead toml_env ???
-//Yaml file ?
 #[derive(Clone, Serialize, Deserialize)]
 pub struct App {
     pub database: Database,
@@ -14,54 +14,30 @@ pub struct App {
     pub logging: Logging,
 }
 
-impl From<App> for ViperusValue {
-    fn from(value: App) -> Self {
-        let str = toml::to_string(&value).ok();
-        str.map(|s| ViperusValue::Str(s))
-            .unwrap_or(ViperusValue::Empty)
-    }
-}
-
-impl FromStr for App {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match toml::from_str::<App>(s) {
-            Ok(app) => Ok(app),
-            Err(_) => Err(()),
-        }
-    }
-}
-
-impl Into<App> for ViperusValue {
-    fn into(self) -> App {
-        value_to_app(&self)
-    }
-}
-
-impl Into<App> for &ViperusValue {
-    fn into(self) -> App {
-        value_to_app(self)
-    }
-}
-
-fn value_to_app(value: &ViperusValue) -> App {
-    match value {
-        ViperusValue::Str(s) => toml::from_str::<App>(s.as_str()).unwrap(),
-        _ => panic!("what I should do?"),
-    }
-}
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Database {
     pub host: String,
-    pub port: u64,
+    pub port: i32,
     pub user: String,
     pub password: String,
     pub name: String,
 }
 
 impl Database {
+    pub fn from_viperus(v: &Viperus, prefix: &str) -> Result<Database, String> {
+        let host = get_config(v, prefix, "host")?;
+        let port = get_config(v, prefix, "port")?;
+        let user = get_config(v, prefix, "user")?;
+        let password = get_config(v, prefix, "password")?;
+        let name = get_config(v, prefix, "name")?;
+        Ok(Database {
+            host,
+            port,
+            user,
+            password,
+            name,
+        })
+    }
     pub fn url(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
@@ -78,6 +54,21 @@ pub struct Kafka {
 }
 
 impl Kafka {
+    pub fn from_viperus(v: &Viperus, prefix: &str) -> Result<Kafka, String> {
+        let hosts_str: String = get_config(v, prefix, "hosts")?;
+        let hosts = hosts_str
+            .split(",")
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
+        let topics = Topics::from_viperus(v, formatted_path(prefix, "topics").as_str())?;
+        let client_id = get_config(v, prefix, "client_id")?;
+        Ok(Kafka {
+            hosts,
+            topics,
+            client_id,
+        })
+    }
     pub fn sink_id(&self) -> SinkId {
         SinkId::from(self.client_id.as_str())
     }
@@ -93,9 +84,45 @@ pub struct Topics {
     pub output: String,
 }
 
+impl Topics {
+    pub fn from_viperus(v: &Viperus, prefix: &str) -> Result<Topics, String> {
+        let input = get_config(v, prefix, "input")?;
+        let output = get_config(v, prefix, "output")?;
+        Ok(Topics { input, output })
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Logging {
     pub debug: bool,
+}
+
+impl Logging {
+    pub fn from_viperus(v: &Viperus, prefix: &str) -> Result<Logging, String> {
+        let debug = get_config(v, prefix, "debug")?;
+        Ok(Logging { debug })
+    }
+}
+
+fn formatted_path(prefix: &str, field: &str) -> String {
+    format!("{}.{}", prefix, field)
+}
+
+fn get_config<'a, T>(v: &Viperus, prefix: &str, field: &str) -> Result<T, String>
+where
+    ViperusValue: From<T>,
+    T: FromStr,
+    T: Clone,
+    &'a ViperusValue: Into<T>,
+    ViperusValue: Into<T>,
+{
+    let path = formatted_path(prefix, field);
+    v.get::<T>(path.as_str())
+        .ok_or(error_message(path.as_str()))
+}
+
+fn error_message(path: &str) -> String {
+    format!("there is no config at {} path", path)
 }
 
 pub fn load() -> Result<App, String> {
@@ -105,14 +132,17 @@ pub fn load() -> Result<App, String> {
         .to_str()
         .unwrap()
         .to_string();
-    println!("{}", path.clone());
+    info!("loading config from {}", path.as_str());
     let mut v = Viperus::new();
     v.automatic_env(true);
-    let res = v.load_file(path.as_str(), viperus::Format::TOML);
-    match res {
-        Ok(()) => (),
-        Err(err) => println!("{}", err.to_string()),
-    }
-    let c = v.get::<App>("database");
-    c.ok_or("failed to read the config".to_string())
+    v.load_file(path.as_str(), viperus::Format::TOML)
+        .map_err(|err| err.to_string())?;
+    let database = Database::from_viperus(&v, "database")?;
+    let kafka = Kafka::from_viperus(&v, "kafka")?;
+    let logging = Logging::from_viperus(&v, "logging")?;
+    Ok(App {
+        database,
+        kafka,
+        logging,
+    })
 }

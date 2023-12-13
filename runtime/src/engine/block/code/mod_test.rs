@@ -50,7 +50,6 @@ mod test {
         let output_frame_name = Name::from("z");
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
-        println!("{:}", serde_json::to_string(&definition).unwrap());
         let block_id: BlockInstanceId = 1;
         let mut block = PythonCodeBlock::new(definition.clone(), deployment_id, block_id);
         let input_x = DataFrame::new(

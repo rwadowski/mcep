@@ -11,7 +11,7 @@
     <option name="backtrace" value="SHORT" />
     <envs>
       <env name="DATABASE_URL" value="postgres://mcep:mcep@localhost:5432/mcep" />
-      <env name="DEBUG_ENABLED" value="true" />
+      <env name="LOGGING_DEBUG" value="true" />
     </envs>
     <option name="isRedirectInput" value="false" />
     <option name="redirectInputPath" value="" />
