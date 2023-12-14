@@ -3,7 +3,7 @@ use actix::{Actor, Addr, Context, Handler, Message};
 use kafka::producer::{Producer, Record};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
-use types::config::Kafka;
+use types::config::app::Kafka;
 use types::deployment::sink::SinkId;
 
 #[derive(Message)]

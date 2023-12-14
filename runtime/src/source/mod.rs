@@ -3,7 +3,7 @@ use crate::source::kafka::KafkaSource;
 use crate::DataFrame;
 use actix::{Actor, Addr, AsyncContext, Context, Handler, Message};
 use std::time::Duration;
-use types::config::Kafka;
+use types::config::app::Kafka;
 
 pub mod kafka;
 

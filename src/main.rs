@@ -15,11 +15,11 @@ use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::SourceActor;
 use types::config;
-use types::config::Logging;
+use types::config::app::Logging;
 
 #[actix::main]
 async fn main() {
-    let config = config::load().expect("config should be loaded");
+    let config = config::app::load().expect("config should be loaded");
     configure_logger(&config.logging);
     info!("Running mcep");
 

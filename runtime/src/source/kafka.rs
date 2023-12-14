@@ -5,7 +5,7 @@ use actix::Addr;
 use kafka::client::FetchOffset;
 use kafka::consumer::Consumer;
 use serde_derive::{Deserialize, Serialize};
-use types::config::Kafka;
+use types::config::app::Kafka;
 use types::deployment::source::SourceId;
 
 pub struct KafkaSource {
