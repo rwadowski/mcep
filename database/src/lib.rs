@@ -2,7 +2,7 @@ use sqlx::migrate::MigrateError;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 
-use types::config::app::Database as DatabaseConfig;
+use types::config::Database as DatabaseConfig;
 
 pub async fn init_connection_pool(cfg: &DatabaseConfig) -> Pool<Postgres> {
     PgPoolOptions::new()

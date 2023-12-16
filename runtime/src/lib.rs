@@ -10,7 +10,6 @@ pub mod engine;
 mod lib_test;
 pub mod sink;
 pub mod source;
-mod util;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Name {

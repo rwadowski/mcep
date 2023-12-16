@@ -26,6 +26,7 @@ RUN apt-get update && \
     apt-get update &&  \
     apt-get install -y python3.10-dev
 WORKDIR /mcep
+RUN mkdir config
 COPY --from=build /mcep/target/debug/mcep .
 COPY --from=build /mcep/Rocket.toml .
 COPY --from=build /mcep/config/*toml ./config

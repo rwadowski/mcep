@@ -1,12 +1,10 @@
-use crate::engine::{EngineActor, EngineActorMessage};
-use crate::source::Source;
-use crate::{util, DataFrame, Message, Origin};
-use actix::Addr;
 use kafka::client::FetchOffset;
 use kafka::consumer::Consumer;
-use serde_derive::{Deserialize, Serialize};
-use types::config::app::Kafka;
-use types::deployment::source::SourceId;
+
+use types::config::Kafka;
+
+use crate::source::Source;
+use crate::{DataFrame, Message, Origin};
 
 pub struct KafkaSource {
     config: Kafka,

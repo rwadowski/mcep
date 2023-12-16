@@ -2,11 +2,17 @@ include:
   - docker-compose.yaml
 services:
   mcep:
-    - image: docker.io/mcep
-      build:
-        context: ../
-      ports:
-        - 8080:8080
-      environment:
-        - DATABASE_URL=postgres://mcep:mcep@localhost:5432/mcep
-        - DEBUG_ENABLED=true
+    container_name: mcep
+    image: docker.io/mcep
+    build:
+      context: ../
+    ports:
+      - '8080:8080'
+    environment:
+      - DATABASE_HOST=psql
+      - DATABASE_PORT=5432
+      - DATABASE_USER=mcep
+      - DATABASE_PASSWORD=mcep
+      - DATABASE_NAME=mcep
+      - DEBUG_ENABLED=true
+      - KAFKA_HOSTS=[kafka:9092]
