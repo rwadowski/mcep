@@ -3,7 +3,6 @@ use crate::runtime::{DataFrame, Message, Origin};
 use crate::types::config::Kafka;
 use kafka::client::FetchOffset;
 use kafka::consumer::{Consumer, MessageSets};
-use kafka::Error;
 use log::error;
 
 pub struct KafkaSource {
@@ -13,7 +12,6 @@ pub struct KafkaSource {
 
 impl KafkaSource {
     pub fn new(cfg: &Kafka) -> Result<Box<KafkaSource>, String> {
-        let consumer = init_consumer(&cfg)?;
         let mut source = KafkaSource {
             config: cfg.clone(),
             consumer: None,
@@ -35,38 +33,22 @@ impl KafkaSource {
     }
 
     fn poll(&mut self) -> Result<Vec<DataFrame>, String> {
-        let messages: Result<MessageSets, Error> = self
+        let consumer = self
             .consumer
-            .ok_or("consumer is not initialized".to_string())
-            .iter_mut()
-            .map(|c| c.poll())
-            .collect();
-        match self.consumer.poll() {
-            Ok(records) => {
-                let mut result: Vec<DataFrame> = Vec::new();
-                for ms in records.iter() {
-                    for m in ms.messages() {
-                        let origin = Origin::from(cfg.source_id());
-                        let payload = std::str::from_utf8(m.value).unwrap();
-                        let decoded = serde_json::from_str::<Message>(payload)
-                            .map_err(|err| err.to_string())?;
-                        let df = to_data_frame(origin, decoded);
-                        result.push(df);
-                    }
-                }
-                Ok(result)
-            }
-            Err(err) => {
-                error!("{}", err);
-                Err(err.to_string())
-            }
-        }
+            .as_mut()
+            .ok_or("kafka is not initialized".to_string())?;
+        let records = consumer.poll().map_err(|err| err.to_string())?;
+        sets_to_frames(&self.config, &records)
     }
 }
 
 impl Source for KafkaSource {
     fn fetch(&mut self) -> Result<Vec<DataFrame>, String> {
-        self.poll()
+        let res = self.poll();
+        if res.is_err() {
+            self.reinit_consumer();
+        }
+        res
     }
 }
 
@@ -86,4 +68,19 @@ fn init_consumer(cfg: &Kafka) -> Result<Consumer, String> {
         .with_client_id(cfg.client_id.clone())
         .create()
         .map_err(|e| e.to_string())
+}
+
+fn sets_to_frames(cfg: &Kafka, sets: &MessageSets) -> Result<Vec<DataFrame>, String> {
+    let mut result = Vec::new();
+    for set in sets.iter() {
+        for m in set.messages() {
+            let origin = Origin::from(cfg.source_id());
+            let payload = std::str::from_utf8(m.value).unwrap();
+            let decoded =
+                serde_json::from_str::<Message>(payload).map_err(|err| err.to_string())?;
+            let df = to_data_frame(origin, decoded);
+            result.push(df);
+        }
+    }
+    Ok(result)
 }
