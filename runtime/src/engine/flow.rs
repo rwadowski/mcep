@@ -1,7 +1,5 @@
+use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
 use std::collections::{HashMap, HashSet};
-use std::future::IntoFuture;
-
-use actix::{Actor, ActorContext, Addr, AsyncContext, Context, Handler, Message, WrapFuture};
 
 use types::definition::block::new_block_from_str;
 use types::definition::block::Block as BlockDefinition;
