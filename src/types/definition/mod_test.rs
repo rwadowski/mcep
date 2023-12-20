@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::definition::DataType;
+    use crate::types::definition::DataType;
     use test_case::test_case;
 
     #[test_case(DataType::Boolean, "\"Boolean\""; "serialization of boolean is correct")]

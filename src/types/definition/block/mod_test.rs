@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::block::code::CodeBlock;
-    use crate::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
-    use crate::definition::{DataType, DefinitionId};
+    use crate::types::definition::block::code::CodeBlock;
+    use crate::types::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
+    use crate::types::definition::{DataType, DefinitionId};
 
     #[test]
     fn input_json_serialize() {
@@ -80,7 +80,6 @@ mod test {
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
         let expected: Box<dyn Block> = Box::new(CodeBlock {
-            id,
             block_type,
             code_block_type,
             inputs,
@@ -90,7 +89,6 @@ mod test {
         let payload: String = r#"{"type":"CodeBlock","id":1,"block_type":"Code","code_block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
 
         let result: Box<dyn Block> = serde_json::from_str(&payload).unwrap();
-        assert_eq!(result.id(), expected.id());
         assert_eq!(result.block_type(), expected.block_type());
         assert_eq!(result.inputs(), expected.inputs());
         assert_eq!(result.outputs(), expected.outputs());

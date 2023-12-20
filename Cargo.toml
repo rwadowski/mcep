@@ -29,3 +29,6 @@ pyo3-build-config = "0.19.2"
 [features]
 extension-module = ["pyo3/extension-module"]
 default = ["extension-module"]
+
+[dev-dependencies]
+test-case = { version = "3.1.0" }

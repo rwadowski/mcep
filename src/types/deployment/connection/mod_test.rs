@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::error::DefinitionError;
-    use crate::definition::DataType;
-    use crate::deployment::connection::junction::BlockJunction;
-    use crate::deployment::connection::BlockConnection;
-    use crate::deployment::BlockId;
+    use crate::types::definition::error::DefinitionError;
+    use crate::types::definition::DataType;
+    use crate::types::deployment::connection::junction::BlockJunction;
+    use crate::types::deployment::connection::BlockConnection;
+    use crate::types::deployment::BlockId;
 
     #[test]
     fn create_block_connection_success() {

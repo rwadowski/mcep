@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::DataType;
-    use crate::deployment::sink::{Sink, SinkId};
+    use crate::types::definition::DataType;
+    use crate::types::deployment::sink::{Sink, SinkId};
 
     #[test]
     fn sink_json_deserialization() {

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod junction_test {
-    use crate::definition::DataType;
-    use crate::deployment::connection::junction::BlockJunction;
-    use crate::deployment::BlockId;
+    use crate::types::definition::DataType;
+    use crate::types::deployment::connection::junction::BlockJunction;
+    use crate::types::deployment::BlockId;
 
     #[test]
     fn create_block_junction_id_success() {

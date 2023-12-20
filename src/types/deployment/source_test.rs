@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::DataType;
-    use crate::deployment::source::{Source, SourceId};
+    use crate::types::definition::DataType;
+    use crate::types::deployment::source::{Source, SourceId};
 
     #[test]
     fn source_json_serialization() {

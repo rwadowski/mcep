@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use services::deployment::create::NewDeployment;
-    use types::definition::{DataType, DefinitionId};
-    use types::deployment::connection::junction::BlockJunction;
-    use types::deployment::connection::BlockConnection;
-    use types::deployment::sink::{Sink, SinkId};
-    use types::deployment::source::{Source, SourceId};
-    use types::deployment::{BlockId, BlockInstanceId, DeployedBlock};
+    use crate::services::deployment::create::NewDeployment;
+    use crate::types::definition::{DataType, DefinitionId};
+    use crate::types::deployment::connection::junction::BlockJunction;
+    use crate::types::deployment::connection::BlockConnection;
+    use crate::types::deployment::sink::{Sink, SinkId};
+    use crate::types::deployment::source::{Source, SourceId};
+    use crate::types::deployment::{BlockId, BlockInstanceId, DeployedBlock};
 
     #[test]
     fn test_new_deployment_deserialize_body() {

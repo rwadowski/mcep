@@ -1,11 +1,10 @@
 #[cfg(test)]
 mod test {
-    use types::definition::block::code::CodeBlock as CodeBlockDefinition;
-    use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::{DataType, DefinitionId};
-    use types::deployment::{BlockInstanceId, DeploymentId};
-
-    use crate::engine::block;
+    use crate::runtime::engine::block;
+    use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
+    use crate::types::definition::block::{BlockType, CodeBlockType, Input, Output};
+    use crate::types::definition::DataType;
+    use crate::types::deployment::{BlockInstanceId, DeploymentId};
 
     #[test]
     fn create_from_correct_definition() {

@@ -1,18 +1,16 @@
 #[cfg(test)]
 mod test {
-    use crate::definition::block::code::CodeBlock;
-    use crate::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use crate::definition::{DataType, DefinitionId};
+    use crate::types::definition::block::code::CodeBlock;
+    use crate::types::definition::block::{BlockType, CodeBlockType, Input, Output};
+    use crate::types::definition::{DataType, DefinitionId};
     #[test]
     fn js_json_serialize() {
-        let id: DefinitionId = 1;
         let block_type = BlockType::Code;
         let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
         let js = CodeBlock {
-            id,
             code_block_type,
             block_type,
             inputs,
@@ -21,7 +19,6 @@ mod test {
         };
         let js_string: String = r#"
             {
-                "id": 1,
                 "block_type": "Code",
                 "code_block_type": "Js",
                 "inputs": [
@@ -50,14 +47,12 @@ mod test {
 
     #[test]
     fn js_json_deserialize() {
-        let id: DefinitionId = 1;
         let block_type = BlockType::Code;
         let code_block_type = CodeBlockType::Js;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
         let expected = CodeBlock {
-            id,
             block_type,
             code_block_type,
             inputs,
@@ -66,7 +61,6 @@ mod test {
         };
         let payload: String = r#"
             {
-                "id": 1,
                 "block_type": "Code",
                 "code_block_type": "Js",
                 "inputs": [

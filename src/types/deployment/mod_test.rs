@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use crate::definition::DataType;
-    use crate::deployment::connection::junction::BlockJunction;
-    use crate::deployment::connection::BlockConnection;
-    use crate::deployment::sink::{Sink, SinkId};
-    use crate::deployment::source::{Source, SourceId};
-    use crate::deployment::{BlockId, DeployedBlock, Deployment, DeploymentId};
+    use crate::types::definition::DataType;
+    use crate::types::deployment::connection::junction::BlockJunction;
+    use crate::types::deployment::connection::BlockConnection;
+    use crate::types::deployment::sink::{Sink, SinkId};
+    use crate::types::deployment::source::{Source, SourceId};
+    use crate::types::deployment::{BlockId, DeployedBlock, Deployment, DeploymentId};
 
     #[test]
     fn test_serialize_body() {

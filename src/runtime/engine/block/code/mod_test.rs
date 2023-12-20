@@ -1,18 +1,15 @@
 #[cfg(test)]
 mod test {
-    use chrono::{DateTime, Utc};
+    use crate::runtime::engine::block::code::PythonCodeBlock;
+    use crate::runtime::engine::block::Block;
+    use crate::runtime::engine::Data;
+    use crate::runtime::{DataFrame, Name, Origin};
+    use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
+    use crate::types::definition::block::{BlockType, CodeBlockType, Input, Output};
+    use crate::types::definition::DataType;
+    use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};
+    use chrono::Utc;
     use std::collections::HashMap;
-    use std::time::Instant;
-
-    use types::definition::block::code::CodeBlock as CodeBlockDefinition;
-    use types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use types::definition::DataType;
-    use types::deployment::{BlockId, BlockInstanceId, DeploymentId};
-
-    use crate::engine::block::code::PythonCodeBlock;
-    use crate::engine::block::Block;
-    use crate::engine::Data;
-    use crate::{DataFrame, Name, Origin};
 
     #[test]
     fn run_code_block() {
