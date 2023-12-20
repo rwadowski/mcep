@@ -31,9 +31,9 @@ impl Database {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Kafka {
-    pub hosts: Vec<String>,
+    pub hosts: String,
     pub topics: Topics,
     pub client_id: String,
 }
@@ -46,9 +46,13 @@ impl Kafka {
     pub fn source_id(&self) -> SourceId {
         SourceId::from(self.client_id.as_str())
     }
+
+    pub fn host_list(&self) -> Vec<String> {
+        self.hosts.split(",").map(|s| s.to_string()).collect()
+    }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Topics {
     pub input: String,
     pub output: String,

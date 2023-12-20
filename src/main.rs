@@ -21,7 +21,10 @@ use types::config::Logging;
 async fn main() {
     let config = config::load().expect("config should be loaded");
     configure_logger(&config.logging);
-    info!("Running mcep");
+    info!("running mcep");
+    if config.logging.debug {
+        info!("logs in debug mode");
+    }
 
     runtime::init();
 
@@ -30,9 +33,12 @@ async fn main() {
         .await
         .expect("migrations failed");
 
+    info!("starting sink");
     let sink = KafkaSinkActor::new(&config.kafka).unwrap();
+    info!("starting engine");
     let engine = EngineActor::new(sink).start();
     let engine_actor = engine.clone();
+    info!("starting source");
     SourceActor::new(&config.kafka, engine_actor)
         .unwrap()
         .start();

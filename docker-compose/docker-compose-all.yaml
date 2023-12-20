@@ -4,6 +4,7 @@ services:
   mcep:
     container_name: mcep
     image: docker.io/mcep
+    restart: always
     build:
       context: ../
     ports:
@@ -14,5 +15,7 @@ services:
       - DATABASE_USER=mcep
       - DATABASE_PASSWORD=mcep
       - DATABASE_NAME=mcep
-      - DEBUG_ENABLED=true
-      - KAFKA_HOSTS=[kafka:9092]
+      - KAFKA_HOSTS=kafka:9092
+      - LOGGING_DEBUG=true
+    depends_on:
+      - init-kafka

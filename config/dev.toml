@@ -6,7 +6,7 @@ password="mcep"
 name="mcep"
 
 [kafka]
-hosts=["localhost:9092"]
+hosts="localhost:9092"
 topics.input="input"
 topics.output="output"
 client_id="mcep"

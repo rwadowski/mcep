@@ -21,7 +21,7 @@ pub struct KafkaSinkActor {
 
 impl KafkaSinkActor {
     pub fn new(cfg: &Kafka) -> Result<HashMap<SinkId, Addr<KafkaSinkActor>>, String> {
-        let producer = Producer::from_hosts(cfg.hosts.clone())
+        let producer = Producer::from_hosts(cfg.host_list())
             .with_client_id(cfg.client_id.clone())
             .create()
             .map_err(|e| e.to_string())?;
