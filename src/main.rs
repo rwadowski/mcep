@@ -1,3 +1,9 @@
+mod api;
+mod database;
+mod runtime;
+mod services;
+mod types;
+
 extern crate rocket;
 
 use actix::prelude::*;
@@ -8,9 +14,6 @@ use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
 use tokio::signal;
 
-use api;
-use database;
-use runtime;
 use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::SourceActor;

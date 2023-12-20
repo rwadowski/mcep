@@ -1,28 +1,31 @@
-[workspace]
-members = [
-    "types",
-    "database",
-    "api",
-    "services",
-    "runtime",
-]
-
 [package]
 name = "mcep"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-types = { path = "types" }
-api = { path = "api"}
-database = { path = "database" }
-runtime = { path = "runtime" }
+typetag = "0.2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "rt"] }
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 toml = { version = "0.8.2" }
 serde = { version = "1.0.164" }
 serde_derive = { version = "1.0.164" }
+serde_millis = { version = "0.1.1" }
 log = { version = "0.4.20" }
 log4rs = { version = "1.2.0" }
 actix = { version = "0.13.1" }
 actix-rt = { version = "2.9.0" }
+chrono = { version = "0.4.31", features = ["serde"]}
+postgres-types = {version = "0.2.6", features = ["derive", "with-serde_json-1"]}
+sqlx = { version = "0.7.2", features = [ "runtime-tokio-native-tls", "postgres", "migrate" ] }
+serde_json = { version = "1.0.95", features = ["raw_value"] }
+pyo3 = { version = "0.19.2", features = ["auto-initialize"]}
+kafka = { version = "0.10.0" }
+config = { version = "0.13.4" }
+
+[build-dependencies]
+pyo3-build-config = "0.19.2"
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
