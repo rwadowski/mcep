@@ -2,7 +2,7 @@
 mod test {
     use crate::types::definition::block::code::CodeBlock;
     use crate::types::definition::block::{BlockType, CodeBlockType, Input, Output};
-    use crate::types::definition::{DataType, DefinitionId};
+    use crate::types::definition::DataType;
     #[test]
     fn js_json_serialize() {
         let block_type = BlockType::Code;

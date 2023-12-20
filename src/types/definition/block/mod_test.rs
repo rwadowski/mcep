@@ -2,7 +2,7 @@
 mod test {
     use crate::types::definition::block::code::CodeBlock;
     use crate::types::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
-    use crate::types::definition::{DataType, DefinitionId};
+    use crate::types::definition::DataType;
 
     #[test]
     fn input_json_serialize() {
@@ -73,7 +73,6 @@ mod test {
 
     #[test]
     fn dynamic_block_json_deserialize() {
-        let id: DefinitionId = 1;
         let code_block_type = CodeBlockType::Js;
         let block_type = BlockType::Code;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
