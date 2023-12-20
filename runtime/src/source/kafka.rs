@@ -30,7 +30,6 @@ impl KafkaSource {
 
 impl Source for KafkaSource {
     fn fetch(&mut self) -> Result<Vec<DataFrame>, String> {
-        debug!("trying to fetch data from kafka {:?}", self.config);
         let mut result: Vec<DataFrame> = Vec::new();
         for ms in self.consumer.poll().unwrap().iter() {
             //TODO - handle failure
