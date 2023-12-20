@@ -14,7 +14,6 @@ pub struct KafkaSource {
 
 impl KafkaSource {
     pub fn new(cfg: &Kafka) -> Result<Box<KafkaSource>, String> {
-        debug!("trying to create kafka source: {:?}", cfg);
         let consumer = Consumer::from_hosts(cfg.host_list())
             .with_fallback_offset(FetchOffset::Latest)
             .with_topic(cfg.topics.output.clone())
