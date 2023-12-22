@@ -22,6 +22,8 @@ serde_json = { version = "1.0.95", features = ["raw_value"] }
 pyo3 = { version = "0.20.0", features = ["auto-initialize"]}
 kafka = { version = "0.10.0" }
 config = { version = "0.13.4" }
+http = { version = "1.0.0" }
+ureq = { version = "2.9.1" }
 
 [build-dependencies]
 pyo3-build-config = "0.20.0"

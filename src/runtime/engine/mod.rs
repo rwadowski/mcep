@@ -139,33 +139,3 @@ impl Handler<EngineActorMessage> for EngineActor {
         }
     }
 }
-/*
-impl Handler<EngineActorMessage> for EngineActor {
-    type Result = EngineActorResponse;
-
-    fn handle(&mut self, msg: EngineActorMessage, _ctx: &mut Self::Context) -> Self::Result {
-        match msg {
-            EngineActorMessage::Process(df) => {
-                self.process(df);
-                EngineActorResponse::Succeed
-            }
-            EngineActorMessage::Deploy(deployment, definitions) => {
-                let definition_map: HashMap<DefinitionId, Definition> =
-                    definitions.into_iter().map(|def| (def.id, def)).collect();
-                let result = self.deploy(&deployment, &definition_map);
-                match result {
-                    Ok(()) => EngineActorResponse::Succeed,
-                    Err(err) => {
-                        error!("engine actor error {}", err);
-                        EngineActorResponse::Failed(err)
-                    }
-                }
-            }
-            EngineActorMessage::Undeploy(deployment) => {
-                self.undeploy(&deployment);
-                EngineActorResponse::Succeed
-            }
-        }
-    }
-}
-*/

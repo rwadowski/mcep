@@ -1,4 +1,8 @@
 use crate::runtime::engine::Data;
+use crate::utils;
+use http::uri::InvalidUri;
+use http::Uri;
+use log::debug;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::IntoPyDict;
@@ -11,8 +15,10 @@ pub struct PythonBlock {
 
 impl PythonBlock {
     pub fn run(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
+        debug!("running python code block {}", self.code);
+        let code = self.load()?;
         Python::with_gil(|py| {
-            let function: Py<PyAny> = PyModule::from_code(py, self.code.as_str(), "", "")
+            let function: Py<PyAny> = PyModule::from_code(py, code.as_str(), "", "")
                 .map_err(|e| e.to_string())?
                 .getattr("logic")
                 .map_err(|e| e.to_string())?
@@ -29,6 +35,19 @@ impl PythonBlock {
             }
         })
     }
+
+    fn load(&self) -> Result<String, String> {
+        let uri_opt: Result<Uri, InvalidUri> = self.code.parse();
+        match uri_opt {
+            Ok(uri) => fetch_code(uri),
+            Err(_) => Ok(self.code.clone()),
+        }
+    }
+}
+
+fn fetch_code(uri: Uri) -> Result<String, String> {
+    let response = ureq::get(uri.path()).call().map_err(utils::to_string)?;
+    response.into_string().map_err(utils::to_string)
 }
 
 impl ToPyObject for Data {

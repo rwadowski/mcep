@@ -3,6 +3,7 @@ mod database;
 mod runtime;
 mod services;
 mod types;
+mod utils;
 
 extern crate rocket;
 

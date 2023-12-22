@@ -9,7 +9,7 @@ name="mcep"
 hosts="localhost:9092"
 topics.input="input"
 topics.output="output"
-client_id="mcep"
+client_id="mcep-kafka"
 
 [logging]
 debug=false

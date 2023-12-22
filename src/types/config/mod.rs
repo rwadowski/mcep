@@ -3,6 +3,7 @@ use crate::types::deployment::source::SourceId;
 use config::{Config, Environment, File};
 use rocket::serde::{Deserialize, Serialize};
 use std::env;
+use std::fmt::format;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct App {
@@ -38,11 +39,13 @@ pub struct Kafka {
 
 impl Kafka {
     pub fn sink_id(&self) -> SinkId {
-        SinkId::from(self.client_id.as_str())
+        let formatted = format!("{}-sink", self.client_id.as_str());
+        SinkId::from(formatted.as_str())
     }
 
     pub fn source_id(&self) -> SourceId {
-        SourceId::from(self.client_id.as_str())
+        let formatted = format!("{}-source", self.client_id.as_str());
+        SourceId::from(formatted.as_str())
     }
 
     pub fn host_list(&self) -> Vec<String> {

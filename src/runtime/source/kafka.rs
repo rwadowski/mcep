@@ -1,6 +1,7 @@
 use crate::runtime::source::Source;
 use crate::runtime::{DataFrame, Message, Origin};
 use crate::types::config::Kafka;
+use crate::utils;
 use kafka::client::FetchOffset;
 use kafka::consumer::{Consumer, MessageSets};
 use log::error;
@@ -37,7 +38,7 @@ impl KafkaSource {
             .consumer
             .as_mut()
             .ok_or("kafka is not initialized".to_string())?;
-        let records = consumer.poll().map_err(|err| err.to_string())?;
+        let records = consumer.poll().map_err(utils::to_string)?;
         sets_to_frames(&self.config, &records)
     }
 }
@@ -64,7 +65,7 @@ fn to_data_frame(origin: Origin, msg: Message) -> DataFrame {
 fn init_consumer(cfg: &Kafka) -> Result<Consumer, String> {
     Consumer::from_hosts(cfg.host_list())
         .with_fallback_offset(FetchOffset::Latest)
-        .with_topic(cfg.topics.output.clone())
+        .with_topic(cfg.topics.input.clone())
         .with_client_id(cfg.client_id.clone())
         .create()
         .map_err(|e| e.to_string())
