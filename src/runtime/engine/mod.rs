@@ -77,11 +77,31 @@ pub struct EngineActor {
 }
 
 impl EngineActor {
-    pub fn new(sinks: HashMap<SinkId, Addr<KafkaSinkActor>>) -> EngineActor {
-        EngineActor {
-            flows: HashMap::new(),
+    pub fn new(
+        sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
+        definitions: Vec<Definition>,
+        deployments: Vec<Deployment>,
+    ) -> Result<EngineActor, String> {
+        let definitions_by_id: HashMap<DefinitionId, Definition> = definitions
+            .into_iter()
+            .map(|definition| (definition.id, definition))
+            .collect();
+        let deployments_by_id: HashMap<DeploymentId, Deployment> = deployments
+            .into_iter()
+            .map(|deployment| (deployment.id, deployment))
+            .collect();
+        let flows: Result<HashMap<DeploymentId, Addr<FlowActor>>, String> = deployments_by_id
+            .into_iter()
+            .map(|(deployment_id, deployment)| {
+                FlowActor::new(&deployment, &definitions_by_id, sinks.clone())
+                    .map(|flow| (deployment_id, flow))
+            })
+            .collect();
+        let engine = EngineActor {
+            flows: flows?,
             sinks,
-        }
+        };
+        Ok(engine)
     }
     fn deploy(
         &mut self,

@@ -13,6 +13,7 @@ use crate::types::deployment::source::Source;
 use crate::types::deployment::{DeployedBlock, Deployment};
 
 use crate::services::definition::get::get_definitions;
+use crate::utils;
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -25,19 +26,12 @@ pub struct NewDeployment {
     pub blocks: Vec<DeployedBlock>,
 }
 
-impl NewDeployment {
-    pub fn definition_ids(&self) -> HashSet<DefinitionId> {
-        HashSet::from_iter(self.blocks.iter().map(|block| block.definition_id))
-    }
-}
-
 pub async fn create_deployment(
     sender: &Addr<EngineActor>,
     pool: &Pool<Postgres>,
     new_deployment: NewDeployment,
 ) -> Option<Deployment> {
-    let definition_ids: HashSet<DefinitionId> = new_deployment.definition_ids();
-    let write_result: Result<Deployment, String> = sqlx::query_as::<_, Deployment>("INSERT INTO deployments (name, version, connections, sources, sinks, blocks) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
+    let deployment: Deployment = sqlx::query_as::<_, Deployment>("INSERT INTO deployments (name, version, connections, sources, sinks, blocks) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
         .bind(new_deployment.name)
         .bind(new_deployment.version)
         .bind(Json::<Vec<BlockConnection>>(new_deployment.connections))
@@ -46,32 +40,29 @@ pub async fn create_deployment(
         .bind(Json::<Vec<DeployedBlock>>(new_deployment.blocks))
         .fetch_one(pool)
         .await
-        .map_err(|err| err.to_string());
-    let definitions = get_definitions(pool, definition_ids).await;
-    let result = to_tuple(write_result, definitions);
-    match result {
-        Ok((deployment, definitions)) => {
-            info!("deployment {} created", deployment.id.to_string());
-            let actor_result = sender
-                .send(EngineActorMessage::Deploy(deployment.clone(), definitions))
-                .await;
-            actor_result.ok().and_then(|response| match response {
-                EngineActorResponse::Succeed => {
-                    info!("deployment {} deployed", deployment.id.to_string());
-                    Some(deployment)
-                }
-                EngineActorResponse::Failed(err) => {
-                    error!(
-                        "deployment {} not deployed due to {}",
-                        deployment.id.to_string(),
-                        err
-                    );
-                    None
-                }
-            })
+        .map_err(utils::log_and_convert_to_string)
+        .ok()?;
+    let definition_ids: HashSet<DefinitionId> = deployment.definition_ids();
+    let definitions = get_definitions(pool, definition_ids)
+        .await
+        .map_err(utils::log_and_convert_to_string)
+        .ok()?;
+    info!("deployment {} created", deployment.id.to_string());
+    let response = sender
+        .send(EngineActorMessage::Deploy(deployment.clone(), definitions))
+        .await
+        .ok()?;
+    match response {
+        EngineActorResponse::Succeed => {
+            info!("deployment {} deployed", deployment.id.to_string());
+            Some(deployment)
         }
-        Err(err) => {
-            error!("{}", err.to_string());
+        EngineActorResponse::Failed(err) => {
+            error!(
+                "deployment {} not deployed due to {}",
+                deployment.id.to_string(),
+                err
+            );
             None
         }
     }

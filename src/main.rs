@@ -13,8 +13,11 @@ use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Logger, Root};
 use log4rs::Config;
 use rocket::figment::providers::{Env, Format, Toml};
+use sqlx::{Pool, Postgres};
 use tokio::signal;
 
+use crate::types::definition::Definition;
+use crate::types::deployment::Deployment;
 use runtime::engine::EngineActor;
 use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::SourceActor;
@@ -40,7 +43,11 @@ async fn main() {
     info!("starting sink");
     let sink = KafkaSinkActor::new(&config.kafka).unwrap();
     info!("starting engine");
-    let engine = EngineActor::new(sink).start();
+    let state_opt = load(&database_connection_pool).await;
+    let (definitions, deployments) = state_opt.expect("state must be loaded");
+    let engine = EngineActor::new(sink, definitions, deployments)
+        .expect("engine must start")
+        .start();
     let engine_actor = engine.clone();
     info!("starting source");
     SourceActor::new(&config.kafka, engine_actor)
@@ -83,4 +90,14 @@ fn configure_logger(logging: &Logging) {
         .build(Root::builder().appender("stdout").build(level))
         .unwrap();
     let _ = log4rs::init_config(config).expect("logger should run");
+}
+
+async fn load(pool: &Pool<Postgres>) -> Result<(Vec<Definition>, Vec<Deployment>), String> {
+    let definitions = services::definition::get::get_all_definitions(pool)
+        .await
+        .map_err(utils::to_string)?;
+    let deployments = services::deployment::get::get_all_deployments(pool)
+        .await
+        .map_err(utils::to_string)?;
+    Ok((definitions, deployments))
 }

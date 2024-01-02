@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -31,6 +32,12 @@ pub struct Deployment {
     pub sources: Vec<Source>,
     pub sinks: Vec<Sink>,
     pub blocks: Vec<DeployedBlock>,
+}
+
+impl Deployment {
+    pub fn definition_ids(&self) -> HashSet<DefinitionId> {
+        HashSet::from_iter(self.blocks.iter().map(|block| block.definition_id))
+    }
 }
 
 impl FromRow<'_, PgRow> for Deployment {
