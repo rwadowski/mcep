@@ -43,14 +43,14 @@ async fn main() {
     info!("starting sink");
     let sink = KafkaSinkActor::new(&config.kafka).unwrap();
     info!("starting engine");
-    let state_opt = load(&database_connection_pool).await;
-    let (definitions, deployments) = state_opt.expect("state must be loaded");
+    let (definitions, deployments) = load(&database_connection_pool)
+        .await
+        .expect("database state must be loaded");
     let engine = EngineActor::new(sink, definitions, deployments)
         .expect("engine must start")
         .start();
-    let engine_actor = engine.clone();
     info!("starting source");
-    SourceActor::new(&config.kafka, engine_actor)
+    SourceActor::new(&config.kafka, engine.clone())
         .unwrap()
         .start();
 
