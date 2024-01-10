@@ -1,3 +1,5 @@
+pub mod github;
+
 use log::error;
 
 pub fn to_string<T: ToString>(t: T) -> String {
