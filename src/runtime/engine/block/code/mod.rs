@@ -1,8 +1,6 @@
 use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};
 use chrono::Utc;
-use rocket::delete;
-use rocket::sentinel::resolution::Resolve;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -58,11 +56,11 @@ impl PythonCodeBlock {
         deployment_id: DeploymentId,
         id: BlockInstanceId,
     ) -> PythonCodeBlock {
-        let code = definition.code.clone();
+        let src = definition.source.clone();
         PythonCodeBlock {
             id: BlockId::new(deployment_id, id),
             definition,
-            python_block: PythonBlock { code },
+            python_block: PythonBlock { source: src },
         }
     }
 }

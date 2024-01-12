@@ -15,7 +15,7 @@ mod test {
             block_type,
             inputs,
             outputs,
-            code,
+            source: code,
         };
         let js_string: String = r#"
             {
@@ -57,7 +57,7 @@ mod test {
             code_block_type,
             inputs,
             outputs,
-            code,
+            source: code,
         };
         let payload: String = r#"
             {

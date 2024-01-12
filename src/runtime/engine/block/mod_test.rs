@@ -30,7 +30,7 @@ mod test {
             block_type,
             inputs,
             outputs,
-            code,
+            source: code,
         };
         let result = block::new_block(Box::new(definition), deployment_id, block_id);
         assert_eq!(result.is_ok(), true);

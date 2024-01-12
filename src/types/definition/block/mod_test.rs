@@ -83,7 +83,7 @@ mod test {
             code_block_type,
             inputs,
             outputs,
-            code,
+            source: code,
         });
         let payload: String = r#"{"type":"CodeBlock","id":1,"block_type":"Code","code_block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
 

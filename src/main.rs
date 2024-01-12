@@ -1,6 +1,5 @@
 mod api;
 mod database;
-mod github;
 mod runtime;
 mod services;
 mod types;

@@ -8,7 +8,7 @@ pub struct CodeBlock {
     pub code_block_type: CodeBlockType,
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
-    pub code: String,
+    pub source: String,
 }
 
 #[typetag::serde]
@@ -35,7 +35,7 @@ impl Block for CodeBlock {
             code_block_type: self.code_block_type.clone(),
             inputs: self.inputs.clone(),
             outputs: self.outputs.clone(),
-            code: self.code.clone(),
+            source: self.source.clone(),
         };
         Box::new(block)
     }

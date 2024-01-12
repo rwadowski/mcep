@@ -40,7 +40,7 @@ mod test {
                 name: output,
                 data_type: DataType::Text,
             }],
-            code: script,
+            source: script,
         };
         let input_x_frame_name = Name::from("x");
         let input_y_frame_name = Name::from("y");
