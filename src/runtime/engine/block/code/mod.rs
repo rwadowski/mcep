@@ -1,7 +1,11 @@
 use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};
 use chrono::Utc;
+use rocket::delete;
+use rocket::sentinel::resolution::Resolve;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use crate::runtime::engine::block::code::python::PythonBlock;
 use crate::runtime::engine::block::Block;
@@ -60,5 +64,56 @@ impl PythonCodeBlock {
             definition,
             python_block: PythonBlock { code },
         }
+    }
+}
+
+#[typetag::serde(tag = "type")]
+pub trait Code: Send + Debug {
+    fn code(&self) -> Result<String, String>;
+
+    fn clone_box(&self) -> Box<dyn Code>;
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PlainCode {
+    code: String,
+}
+
+impl Clone for Box<dyn Code> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
+}
+
+#[typetag::serde]
+impl Code for PlainCode {
+    fn code(&self) -> Result<String, String> {
+        Ok(self.code.clone())
+    }
+
+    fn clone_box(&self) -> Box<dyn Code> {
+        let raw_code = PlainCode {
+            code: self.code.clone(),
+        };
+        Box::new(raw_code)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct GithubCode {
+    pub owner: String,
+    pub repository: String,
+    pub path: String,
+    pub token: String, //TODO - store it somewhere else ex. env ?
+}
+
+#[typetag::serde]
+impl Code for GithubCode {
+    fn code(&self) -> Result<String, String> {
+        todo!()
+    }
+
+    fn clone_box(&self) -> Box<dyn Code> {
+        todo!()
     }
 }
