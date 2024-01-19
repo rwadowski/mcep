@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::types::definition::block::code::CodeBlock;
-    use crate::types::definition::block::{Block, BlockType, CodeBlockType, Input, Output};
+    use crate::types::definition::block::{Block, BlockType, Input, Output};
     use crate::types::definition::DataType;
 
     #[test]
@@ -73,22 +73,18 @@ mod test {
 
     #[test]
     fn dynamic_block_json_deserialize() {
-        let code_block_type = CodeBlockType::Js;
-        let block_type = BlockType::Code;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let code = "function f(x){return x+x}".to_string();
         let expected: Box<dyn Block> = Box::new(CodeBlock {
-            block_type,
-            code_block_type,
             inputs,
             outputs,
             source: code,
         });
-        let payload: String = r#"{"type":"CodeBlock","id":1,"block_type":"Code","code_block_type":"Js","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"code":"function f(x){return x+x}"}"#.to_string();
+        let payload: String = r#"{"type":"CodeBlock","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"source":"function f(x){return x+x}"}"#.to_string();
 
         let result: Box<dyn Block> = serde_json::from_str(&payload).unwrap();
-        assert_eq!(result.block_type(), expected.block_type());
+        assert_eq!(result.block_type(), BlockType::CodeBlock);
         assert_eq!(result.inputs(), expected.inputs());
         assert_eq!(result.outputs(), expected.outputs());
     }

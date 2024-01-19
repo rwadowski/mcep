@@ -5,7 +5,7 @@ mod test {
     use crate::runtime::engine::Data;
     use crate::runtime::{DataFrame, Name, Origin};
     use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
-    use crate::types::definition::block::{BlockType, CodeBlockType, Input, Output};
+    use crate::types::definition::block::{BlockType, Input, Output};
     use crate::types::definition::DataType;
     use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};
     use chrono::Utc;
@@ -24,8 +24,6 @@ mod test {
         let y_input = "y".to_string();
         let output = "z".to_string();
         let definition = CodeBlockDefinition {
-            code_block_type: CodeBlockType::Python,
-            block_type: BlockType::Code,
             inputs: vec![
                 Input {
                     name: x_input,
@@ -40,7 +38,7 @@ mod test {
                 name: output,
                 data_type: DataType::Text,
             }],
-            source: script,
+            source: script.clone(),
         };
         let input_x_frame_name = Name::from("x");
         let input_y_frame_name = Name::from("y");
@@ -48,7 +46,8 @@ mod test {
         let mut output_mappings: HashMap<Name, Name> = HashMap::new();
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         let block_id: BlockInstanceId = 1;
-        let mut block = PythonCodeBlock::new(definition.clone(), deployment_id, block_id);
+        let mut block =
+            PythonCodeBlock::new(script.clone(), deployment_id, block_id, definition.inputs);
         let input_x = DataFrame::new(
             Origin::from(BlockId::new(deployment_id, block_id)),
             Utc::now(),

@@ -9,6 +9,7 @@ use crate::runtime::engine::block::code::python::PythonBlock;
 use crate::runtime::engine::block::Block;
 use crate::runtime::engine::Data;
 use crate::runtime::{DataFrame, Name, Origin};
+use crate::types::definition::block::Input;
 
 mod mod_test;
 pub mod python;
@@ -16,9 +17,8 @@ mod python_test;
 
 pub struct PythonCodeBlock {
     pub id: BlockId,
-    pub definition: CodeBlockDefinition,
-    // state: HashMap<Name, Data>,
     python_block: PythonBlock,
+    inputs: Vec<Input>,
 }
 
 impl Block for PythonCodeBlock {
@@ -27,7 +27,7 @@ impl Block for PythonCodeBlock {
     }
 
     fn run(&mut self, df: &HashMap<Name, Data>) -> Result<Vec<DataFrame>, String> {
-        if df.len() != self.definition.inputs.len() {
+        if df.len() != self.inputs.len() {
             return Ok(Vec::new());
         }
         let mut input: HashMap<String, Data> = HashMap::new();
@@ -52,15 +52,15 @@ impl Block for PythonCodeBlock {
 
 impl PythonCodeBlock {
     pub fn new(
-        definition: CodeBlockDefinition,
+        source: String,
         deployment_id: DeploymentId,
         id: BlockInstanceId,
+        inputs: Vec<Input>,
     ) -> PythonCodeBlock {
-        let src = definition.source.clone();
         PythonCodeBlock {
             id: BlockId::new(deployment_id, id),
-            definition,
-            python_block: PythonBlock { source: src },
+            python_block: PythonBlock { source },
+            inputs,
         }
     }
 }

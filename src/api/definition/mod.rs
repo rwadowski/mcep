@@ -25,8 +25,8 @@ pub async fn create_app_definition_handler(
     def: Json<NewDefinition>,
 ) -> Result<String, Status> {
     match create::create_definition(pool.inner(), def.into_inner()).await {
-        Some(definition) => Ok(serde_json::to_string(&definition).unwrap()),
-        None => Err(Status::InternalServerError),
+        Ok(definition) => Ok(serde_json::to_string(&definition).unwrap()),
+        Err(_) => Err(Status::InternalServerError),
     }
 }
 
@@ -45,7 +45,7 @@ pub async fn update_app_definition_handler(
     def: Json<UpdateDefinition>,
 ) -> Result<String, Status> {
     match update::update_definition(pool.inner(), def.into_inner()).await {
-        Some(definition) => Ok(serde_json::to_string(&definition).unwrap()),
-        None => Ok("".to_string()),
+        Ok(definition) => Ok(serde_json::to_string(&definition).unwrap()),
+        Err(_) => Err(Status::InternalServerError),
     }
 }

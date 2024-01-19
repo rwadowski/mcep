@@ -6,6 +6,7 @@ use crate::runtime::engine::block::code::PythonCodeBlock;
 use crate::runtime::engine::Data;
 use crate::runtime::sink::kafka::{KafkaSinkActor, KafkaSinkActorMessage};
 use crate::runtime::{DataFrame, Name};
+use crate::types::definition::block::code::github::Github;
 use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use crate::types::definition::block::{Block as BlockDefinition, BlockType};
 use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};
@@ -25,17 +26,30 @@ pub fn new_block(
 ) -> Result<Box<dyn Block>, String> {
     let block_type = definition.block_type();
     match block_type {
-        BlockType::Code => {
-            let def = as_code_block_definition(definition)?;
-            Ok(Box::new(PythonCodeBlock::new(def, deployment_id, id)))
-        } //_ => Err("unrecognized definition".to_string()),
+        BlockType::CodeBlock => {
+            let def = as_type::<CodeBlockDefinition>(definition)?;
+            Ok(Box::new(PythonCodeBlock::new(
+                def.source,
+                deployment_id,
+                id,
+                def.inputs,
+            )))
+        }
+        BlockType::Github => {
+            let def = as_type::<Github>(definition)?;
+            let src = def.source()?;
+            Ok(Box::new(PythonCodeBlock::new(
+                src,
+                deployment_id,
+                id,
+                def.inputs,
+            )))
+        }
     }
 }
 
-fn as_code_block_definition(
-    definition: Box<dyn BlockDefinition>,
-) -> Result<CodeBlockDefinition, String> {
-    match definition.as_any().downcast_ref::<CodeBlockDefinition>() {
+fn as_type<T: Clone + 'static>(definition: Box<dyn BlockDefinition>) -> Result<T, String> {
+    match definition.as_any().downcast_ref::<T>() {
         Some(def) => Ok(def.clone()),
         None => Err("can't cast to code block definition".to_string()),
     }
