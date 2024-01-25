@@ -12,7 +12,7 @@ RUN rustup install 1.75.0
 RUN apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get update &&  \
-    apt-get install -y python3.10-dev
+    apt-get install -y python3.11-dev
 
 WORKDIR /mcep
 COPY . ./

@@ -13,8 +13,7 @@ use crate::utils;
 pub struct NewDefinition {
     pub name: String,
     pub version: String,
-    pub body: Box<dyn Block>, // <- to jest code block - to poprawic
-    // pub body: Value, // <- to jest code block - to poprawic
+    pub body: Box<dyn Block>,
     pub description: Option<String>,
     pub help: Option<String>,
 }
