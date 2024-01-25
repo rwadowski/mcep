@@ -2,7 +2,7 @@
 mod test {
     use crate::types::definition::block::code::github::Github;
     use crate::types::definition::block::code::github::Source;
-    use crate::types::definition::block::{BlockType, Input, Output};
+    use crate::types::definition::block::{Block, BlockType, Input, Output};
     use crate::types::definition::DataType;
 
     #[test]
@@ -19,14 +19,14 @@ mod test {
             token,
             path,
         };
-        let block = Github {
+        let block: Box<dyn Block> = Box::new(Github {
             inputs,
             outputs,
             source,
-        };
+        });
         let expected: String = r#"
             {
-                "block_type": "Github",
+                "type": "Github",
                 "inputs": [
                     {
                         "name": "input_id_1",
@@ -51,7 +51,7 @@ mod test {
         .filter(|c| !c.is_whitespace())
         .collect();
 
-        let result = serde_json::to_string(&block);
+        let result = serde_json::to_string(block.as_ref());
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);
     }
@@ -78,7 +78,7 @@ mod test {
         };
         let payload: String = r#"
             {
-                "block_type": "Github",
+                "type": "Github",
                 "inputs": [
                     {
                         "name": "input_id_1",

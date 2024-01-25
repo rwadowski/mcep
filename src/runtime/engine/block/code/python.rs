@@ -14,20 +14,18 @@ pub struct PythonBlock {
 
 impl PythonBlock {
     pub fn run(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
-        debug!("running python code block {}", self.source);
-        //let code = self.load()?; //TODO - move it to creation of the PythonBlock instance - it is an expensive operation
+        debug!("running python code block \n{}", self.source);
         Python::with_gil(|py| {
-            let function: Py<PyAny> = PyModule::from_code(py, self.source.as_str(), "", "")
-                .map_err(|e| e.to_string())?
-                .getattr("logic")
-                .map_err(|e| e.to_string())?
-                .into();
+            PyModule::import(py, "psycopg2").map_err(utils::to_string)?;
+            let module = PyModule::from_code(py, self.source.as_str(), "logic.py", "logic")
+                .map_err(utils::to_string)?;
+            let function: Py<PyAny> = module.getattr("logic").map_err(utils::to_string)?.into();
             let args = (input.into_py_dict(py),);
             let result = function.call(py, args, None);
             match result {
                 Ok(object) => {
                     let map: HashMap<String, Data> =
-                        object.extract(py).map_err(|e| e.to_string())?;
+                        object.extract(py).map_err(utils::to_string)?;
                     Ok(map)
                 }
                 Err(e) => Err(e.to_string()),
