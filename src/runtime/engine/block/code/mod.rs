@@ -9,7 +9,7 @@ use crate::runtime::engine::block::code::python::PythonBlock;
 use crate::runtime::engine::block::Block;
 use crate::runtime::engine::Data;
 use crate::runtime::{DataFrame, Name, Origin};
-use crate::types::definition::block::Input;
+use crate::types::definition::block::{Dependency, Input};
 
 mod mod_test;
 pub mod python;
@@ -56,10 +56,11 @@ impl PythonCodeBlock {
         deployment_id: DeploymentId,
         id: BlockInstanceId,
         inputs: Vec<Input>,
+        dependencies: Vec<Dependency>,
     ) -> PythonCodeBlock {
         PythonCodeBlock {
             id: BlockId::new(deployment_id, id),
-            python_block: PythonBlock { source },
+            python_block: PythonBlock::new(source, dependencies),
             inputs,
         }
     }

@@ -33,6 +33,7 @@ pub fn new_block(
                 deployment_id,
                 id,
                 def.inputs,
+                def.dependencies,
             )))
         }
         BlockType::Github => {
@@ -43,6 +44,7 @@ pub fn new_block(
                 deployment_id,
                 id,
                 def.inputs,
+                def.dependencies,
             )))
         }
     }

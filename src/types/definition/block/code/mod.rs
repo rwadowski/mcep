@@ -1,7 +1,7 @@
 pub mod github;
 mod mod_test;
 
-use crate::types::definition::block::{Block, BlockType, Input, Output};
+use crate::types::definition::block::{Block, BlockType, Dependency, Input, Output};
 use crate::utils;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -12,6 +12,7 @@ pub struct CodeBlock {
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
     pub source: String,
+    pub dependencies: Vec<Dependency>,
 }
 
 #[typetag::serde]
@@ -37,6 +38,7 @@ impl Block for CodeBlock {
             inputs: self.inputs.clone(),
             outputs: self.outputs.clone(),
             source: self.source.clone(),
+            dependencies: self.dependencies.clone(),
         };
         Box::new(block)
     }
@@ -44,5 +46,9 @@ impl Block for CodeBlock {
     fn as_json(&self) -> Result<Value, String> {
         let boxed: Box<dyn Block> = Box::new(self.clone());
         serde_json::to_value(boxed).map_err(utils::to_string)
+    }
+
+    fn dependencies(&self) -> Vec<Dependency> {
+        self.dependencies.clone()
     }
 }
