@@ -3,7 +3,6 @@ use crate::types::deployment::source::SourceId;
 use config::{Config, Environment, File};
 use rocket::serde::{Deserialize, Serialize};
 use std::env;
-use std::fmt::format;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct App {

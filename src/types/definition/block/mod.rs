@@ -1,21 +1,16 @@
 pub mod code;
-mod code_test;
 mod mod_test;
 
 use crate::types::definition::DataType;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::any::Any;
 use std::fmt::Debug;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BlockType {
-    Code,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum CodeBlockType {
-    Js,
-    Python,
+    CodeBlock,
+    Github,
 }
 
 #[typetag::serde(tag = "type")]
@@ -25,6 +20,7 @@ pub trait Block: Send + Debug {
     fn outputs(&self) -> Vec<Output>;
     fn as_any(&self) -> &dyn Any;
     fn clone_box(&self) -> Box<dyn Block>;
+    fn as_json(&self) -> Result<Value, String>;
 }
 
 pub fn new_block_from_str(s: &str) -> Result<Box<dyn Block>, String> {
