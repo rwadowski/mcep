@@ -157,3 +157,11 @@ Install dependency like `python3.11 -m pip install psycopg2-binary` in order to 
     ```
  4. Send similar message for second name in definition above (`y`)
  5. If both inputs will be in place - a new message should produce a message to `output` topic with name = `z`
+
+### TODOS ###
+
+* make it distributed
+* refine how deployments can be triggered
+* ensure state won't be lost (failover)
+* testing + tests
+* reviewing implementation - I was more focused with getting grasp of rust thant architecture
