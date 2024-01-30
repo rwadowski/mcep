@@ -2,7 +2,7 @@ mod mod_test;
 
 use crate::services::github;
 use crate::types::definition::block::code::CodeBlock;
-use crate::types::definition::block::{Block, BlockType, Input, Output};
+use crate::types::definition::block::{Block, BlockType, Dependency, Input, Output};
 use crate::utils;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
@@ -13,6 +13,7 @@ pub struct Github {
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
     source: Source,
+    pub dependencies: Vec<Dependency>,
 }
 
 impl Github {
@@ -44,6 +45,7 @@ impl Block for Github {
             inputs: self.inputs.clone(),
             outputs: self.outputs.clone(),
             source: self.source.clone(),
+            dependencies: self.dependencies.clone(),
         };
         Box::new(v)
     }
@@ -54,8 +56,13 @@ impl Block for Github {
             inputs: self.inputs.clone(),
             outputs: self.outputs.clone(),
             source: body,
+            dependencies: self.dependencies.clone(),
         });
         serde_json::to_value(cb).map_err(utils::to_string)
+    }
+
+    fn dependencies(&self) -> Vec<Dependency> {
+        todo!()
     }
 }
 

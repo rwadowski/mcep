@@ -1,8 +1,9 @@
 FROM ubuntu:22.04 AS build
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y curl build-essential software-properties-common pkg-config  \
-    openssl libssl-dev -y && \
+    openssl libssl-dev && \
     apt-get update
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
@@ -19,12 +20,16 @@ COPY . ./
 RUN make build
 
 FROM ubuntu:22.04 AS image
+ARG DEBIAN_FRONTEND=noninteractive
 EXPOSE 8080
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
+    apt-get install -y curl software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get update &&  \
-    apt-get install -y python3.10-dev
+    apt-get install -y python3.11-dev
+
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+RUN python3.11 -m pip install psycopg2-binary
 WORKDIR /mcep
 RUN mkdir config
 COPY --from=build /mcep/target/debug/mcep .

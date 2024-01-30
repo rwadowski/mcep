@@ -21,6 +21,8 @@ pub trait Block: Send + Debug {
     fn as_any(&self) -> &dyn Any;
     fn clone_box(&self) -> Box<dyn Block>;
     fn as_json(&self) -> Result<Value, String>;
+
+    fn dependencies(&self) -> Vec<Dependency>;
 }
 
 pub fn new_block_from_str(s: &str) -> Result<Box<dyn Block>, String> {
@@ -61,4 +63,9 @@ impl Output {
             data_type: dt,
         }
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Dependency {
+    pub name: String,
 }

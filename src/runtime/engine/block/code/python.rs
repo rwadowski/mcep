@@ -1,4 +1,5 @@
 use crate::runtime::engine::Data;
+use crate::types::definition::block::Dependency;
 use crate::utils;
 use log::debug;
 use pyo3::exceptions::PyValueError;
@@ -10,13 +11,22 @@ use url::Url;
 
 pub struct PythonBlock {
     pub source: String,
+    pub dependencies: Vec<Dependency>,
 }
 
 impl PythonBlock {
+    pub fn new(source: String, dependencies: Vec<Dependency>) -> PythonBlock {
+        PythonBlock {
+            source,
+            dependencies,
+        }
+    }
     pub fn run(&self, input: HashMap<String, Data>) -> Result<HashMap<String, Data>, String> {
         debug!("running python code block \n{}", self.source);
         Python::with_gil(|py| {
-            PyModule::import(py, "psycopg2").map_err(utils::to_string)?;
+            for dependency in self.dependencies.iter() {
+                PyModule::import(py, dependency.name.as_str()).map_err(utils::to_string)?;
+            }
             let module = PyModule::from_code(py, self.source.as_str(), "logic.py", "logic")
                 .map_err(utils::to_string)?;
             let function: Py<PyAny> = module.getattr("logic").map_err(utils::to_string)?.into();
