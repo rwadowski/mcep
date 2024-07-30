@@ -80,8 +80,9 @@ mod test {
             inputs,
             outputs,
             source: code,
+            dependencies: vec![],
         });
-        let payload: String = r#"{"type":"CodeBlock","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"source":"function f(x){return x+x}"}"#.to_string();
+        let payload: String = r#"{"type":"CodeBlock","inputs":[{"name":"input_id_1","data_type":"Text"}],"outputs":[{"name":"output_id_1","data_type":"Text"}],"source":"function f(x){return x+x}","dependencies":[]}"#.to_string();
 
         let result: Box<dyn Block> = serde_json::from_str(&payload).unwrap();
         assert_eq!(result.block_type(), BlockType::CodeBlock);

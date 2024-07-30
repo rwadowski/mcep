@@ -39,6 +39,7 @@ mod test {
                 data_type: DataType::Text,
             }],
             source: script.clone(),
+            dependencies: vec![],
         };
         let input_x_frame_name = Name::from("x");
         let input_y_frame_name = Name::from("y");
@@ -47,7 +48,7 @@ mod test {
         output_mappings.insert(output_frame_name.clone(), output_frame_name.clone());
         let block_id: BlockInstanceId = 1;
         let mut block =
-            PythonCodeBlock::new(script.clone(), deployment_id, block_id, definition.inputs);
+            PythonCodeBlock::new(script.clone(), deployment_id, block_id, definition.inputs, vec![]);
         let input_x = DataFrame::new(
             Origin::from(BlockId::new(deployment_id, block_id)),
             Utc::now(),

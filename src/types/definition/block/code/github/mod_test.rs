@@ -23,6 +23,7 @@ mod test {
             inputs,
             outputs,
             source,
+            dependencies: vec![],
         });
         let expected: String = r#"
             {
@@ -44,7 +45,8 @@ mod test {
                     "repository": "repository",
                     "token": "token",
                     "path": "path"
-                }
+                },
+                "dependencies": []
             }
         "#
         .chars()
@@ -75,6 +77,7 @@ mod test {
             inputs,
             outputs,
             source,
+            dependencies: vec![],
         };
         let payload: String = r#"
             {
@@ -96,7 +99,8 @@ mod test {
                     "repository": "repository",
                     "token": "token",
                     "path": "path"
-                }
+                },
+                "dependencies": []
             }
         "#
         .to_string();

@@ -28,6 +28,7 @@ mod test {
             inputs,
             outputs,
             source: code,
+            dependencies: vec![],
         };
         let result = block::new_block(Box::new(definition), deployment_id, block_id);
         assert_eq!(result.is_ok(), true);

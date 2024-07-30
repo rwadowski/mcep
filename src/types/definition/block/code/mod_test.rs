@@ -12,6 +12,7 @@ mod test {
             inputs,
             outputs,
             source: code,
+            dependencies: vec![],
         };
         let js_string: String = r#"
             {
@@ -28,7 +29,8 @@ mod test {
                         "data_type": "Text"
                     }
                 ],
-                "source": "function f(x){return x+x}"
+                "source": "function f(x){return x+x}",
+                "dependencies": []
             }
         "#
         .chars()
@@ -50,6 +52,7 @@ mod test {
             inputs,
             outputs,
             source: code,
+            dependencies: vec![],
         };
         let payload: String = r#"
             {
@@ -67,7 +70,8 @@ mod test {
                         "data_type": "Text"
                     }
                 ],
-                "source": "function f(x){return x+x}"
+                "source": "function f(x){return x+x}",
+                "dependencies": []
             }
         "#
         .to_string();
