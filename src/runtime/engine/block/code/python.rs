@@ -44,19 +44,6 @@ impl PythonBlock {
     }
 }
 
-fn load(code: String) -> Result<String, String> {
-    let url_opt = Url::parse(code.as_str());
-    match url_opt {
-        Ok(url) => fetch_code(url),
-        Err(_) => Ok(code.clone()),
-    }
-}
-
-fn fetch_code(url: Url) -> Result<String, String> {
-    let response = ureq::get(url.as_str()).call().map_err(utils::to_string)?;
-    response.into_string().map_err(utils::to_string)
-}
-
 impl ToPyObject for Data {
     fn to_object(&self, py: Python<'_>) -> PyObject {
         match self {

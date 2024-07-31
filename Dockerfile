@@ -8,12 +8,12 @@ RUN apt-get update && \
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup install 1.75.0
+RUN rustup install 1.79.0
 
 RUN apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get update &&  \
-    apt-get install -y python3.11-dev
+    apt-get install -y python3.12-dev
 
 WORKDIR /mcep
 COPY . ./
@@ -26,10 +26,10 @@ RUN apt-get update && \
     apt-get install -y curl software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get update &&  \
-    apt-get install -y python3.11-dev
+    apt-get install -y python3.12-dev
 
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
-RUN python3.11 -m pip install psycopg2-binary
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+RUN python3.12 -m pip install psycopg2-binary
 WORKDIR /mcep
 RUN mkdir config
 COPY --from=build /mcep/target/debug/mcep .

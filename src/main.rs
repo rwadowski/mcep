@@ -64,7 +64,7 @@ async fn main() {
         .await
     });
     signal::ctrl_c().await.expect("failed to listen for event");
-    println!("Closing mcep");
+    info!("closing mcep");
 }
 
 fn rocket_config() -> rocket::figment::Figment {
