@@ -1,12 +1,20 @@
-use actix_web::web::{Data, Json, Path};
-use actix_web::{delete, get, patch, post, HttpResponse, Responder};
-use actix_web::http::StatusCode;
 use crate::services::definition::create::NewDefinition;
 use crate::services::definition::update::UpdateDefinition;
 use crate::services::definition::{create, delete, get, update};
+use actix_web::http::StatusCode;
+use actix_web::web::{Data, Json, Path};
+use actix_web::{delete, get, patch, post, HttpResponse};
 use sqlx::{Pool, Postgres};
 
-#[get("/{id}")]
+#[get("")]
+pub async fn get_all_definitions_handler(pool: Data<Pool<Postgres>>) -> HttpResponse {
+    let list = get::get_all_definitions(&pool).await;
+    match list {
+        Ok(definitions) => HttpResponse::Ok().json(definitions),
+        _ => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+#[get("{id}")]
 pub async fn get_app_definition_handler(
     path: Path<(i32)>,
     pool: Data<Pool<Postgres>>,
@@ -19,7 +27,7 @@ pub async fn get_app_definition_handler(
     }
 }
 
-#[post("/")]
+#[post("")]
 pub async fn create_app_definition_handler(
     pool: Data<Pool<Postgres>>,
     def: Json<NewDefinition>,
@@ -30,7 +38,7 @@ pub async fn create_app_definition_handler(
     }
 }
 
-#[delete("/definition/{id}")]
+#[delete("{id}")]
 pub async fn delete_app_definition_handler(
     path: Path<(i32)>,
     pool: Data<Pool<Postgres>>,
@@ -40,7 +48,7 @@ pub async fn delete_app_definition_handler(
     HttpResponse::new(StatusCode::OK)
 }
 
-#[patch("/definition")]
+#[patch("")]
 pub async fn update_app_definition_handler(
     pool: Data<Pool<Postgres>>,
     def: Json<UpdateDefinition>,

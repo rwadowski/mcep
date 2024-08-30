@@ -33,6 +33,5 @@ RUN python3.12 -m pip install psycopg2-binary
 WORKDIR /mcep
 RUN mkdir config
 COPY --from=build /mcep/target/debug/mcep .
-COPY --from=build /mcep/Rocket.toml .
 COPY --from=build /mcep/config/*toml ./config
 CMD ["./mcep"]

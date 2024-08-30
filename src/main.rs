@@ -6,6 +6,7 @@ mod types;
 mod utils;
 
 use actix::prelude::*;
+use actix_web::middleware::Logger as ActixLogger;
 use actix_web::web::Data;
 use actix_web::{rt, web, App, HttpServer};
 use log::{info, LevelFilter};
@@ -15,6 +16,7 @@ use log4rs::Config;
 use sqlx::{Pool, Postgres};
 use tokio::signal;
 
+use crate::api::{definition, deployment};
 use crate::types::definition::Definition;
 use crate::types::deployment::Deployment;
 use runtime::engine::EngineActor;
@@ -22,7 +24,6 @@ use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::SourceActor;
 use types::config;
 use types::config::Logging;
-use crate::api::{definition, deployment};
 
 #[actix::main]
 async fn main() {
@@ -55,24 +56,29 @@ async fn main() {
         .start();
 
     let server = HttpServer::new(move || {
-        let definition_services = web::scope("definition")
-            .service(definition::get_app_definition_handler)
+        let definition_services = web::scope("/definition")
             .service(definition::create_app_definition_handler)
+            .service(definition::get_app_definition_handler)
             .service(definition::delete_app_definition_handler)
-            .service(definition::update_app_definition_handler);
-        let deployment_services = web::scope("deployment")
+            .service(definition::update_app_definition_handler)
+            .service(definition::get_all_definitions_handler);
+        let deployment_services = web::scope("/deployment")
             .service(deployment::create_deployment_handler)
             .service(deployment::get_deployment_handler)
             .service(deployment::delete_deployment_handler);
+        let v1 = web::scope("/v1")
+            .service(definition_services)
+            .service(deployment_services);
+        let api = web::scope("/api").service(v1);
         App::new()
+            .wrap(ActixLogger::default())
             .app_data(Data::new(database_connection_pool.clone()))
             .app_data(Data::new(engine.clone()))
-            .service(definition_services)
-            .service(deployment_services)
+            .service(api)
     })
-        .bind(("127.0.0.1", 8080))
-        .unwrap()
-        .run();
+    .bind(("127.0.0.1", 8080))
+    .unwrap()
+    .run();
     let server_handle = server.handle();
     rt::spawn(server);
     signal::ctrl_c().await.expect("failed to listen for event");

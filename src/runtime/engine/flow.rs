@@ -1,12 +1,12 @@
-use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
-use std::collections::{HashMap, HashSet};
-
 use crate::types::definition::block::new_block_from_str;
 use crate::types::definition::block::Block as BlockDefinition;
 use crate::types::definition::{Definition, DefinitionId};
 use crate::types::deployment::sink::SinkId;
 use crate::types::deployment::source::SourceId;
 use crate::types::deployment::{BlockId, Deployment};
+use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
+use log::debug;
+use std::collections::{HashMap, HashSet};
 
 use crate::runtime::engine::block::{new_block, BlockActor, BlockActorMessage};
 use crate::runtime::engine::router::Router;
@@ -21,6 +21,7 @@ pub enum FlowActorMessages {
 }
 
 pub struct FlowActor {
+    deployment_name: String,
     blocks: HashMap<BlockId, Addr<BlockActor>>,
     sources: HashMap<SourceId, HashSet<BlockId>>,
     sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
@@ -37,6 +38,7 @@ impl FlowActor {
         let blocks: HashMap<BlockId, Addr<BlockActor>> =
             create_block_actors(deployment, definitions)?;
         let flow_actor = FlowActor {
+            deployment_name: deployment.name.clone(),
             blocks,
             sources: router.source_targets(),
             sinks,
@@ -47,7 +49,13 @@ impl FlowActor {
 
     fn process(&self, df: &DataFrame) {
         match &df.origin.source {
-            Some(source_id) => self.send_from_source(source_id, df),
+            Some(source_id) => {
+                debug!(
+                    "processing '{:?}' for deployment '{}'",
+                    df, self.deployment_name
+                );
+                self.send_from_source(source_id, df)
+            }
             _ => {}
         }
     }

@@ -2,17 +2,14 @@ use crate::runtime::engine::EngineActor;
 use crate::services::deployment::create::NewDeployment;
 use crate::services::deployment::{create, delete, get};
 use actix::Addr;
-use actix_web::{delete, get, post, HttpResponse, Responder};
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json, Path};
+use actix_web::{delete, get, post, HttpResponse, Responder};
 use sqlx::{Pool, Postgres};
 mod mod_test;
 
-#[get("/{id}")]
-pub async fn get_deployment_handler(
-    path: Path<i32>,
-    pool: Data<Pool<Postgres>>,
-) -> HttpResponse {
+#[get("{id}")]
+pub async fn get_deployment_handler(path: Path<i32>, pool: Data<Pool<Postgres>>) -> HttpResponse {
     let id = path.into_inner();
     let deployment = get::get_deployment(&pool, id).await;
     match deployment {
@@ -21,7 +18,7 @@ pub async fn get_deployment_handler(
     }
 }
 
-#[post("/")]
+#[post("")]
 pub async fn create_deployment_handler(
     sender: Data<Addr<EngineActor>>,
     pool: Data<Pool<Postgres>>,
@@ -33,7 +30,7 @@ pub async fn create_deployment_handler(
     }
 }
 
-#[delete("/{id}")]
+#[delete("{id}")]
 pub async fn delete_deployment_handler(
     path: Path<i32>,
     sender: Data<Addr<EngineActor>>,
