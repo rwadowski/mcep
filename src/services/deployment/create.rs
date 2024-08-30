@@ -1,10 +1,9 @@
 use actix::Addr;
-use rocket::log::private::{error, info};
-use rocket::serde::Deserialize;
 use sqlx::types::Json;
 use sqlx::{Pool, Postgres};
 use std::collections::HashSet;
-
+use log::{error, info};
+use serde_derive::Deserialize;
 use crate::runtime::engine::{EngineActor, EngineActorMessage, EngineActorResponse};
 use crate::types::definition::{Definition, DefinitionId};
 use crate::types::deployment::connection::BlockConnection;
@@ -16,7 +15,6 @@ use crate::services::definition::get::get_definitions;
 use crate::utils;
 
 #[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct NewDeployment {
     pub name: String,
     pub version: String,

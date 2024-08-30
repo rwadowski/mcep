@@ -1,6 +1,6 @@
-use rocket::log::private::{error, info};
-use rocket::serde::{Deserialize, Serialize};
-
+use actix_web::{HttpRequest, HttpResponse, Responder};
+use log::{error, info};
+use serde_derive::Deserialize;
 use crate::types::definition::block::{Block, BlockType};
 use serde_json::Value;
 use sqlx::{Error, Pool, Postgres};
@@ -9,7 +9,6 @@ use crate::types::definition::Definition;
 use crate::utils;
 
 #[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct NewDefinition {
     pub name: String,
     pub version: String,
@@ -43,3 +42,4 @@ pub async fn create_definition(
         }
     }
 }
+

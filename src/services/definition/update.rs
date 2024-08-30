@@ -1,10 +1,9 @@
 use crate::types::definition::Definition;
 use log::{error, info};
-use rocket::serde::Deserialize;
+use serde_derive::Deserialize;
 use sqlx::{Error, Pool, Postgres};
 
 #[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct UpdateDefinition {
     pub id: i32,
     pub version: Option<String>,

@@ -1,8 +1,8 @@
 use crate::types::deployment::sink::SinkId;
 use crate::types::deployment::source::SourceId;
 use config::{Config, Environment, File};
-use rocket::serde::{Deserialize, Serialize};
 use std::env;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct App {

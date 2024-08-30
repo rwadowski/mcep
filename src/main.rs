@@ -5,14 +5,13 @@ mod services;
 mod types;
 mod utils;
 
-extern crate rocket;
-
 use actix::prelude::*;
+use actix_web::web::Data;
+use actix_web::{rt, web, App, HttpServer};
 use log::{info, LevelFilter};
 use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Logger, Root};
 use log4rs::Config;
-use rocket::figment::providers::{Env, Format, Toml};
 use sqlx::{Pool, Postgres};
 use tokio::signal;
 
@@ -23,6 +22,7 @@ use runtime::sink::kafka::KafkaSinkActor;
 use runtime::source::SourceActor;
 use types::config;
 use types::config::Logging;
+use crate::api::{definition, deployment};
 
 #[actix::main]
 async fn main() {
@@ -54,27 +54,30 @@ async fn main() {
         .unwrap()
         .start();
 
-    tokio::spawn(async move {
-        api::start_rocket(
-            rocket_config(),
-            database_connection_pool.clone(),
-            engine.clone(),
-        )
-        .launch()
-        .await
-    });
+    let server = HttpServer::new(move || {
+        let definition_services = web::scope("definition")
+            .service(definition::get_app_definition_handler)
+            .service(definition::create_app_definition_handler)
+            .service(definition::delete_app_definition_handler)
+            .service(definition::update_app_definition_handler);
+        let deployment_services = web::scope("deployment")
+            .service(deployment::create_deployment_handler)
+            .service(deployment::get_deployment_handler)
+            .service(deployment::delete_deployment_handler);
+        App::new()
+            .app_data(Data::new(database_connection_pool.clone()))
+            .app_data(Data::new(engine.clone()))
+            .service(definition_services)
+            .service(deployment_services)
+    })
+        .bind(("127.0.0.1", 8080))
+        .unwrap()
+        .run();
+    let server_handle = server.handle();
+    rt::spawn(server);
     signal::ctrl_c().await.expect("failed to listen for event");
+    server_handle.stop(false).await;
     info!("closing mcep");
-}
-
-fn rocket_config() -> rocket::figment::Figment {
-    rocket::figment::Figment::from(rocket::config::Config::default())
-        .merge(Toml::file("Rocket.toml").nested())
-        .merge(Env::prefixed("MCEP_").global())
-        .select(rocket::figment::Profile::from_env_or(
-            "MCEP_PROFILE",
-            "default",
-        ))
 }
 
 fn configure_logger(logging: &Logging) {
