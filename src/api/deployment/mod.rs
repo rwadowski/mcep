@@ -2,43 +2,41 @@ use crate::runtime::engine::EngineActor;
 use crate::services::deployment::create::NewDeployment;
 use crate::services::deployment::{create, delete, get};
 use actix::Addr;
-use rocket::http::Status;
-use rocket::response::status::NotFound;
-use rocket::serde::json::Json;
-use rocket::{delete, get, post, State};
+use actix_web::http::StatusCode;
+use actix_web::web::{Data, Json, Path};
+use actix_web::{delete, get, post, HttpResponse, Responder};
 use sqlx::{Pool, Postgres};
 mod mod_test;
 
-#[get("/deployment/<id>")]
-pub async fn get_deployment_handler(
-    pool: &State<Pool<Postgres>>,
-    id: i32,
-) -> Result<String, NotFound<String>> {
-    let deployment = get::get_deployment(pool.inner(), id).await;
+#[get("{id}")]
+pub async fn get_deployment_handler(path: Path<i32>, pool: Data<Pool<Postgres>>) -> HttpResponse {
+    let id = path.into_inner();
+    let deployment = get::get_deployment(&pool, id).await;
     match deployment {
-        Ok(d) => Ok(serde_json::to_string(&d).unwrap()),
-        Err(err) => Err(NotFound(err)),
+        Ok(d) => HttpResponse::Ok().json(d),
+        Err(err) => HttpResponse::new(StatusCode::NOT_FOUND),
     }
 }
 
-#[post("/deployment", format = "application/json", data = "<dep>")]
+#[post("")]
 pub async fn create_deployment_handler(
-    sender: &State<Addr<EngineActor>>,
-    pool: &State<Pool<Postgres>>,
+    sender: Data<Addr<EngineActor>>,
+    pool: Data<Pool<Postgres>>,
     dep: Json<NewDeployment>,
-) -> Result<String, Status> {
-    match create::create_deployment(sender.inner(), pool.inner(), dep.into_inner()).await {
-        Some(deployment) => Ok(serde_json::to_string(&deployment).unwrap()),
-        None => Err(Status::InternalServerError),
+) -> HttpResponse {
+    match create::create_deployment(&sender, &pool, dep.into_inner()).await {
+        Some(deployment) => HttpResponse::Ok().json(deployment),
+        None => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
 
-#[delete("/deployment/<id>")]
+#[delete("{id}")]
 pub async fn delete_deployment_handler(
-    sender: &State<Addr<EngineActor>>,
-    pool: &State<Pool<Postgres>>,
-    id: i32,
-) -> Result<String, Status> {
-    let _ = delete::delete_deployment(sender, pool, id).await;
-    Ok(id.to_string())
+    path: Path<i32>,
+    sender: Data<Addr<EngineActor>>,
+    pool: Data<Pool<Postgres>>,
+) -> HttpResponse {
+    let id = path.into_inner();
+    let _ = delete::delete_deployment(&sender, &pool, id).await;
+    HttpResponse::new(StatusCode::OK)
 }

@@ -1,51 +1,60 @@
 use crate::services::definition::create::NewDefinition;
 use crate::services::definition::update::UpdateDefinition;
 use crate::services::definition::{create, delete, get, update};
-use rocket::http::Status;
-use rocket::response::status::NotFound;
-use rocket::serde::json::Json;
-use rocket::{delete, get, patch, post, State};
+use actix_web::http::StatusCode;
+use actix_web::web::{Data, Json, Path};
+use actix_web::{delete, get, patch, post, HttpResponse};
 use sqlx::{Pool, Postgres};
 
-#[get("/definition/<id>")]
+#[get("")]
+pub async fn get_all_definitions_handler(pool: Data<Pool<Postgres>>) -> HttpResponse {
+    let list = get::get_all_definitions(&pool).await;
+    match list {
+        Ok(definitions) => HttpResponse::Ok().json(definitions),
+        _ => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+#[get("{id}")]
 pub async fn get_app_definition_handler(
-    pool: &State<Pool<Postgres>>,
-    id: i32,
-) -> Result<String, NotFound<String>> {
-    let definition = get::get_definition(pool.inner(), id).await;
+    path: Path<(i32)>,
+    pool: Data<Pool<Postgres>>,
+) -> HttpResponse {
+    let id = path.into_inner();
+    let definition = get::get_definition(&pool, id).await;
     match definition {
-        Ok(d) => Ok(serde_json::to_string(&d).unwrap()),
-        Err(err) => Err(NotFound(err)),
+        Ok(d) => HttpResponse::Ok().json(d),
+        Err(_) => HttpResponse::new(StatusCode::NOT_FOUND),
     }
 }
 
-#[post("/definition", format = "application/json", data = "<def>")]
+#[post("")]
 pub async fn create_app_definition_handler(
-    pool: &State<Pool<Postgres>>,
+    pool: Data<Pool<Postgres>>,
     def: Json<NewDefinition>,
-) -> Result<String, Status> {
-    match create::create_definition(pool.inner(), def.into_inner()).await {
-        Ok(definition) => Ok(serde_json::to_string(&definition).unwrap()),
-        Err(_) => Err(Status::InternalServerError),
+) -> HttpResponse {
+    match create::create_definition(&pool, def.into_inner()).await {
+        Ok(definition) => HttpResponse::Ok().json(definition),
+        Err(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
 
-#[delete("/definition/<id>")]
+#[delete("{id}")]
 pub async fn delete_app_definition_handler(
-    pool: &State<Pool<Postgres>>,
-    id: i32,
-) -> Result<String, String> {
-    let _ = delete::delete_definition(pool.inner(), id).await;
-    Ok(id.to_string())
+    path: Path<(i32)>,
+    pool: Data<Pool<Postgres>>,
+) -> HttpResponse {
+    let id = path.into_inner();
+    let _ = delete::delete_definition(&pool, id).await;
+    HttpResponse::new(StatusCode::OK)
 }
 
-#[patch("/definition", format = "application/json", data = "<def>")]
+#[patch("")]
 pub async fn update_app_definition_handler(
-    pool: &State<Pool<Postgres>>,
+    pool: Data<Pool<Postgres>>,
     def: Json<UpdateDefinition>,
-) -> Result<String, Status> {
-    match update::update_definition(pool.inner(), def.into_inner()).await {
-        Ok(definition) => Ok(serde_json::to_string(&definition).unwrap()),
-        Err(_) => Err(Status::InternalServerError),
+) -> HttpResponse {
+    match update::update_definition(&pool, def.into_inner()).await {
+        Ok(definition) => HttpResponse::Ok().json(definition),
+        Err(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
