@@ -1,34 +1,24 @@
-mod api;
-mod database;
-mod runtime;
-mod services;
-mod types;
-mod utils;
-
 use actix::prelude::*;
 use actix_web::middleware::Logger as ActixLogger;
 use actix_web::web::Data;
 use actix_web::{rt, web, App, HttpServer};
-use log::{info, LevelFilter};
-use log4rs::append::console::ConsoleAppender;
-use log4rs::config::{Appender, Logger, Root};
-use log4rs::Config;
+use log::info;
+use log4rs::config::{Logger, Root};
+use mcep::api::{definition, deployment};
+use mcep::runtime::engine::EngineActor;
+use mcep::runtime::sink::kafka::KafkaSinkActor;
+use mcep::runtime::source::SourceActor;
+use mcep::types::config;
+use mcep::types::definition::Definition;
+use mcep::types::deployment::Deployment;
+use mcep::{database, runtime, utils};
 use sqlx::{Pool, Postgres};
 use tokio::signal;
-
-use crate::api::{definition, deployment};
-use crate::types::definition::Definition;
-use crate::types::deployment::Deployment;
-use runtime::engine::EngineActor;
-use runtime::sink::kafka::KafkaSinkActor;
-use runtime::source::SourceActor;
-use types::config;
-use types::config::Logging;
 
 #[actix::main]
 async fn main() {
     let config = config::load().expect("config should be loaded");
-    configure_logger(&config.logging);
+    utils::configure_logger(&config.logging);
     info!("running mcep");
     if config.logging.debug {
         info!("logs in debug mode");
@@ -86,26 +76,11 @@ async fn main() {
     info!("closing mcep");
 }
 
-fn configure_logger(logging: &Logging) {
-    let level = if logging.debug {
-        LevelFilter::Debug
-    } else {
-        LevelFilter::Info
-    };
-    let stdout = ConsoleAppender::builder().build();
-    let config = Config::builder()
-        .appender(Appender::builder().build("stdout", Box::new(stdout)))
-        .logger(Logger::builder().build("kafka::consumer", LevelFilter::Info))
-        .build(Root::builder().appender("stdout").build(level))
-        .unwrap();
-    let _ = log4rs::init_config(config).expect("logger should run");
-}
-
 async fn load(pool: &Pool<Postgres>) -> Result<(Vec<Definition>, Vec<Deployment>), String> {
-    let definitions = services::definition::get::get_all_definitions(pool)
+    let definitions = mcep::services::definition::get::get_all_definitions(pool)
         .await
         .map_err(utils::to_string)?;
-    let deployments = services::deployment::get::get_all_deployments(pool)
+    let deployments = mcep::services::deployment::get::get_all_deployments(pool)
         .await
         .map_err(utils::to_string)?;
     Ok((definitions, deployments))

@@ -25,13 +25,13 @@ impl PythonBlock {
         debug!("running python code block \n{}", self.source);
         Python::with_gil(|py| {
             for dependency in self.dependencies.iter() {
-                PyModule::import(py, dependency.name.as_str()).map_err(utils::to_string)?;
+                PyModule::import_bound(py, dependency.name.as_str()).map_err(utils::to_string)?;
             }
-            let module = PyModule::from_code(py, self.source.as_str(), "logic.py", "logic")
+            let module = PyModule::from_code_bound(py, self.source.as_str(), "logic.py", "logic")
                 .map_err(utils::to_string)?;
             let function: Py<PyAny> = module.getattr("logic").map_err(utils::to_string)?.into();
-            let args = (input.into_py_dict(py),);
-            let result = function.call(py, args, None);
+            let args = (input.into_py_dict_bound(py),);
+            let result = function.call_bound(py, args, None);
             match result {
                 Ok(object) => {
                     let map: HashMap<String, Data> =
@@ -51,14 +51,14 @@ impl ToPyObject for Data {
             Data::UnsignedInt(v) => v.into_py(py),
             Data::SignedInt(v) => v.into_py(py),
             Data::Text(v) => v.into_py(py),
-            Data::Array(v) => PyList::new(py, v).to_object(py),
+            Data::Array(v) => PyList::new_bound(py, v).to_object(py),
             Data::Float(v) => v.into_py(py),
         }
     }
 }
 
 impl<'source> FromPyObject<'source> for Data {
-    fn extract(ob: &'source PyAny) -> PyResult<Self> {
+    fn extract_bound(ob: &Bound<'source, PyAny>) -> PyResult<Self> {
         if ob.is_instance_of::<PyString>() {
             let str: String = ob.extract()?;
             return Ok(Data::Text(str));
