@@ -17,7 +17,7 @@ RUN apt-get update && \
 
 WORKDIR /mcep
 COPY . ./
-RUN make build
+RUN make release
 
 FROM ubuntu:22.04 AS image
 ARG DEBIAN_FRONTEND=noninteractive
@@ -32,6 +32,6 @@ RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
 RUN python3.12 -m pip install psycopg2-binary
 WORKDIR /mcep
 RUN mkdir config
-COPY --from=build /mcep/target/debug/mcep .
+COPY --from=build /mcep/target/release/mcep .
 COPY --from=build /mcep/config/*toml ./config
 CMD ["./mcep"]
