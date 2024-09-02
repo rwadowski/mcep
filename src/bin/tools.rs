@@ -1,6 +1,5 @@
 extern crate core;
 
-use actix_web::web::to;
 use chrono::Utc;
 use clap::{Parser, ValueEnum};
 use log::{error, info};
