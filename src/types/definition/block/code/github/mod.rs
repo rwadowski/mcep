@@ -12,7 +12,7 @@ use std::any::Any;
 pub struct Github {
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
-    source: Source,
+    pub source: Source,
     pub dependencies: Vec<Dependency>,
 }
 
@@ -22,7 +22,7 @@ impl Github {
     }
 }
 
-#[typetag::serde]
+#[typetag::serde(name = "Github")]
 impl Block for Github {
     fn block_type(&self) -> BlockType {
         BlockType::Github
