@@ -1,3 +1,5 @@
+pub mod json;
+
 use crate::types::config::Logging;
 use log::{error, LevelFilter};
 use log4rs::append::console::ConsoleAppender;

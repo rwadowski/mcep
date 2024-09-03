@@ -46,17 +46,17 @@ impl<'de> Deserialize<'de> for Name {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Message {
     #[serde(with = "ts_milliseconds")]
-    ts: DateTime<Utc>,
-    name: Name,
-    value: Data,
+    pub ts: DateTime<Utc>,
+    pub name: Name,
+    pub value: Data,
 }
 
 impl Message {
-    fn key(&self) -> String {
+    pub fn key(&self) -> String {
         self.name.value.to_string()
     }
 
-    fn as_json(&self) -> Result<String, String> {
+    pub fn as_json(&self) -> Result<String, String> {
         serde_json::to_string(self).map_err(|err| err.to_string())
     }
 }

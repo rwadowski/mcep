@@ -2,7 +2,7 @@
 mod test {
     use crate::types::definition::block::code::github::Github;
     use crate::types::definition::block::code::github::Source;
-    use crate::types::definition::block::{Block, BlockType, Input, Output};
+    use crate::types::definition::block::{Block, Input, Output};
     use crate::types::definition::DataType;
 
     #[test]
@@ -60,7 +60,6 @@ mod test {
 
     #[test]
     fn github_json_deserialize() {
-        let block_type = BlockType::Github;
         let inputs = vec![Input::new("input_id_1", DataType::Text)];
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let owner = "owner".to_string();

@@ -26,7 +26,7 @@ pub enum DataType {
     Boolean,
     UnsignedInt,
     SignedInt,
-    FloatType,
+    Float,
     Text,
     // Array(Box<DataType>),
     // Map(Box<DataType>, Box<DataType>),

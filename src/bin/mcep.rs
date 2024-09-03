@@ -3,7 +3,7 @@ use actix_web::middleware::Logger as ActixLogger;
 use actix_web::web::Data;
 use actix_web::{rt, web, App, HttpServer};
 use log::info;
-use log4rs::config::{Logger, Root};
+use log4rs::config::Root;
 use mcep::api::{definition, deployment};
 use mcep::runtime::engine::EngineActor;
 use mcep::runtime::sink::kafka::KafkaSinkActor;

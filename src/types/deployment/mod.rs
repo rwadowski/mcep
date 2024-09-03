@@ -1,18 +1,19 @@
-use std::collections::HashSet;
-use std::fmt;
-use std::fmt::Formatter;
-
 use serde::de::Error as SerdeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::from_str;
 use sqlx::postgres::PgRow;
 use sqlx::types::Json;
 use sqlx::{Error, FromRow, Row};
+use std::collections::HashSet;
+use std::fmt;
+use std::fmt::Formatter;
+use std::str::FromStr;
 
 use crate::types::definition::DefinitionId;
 use crate::types::deployment::connection::BlockConnection;
 use crate::types::deployment::sink::Sink;
 use crate::types::deployment::source::Source;
+use crate::utils;
 
 pub mod connection;
 mod mod_test;
@@ -165,5 +166,20 @@ impl DeployedBlock {
     }
     pub fn id(&self) -> BlockId {
         BlockId::new(self.definition_id, self.id)
+    }
+}
+
+impl FromStr for DeployedBlock {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let elements = s.split(".").collect::<Vec<&str>>();
+        if elements.len() != 2 {
+            return Err("incorrect block format".to_string());
+        }
+        let definition_id = DefinitionId::from_str(elements[0]).map_err(utils::to_string)?;
+        let id = BlockInstanceId::from_str(elements[1]).map_err(utils::to_string)?;
+        let deployed_block = DeployedBlock { definition_id, id };
+        Ok(deployed_block)
     }
 }
