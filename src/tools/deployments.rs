@@ -1,9 +1,9 @@
-use crate::types::definition::{DataType, DefinitionId};
+use crate::types::definition::DataType;
 use crate::types::deployment::connection::junction::BlockJunction;
 use crate::types::deployment::connection::BlockConnection;
 use crate::types::deployment::sink::{Sink, SinkId};
 use crate::types::deployment::source::{Source, SourceId};
-use crate::types::deployment::{BlockId, BlockInstanceId, DeployedBlock, Deployment};
+use crate::types::deployment::{BlockId, DeployedBlock, Deployment};
 use crate::utils;
 use std::collections::HashSet;
 use std::str::FromStr;

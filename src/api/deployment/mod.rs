@@ -4,7 +4,7 @@ use crate::services::deployment::{create, delete, get};
 use actix::Addr;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json, Path};
-use actix_web::{delete, get, post, HttpResponse, Responder};
+use actix_web::{delete, get, post, HttpResponse};
 use sqlx::{Pool, Postgres};
 mod mod_test;
 
@@ -14,7 +14,7 @@ pub async fn get_deployment_handler(path: Path<i32>, pool: Data<Pool<Postgres>>)
     let deployment = get::get_deployment(&pool, id).await;
     match deployment {
         Ok(d) => HttpResponse::Ok().json(d),
-        Err(err) => HttpResponse::new(StatusCode::NOT_FOUND),
+        Err(_) => HttpResponse::new(StatusCode::NOT_FOUND),
     }
 }
 

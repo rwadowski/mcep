@@ -1,6 +1,6 @@
 use crate::runtime::engine::{EngineActor, EngineActorMessage};
 use crate::services::deployment::get;
-use crate::types::deployment::{Deployment, DeploymentId};
+use crate::types::deployment::DeploymentId;
 use actix::Addr;
 use sqlx::{Error, Pool, Postgres};
 

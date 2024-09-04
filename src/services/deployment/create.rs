@@ -1,15 +1,15 @@
-use actix::Addr;
-use sqlx::types::Json;
-use sqlx::{Pool, Postgres};
-use std::collections::HashSet;
-use log::{error, info};
-use serde_derive::Deserialize;
 use crate::runtime::engine::{EngineActor, EngineActorMessage, EngineActorResponse};
-use crate::types::definition::{Definition, DefinitionId};
+use crate::types::definition::DefinitionId;
 use crate::types::deployment::connection::BlockConnection;
 use crate::types::deployment::sink::Sink;
 use crate::types::deployment::source::Source;
 use crate::types::deployment::{DeployedBlock, Deployment};
+use actix::Addr;
+use log::{error, info};
+use serde_derive::Deserialize;
+use sqlx::types::Json;
+use sqlx::{Pool, Postgres};
+use std::collections::HashSet;
 
 use crate::services::definition::get::get_definitions;
 use crate::utils;
@@ -64,13 +64,4 @@ pub async fn create_deployment(
             None
         }
     }
-}
-
-fn to_tuple(
-    deployment_opt: Result<Deployment, String>,
-    definitions_opt: Result<Vec<Definition>, String>,
-) -> Result<(Deployment, Vec<Definition>), String> {
-    deployment_opt.and_then(|deployment| {
-        definitions_opt.and_then(|definitions| Ok((deployment, definitions)))
-    })
 }

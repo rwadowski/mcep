@@ -16,7 +16,7 @@ pub async fn get_all_definitions_handler(pool: Data<Pool<Postgres>>) -> HttpResp
 }
 #[get("{id}")]
 pub async fn get_app_definition_handler(
-    path: Path<(i32)>,
+    path: Path<i32>,
     pool: Data<Pool<Postgres>>,
 ) -> HttpResponse {
     let id = path.into_inner();
@@ -40,7 +40,7 @@ pub async fn create_app_definition_handler(
 
 #[delete("{id}")]
 pub async fn delete_app_definition_handler(
-    path: Path<(i32)>,
+    path: Path<i32>,
     pool: Data<Pool<Postgres>>,
 ) -> HttpResponse {
     let id = path.into_inner();

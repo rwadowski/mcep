@@ -7,7 +7,6 @@ use pyo3::prelude::*;
 use pyo3::types::IntoPyDict;
 use pyo3::types::{PyBool, PyFloat, PyInt, PyList, PyLong, PyString};
 use std::collections::HashMap;
-use url::Url;
 
 pub struct PythonBlock {
     pub source: String,

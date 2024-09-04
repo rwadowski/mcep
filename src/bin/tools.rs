@@ -128,7 +128,6 @@ fn main() {
             info!("sending to kafka");
             send(&cli)
         }
-        _ => Err("not implemented yet".to_string()),
     };
     match result {
         Ok(txt) => info!("{}", txt),
