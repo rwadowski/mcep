@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::types::definition::block::code::CodeBlock;
-    use crate::types::definition::block::{Block, BlockType, Input, Output};
+    use crate::types::definition::block::{Block, Input, Output};
     use crate::types::definition::DataType;
     #[test]
     fn js_json_serialize() {
@@ -33,9 +33,9 @@ mod test {
                 "dependencies": []
             }
         "#
-        .chars()
-        .filter(|c| !c.is_whitespace())
-        .collect();
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
         let expected = js_string.replace("functionf(x){returnx+x}", "function f(x){return x+x}");
         let boxed: Box<dyn Block> = Box::new(js);
         let result = serde_json::to_string(boxed.as_ref());
@@ -74,7 +74,7 @@ mod test {
                 "dependencies": []
             }
         "#
-        .to_string();
+            .to_string();
         let result = serde_json::from_str::<CodeBlock>(&payload);
         assert_eq!(result.is_ok(), true);
         assert_eq!(result.unwrap(), expected);

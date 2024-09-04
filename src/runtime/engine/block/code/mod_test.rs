@@ -5,7 +5,7 @@ mod test {
     use crate::runtime::engine::Data;
     use crate::runtime::{DataFrame, Name, Origin};
     use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
-    use crate::types::definition::block::{BlockType, Input, Output};
+    use crate::types::definition::block::{Input, Output};
     use crate::types::definition::DataType;
     use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};
     use chrono::Utc;
