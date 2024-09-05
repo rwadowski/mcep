@@ -18,7 +18,7 @@ pub struct Github {
 
 impl Github {
     pub fn source(&self) -> Result<String, String> {
-        Err("not implemented".to_string())
+        github::fetch_code(&self.source)
     }
 }
 
