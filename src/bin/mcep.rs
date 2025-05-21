@@ -10,7 +10,7 @@ use mcep::runtime::source::SourceActor;
 use mcep::types::config;
 use mcep::types::definition::Definition;
 use mcep::types::deployment::Deployment;
-use mcep::{database, runtime, utils};
+use mcep::{database, utils};
 use sqlx::{Pool, Postgres};
 use tokio::signal;
 
@@ -22,8 +22,6 @@ async fn main() {
     if config.logging.debug {
         info!("logs in debug mode");
     }
-
-    runtime::init();
 
     let database_connection_pool = database::init_connection_pool(&config.database).await;
     database::apply_migrations(&database_connection_pool)

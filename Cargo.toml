@@ -16,9 +16,8 @@ actix = { version = "0.13.1" }
 actix-rt = { version = "2.9.0" }
 chrono = { version = "0.4.31", features = ["serde"] }
 postgres-types = { version = "0.2.6", features = ["derive", "with-serde_json-1"] }
-sqlx = { version = "0.7.2", features = ["runtime-tokio-native-tls", "postgres", "migrate"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "postgres", "migrate"] }
 serde_json = { version = "1.0.95", features = ["raw_value"] }
-pyo3 = { version = "0.22.2", features = ["auto-initialize"] }
 kafka = { version = "0.10.0" }
 config = { version = "0.14.0" }
 http = { version = "1.0.0" }
@@ -26,13 +25,7 @@ ureq = { version = "2.10.1", features = ["json"] }
 url = { version = "2.3.1" }
 actix-web = { version = "4.9.0" }
 clap = { version = "4.5.16", features = ["derive"] }
-
-[build-dependencies]
-pyo3-build-config = "0.22.2"
-
-[features]
-extension-module = ["pyo3/extension-module"]
-default = ["extension-module"]
+rustpython = { version = "0.4.0", features = ["stdlib"] }
 
 [dev-dependencies]
 test-case = { version = "3.1.0" }
