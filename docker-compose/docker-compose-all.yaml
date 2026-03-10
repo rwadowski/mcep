@@ -3,7 +3,6 @@ include:
 services:
   mcep:
     container_name: mcep
-    image: docker.io/mcep
     restart: always
     build:
       context: ../
@@ -18,4 +17,7 @@ services:
       - KAFKA_HOSTS=kafka:9092
       - LOGGING_DEBUG=true
     depends_on:
-      - init-kafka
+      kafka:
+        condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully

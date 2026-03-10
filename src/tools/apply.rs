@@ -1,21 +1,39 @@
-use crate::runtime::sink::kafka::messages_to_records;
 use crate::runtime::Message;
 use crate::types::definition::{Definition, DefinitionId};
 use crate::types::deployment::{Deployment, DeploymentId};
 use crate::utils;
-use kafka::producer::Producer;
+use rdkafka::error::KafkaError;
+use rdkafka::producer::{BaseProducer, BaseRecord, Producer};
+use rdkafka::ClientConfig;
+use std::time::Duration;
 
 pub fn send(hosts: Vec<String>, topic: String, messages: Vec<Message>) -> Result<usize, String> {
-    let mut producer = Producer::from_hosts(hosts)
-        .with_client_id("mcep-tools".to_string())
+    let producer: BaseProducer = ClientConfig::new()
+        .set("bootstrap.servers", &hosts.join(","))
+        .set("client.id", "mcep-tools")
         .create()
         .map_err(utils::to_string)?;
 
-    let records = messages_to_records(&topic, &messages)?;
-    let result = producer.send_all(&records);
-    result
-        .map(|confirms| confirms.len())
-        .map_err(utils::to_string)
+    let mut sent = 0;
+
+    for message in messages {
+        let payload = serde_json::to_string(&message).map_err(utils::to_string)?;
+        let record: BaseRecord<String, String> = BaseRecord::to(&topic).payload(&payload);
+        match producer.send(record) {
+            Ok(_) => sent += 1,
+            Err((KafkaError::MessageProduction(_retryable), _)) => {
+                return Err("retryable Kafka error".to_string());
+            }
+            Err((err, _)) => {
+                return Err(utils::to_string(&err));
+            }
+        }
+    }
+
+    producer
+        .flush(Duration::from_secs(1))
+        .map_err(utils::to_string)?;
+    Ok(sent)
 }
 pub fn create_definition(
     host: String,
