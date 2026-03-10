@@ -1,14 +1,14 @@
 use crate::runtime::source::Source;
 use crate::runtime::{DataFrame, Message, Origin};
 use crate::types::config::Kafka;
-use crate::utils;
-use kafka::client::FetchOffset;
-use kafka::consumer::{Consumer, MessageSets};
 use log::error;
+use rdkafka::consumer::{BaseConsumer, Consumer};
+use rdkafka::{ClientConfig, Message as KafkaMessage};
+use std::time::Duration;
 
 pub struct KafkaSource {
     config: Kafka,
-    consumer: Option<Consumer>,
+    consumer: Option<BaseConsumer>,
 }
 
 impl KafkaSource {
@@ -38,8 +38,24 @@ impl KafkaSource {
             .consumer
             .as_mut()
             .ok_or("kafka is not initialized".to_string())?;
-        let records = consumer.poll().map_err(utils::to_string)?;
-        sets_to_frames(&self.config, &records)
+        let msg = consumer.poll(Duration::from_millis(100));
+        let mut frames = vec![];
+        if let Some(result) = msg {
+            match result {
+                Ok(m) => {
+                    if let Some(payload) = m.payload() {
+                        // Convert payload to DataFrame (your function)
+                        let frame = process_message(&self.config, payload)?;
+                        frames.push(frame);
+                    }
+                }
+                Err(e) => {
+                    return Err(format!("Kafka poll error: {}", e));
+                }
+            }
+        }
+
+        Ok(frames)
     }
 }
 
@@ -62,26 +78,25 @@ fn to_data_frame(origin: Origin, msg: Message) -> DataFrame {
     }
 }
 
-fn init_consumer(cfg: &Kafka) -> Result<Consumer, String> {
-    Consumer::from_hosts(cfg.host_list())
-        .with_fallback_offset(FetchOffset::Latest)
-        .with_topic(cfg.topics.input.clone())
-        .with_client_id(cfg.client_id.clone())
+fn init_consumer(cfg: &Kafka) -> Result<BaseConsumer, String> {
+    let consumer: BaseConsumer = ClientConfig::new()
+        .set("bootstrap.servers", &cfg.host_list().join(","))
+        .set("group.id", &cfg.client_id)
+        .set("client.id", &cfg.client_id)
+        .set("auto.offset.reset", "latest") // Matches `FetchOffset::Latest`
         .create()
-        .map_err(|e| e.to_string())
+        .map_err(|e| format!("Failed to create Kafka consumer: {}", e))?;
+
+    consumer
+        .subscribe(&[&cfg.topics.input])
+        .map_err(|e| format!("Failed to subscribe to topic: {}", e))?;
+
+    Ok(consumer)
 }
 
-fn sets_to_frames(cfg: &Kafka, sets: &MessageSets) -> Result<Vec<DataFrame>, String> {
-    let mut result = Vec::new();
-    for set in sets.iter() {
-        for m in set.messages() {
-            let origin = Origin::from(cfg.source_id());
-            let payload = std::str::from_utf8(m.value).unwrap();
-            let decoded =
-                serde_json::from_str::<Message>(payload).map_err(|err| err.to_string())?;
-            let df = to_data_frame(origin, decoded);
-            result.push(df);
-        }
-    }
-    Ok(result)
+fn process_message(cfg: &Kafka, message: &[u8]) -> Result<DataFrame, String> {
+    let origin = Origin::from(cfg.source_id());
+    let payload_str = std::str::from_utf8(message).map_err(|e| e.to_string())?;
+    let decoded: Message = serde_json::from_str(payload_str).map_err(|e| e.to_string())?;
+    Ok(to_data_frame(origin, decoded))
 }

@@ -1,7 +1,9 @@
-use std::collections::HashMap;
-
 use actix::{Actor, Addr, Context, Handler, Message};
-use kafka::producer::{Producer, Record};
+use log::error;
+use rdkafka::producer::{BaseProducer, BaseRecord};
+use rdkafka::ClientConfig;
+use std::collections::HashMap;
+use std::time::Duration;
 
 use crate::types::config::Kafka;
 use crate::types::deployment::sink::SinkId;
@@ -17,13 +19,14 @@ pub enum KafkaSinkActorMessage {
 
 pub struct KafkaSinkActor {
     topic: String,
-    producer: Producer,
+    producer: BaseProducer,
 }
 
 impl KafkaSinkActor {
     pub fn new(cfg: &Kafka) -> Result<HashMap<SinkId, Addr<KafkaSinkActor>>, String> {
-        let producer = Producer::from_hosts(cfg.host_list())
-            .with_client_id(cfg.client_id.clone())
+        let producer: BaseProducer = ClientConfig::new()
+            .set("bootstrap.servers", &cfg.host_list().join(","))
+            .set("client.id", &cfg.client_id)
             .create()
             .map_err(|e| e.to_string())?;
         let actor = KafkaSinkActor {
@@ -46,45 +49,43 @@ impl Handler<KafkaSinkActorMessage> for KafkaSinkActor {
     fn handle(&mut self, msg: KafkaSinkActorMessage, _ctx: &mut Self::Context) -> Self::Result {
         match msg {
             KafkaSinkActorMessage::Send(frames) => {
-                let records: Vec<Record<String, String>> =
-                    frames_to_record(&self.topic, &frames).expect("convert frames"); // todo - error handling
-                let _ = self.producer.send_all(&records); // todo - evaluate result
+                let records: Vec<(String, String)> =
+                    frames_to_record(&frames).expect("convert frames"); // todo - error handling
+                for (key, payload) in records {
+                    let record = BaseRecord::to(&self.topic).key(&key).payload(&payload);
+                    if let Err((err, _record)) = self.producer.send(record) {
+                        error!("failed to send record {}", err);
+                    }
+                }
+                self.producer.poll(Duration::from_millis(0));
             }
         }
     }
 }
 
-pub fn frames_to_record<'a>(
-    topic: &'a String,
-    frames: &Vec<DataFrame>,
-) -> Result<Vec<Record<'a, String, String>>, String> {
-    let mut records: Vec<Record<'a, String, String>> = Vec::new();
+pub fn frames_to_record(frames: &Vec<DataFrame>) -> Result<Vec<(String, String)>, String> {
+    let mut records: Vec<(String, String)> = Vec::new();
     for frame in frames {
         let msg = frame_to_message(frame);
-        records.push(message_to_record(topic, &msg)?);
+        records.push(message_to_record(&msg)?);
     }
     Ok(records)
 }
 
 pub fn messages_to_records<'a>(
-    topic: &'a String,
     messages: &Vec<DataMessage>,
-) -> Result<Vec<Record<'a, String, String>>, String> {
-    let mut records: Vec<Record<'a, String, String>> = Vec::new();
+) -> Result<Vec<(String, String)>, String> {
+    let mut records: Vec<(String, String)> = Vec::new();
     for message in messages {
-        let record = message_to_record(topic, &message)?;
-        records.push(record);
+        records.push(message_to_record(&message)?);
     }
     Ok(records)
 }
 
-pub fn message_to_record<'a>(
-    topic: &'a String,
-    msg: &DataMessage,
-) -> Result<Record<'a, String, String>, String> {
-    let key = msg.key();
+pub fn message_to_record<'a>(msg: &DataMessage) -> Result<(String, String), String> {
+    let key = msg.key().to_string();
     let value = msg.as_json().map_err(utils::to_string)?;
-    Ok(Record::from_key_value(topic, key, value))
+    Ok((key, value))
 }
 
 fn frame_to_message(frame: &DataFrame) -> DataMessage {

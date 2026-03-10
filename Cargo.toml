@@ -20,12 +20,14 @@ sqlx = { version = "0.7.2", features = ["runtime-tokio-native-tls", "postgres", 
 serde_json = { version = "1.0.95", features = ["raw_value"] }
 pyo3 = { version = "0.22.2", features = ["auto-initialize"] }
 kafka = { version = "0.10.0" }
+rdkafka = { version = "0.39.0", features = ["tokio"] }
 config = { version = "0.14.0" }
 http = { version = "1.0.0" }
 ureq = { version = "2.10.1", features = ["json"] }
 url = { version = "2.3.1" }
 actix-web = { version = "4.9.0" }
 clap = { version = "4.5.16", features = ["derive"] }
+time = { version = "0.3.47" }
 
 [build-dependencies]
 pyo3-build-config = "0.22.2"

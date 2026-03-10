@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup install 1.79.0
+RUN rustup install 1.91.1
 
 RUN apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa -y && \

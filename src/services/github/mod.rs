@@ -32,10 +32,10 @@ pub fn fetch_code(source: &Source) -> Result<String, String> {
         "https://api.github.com/repos/{}/{}/contents/{}",
         source.owner, source.repository, source.path
     );
+    let bearer = format!("Bearer {}", source.token);
     let body = ureq::get(path.as_str())
-        .set("Authorization", format!("Bearer {}", source.token).as_str())
-        .set("X-GitHub-Api-Version", "2022-11-28")
-        .set("Accept", " application/json")
+        .set("Authorization", bearer.as_str())
+        .set("Accept", " application/vnd.github+json")
         .call()
         .map_err(utils::to_string)?
         .into_string()
