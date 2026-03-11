@@ -1,35 +1,30 @@
-FROM ubuntu:22.04 AS build
+FROM debian:bookworm-slim AS build
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y curl build-essential software-properties-common pkg-config  \
-    openssl libssl-dev && \
-    apt-get update
+    apt-get install -y curl build-essential pkg-config \
+    openssl libssl-dev python3.11 python3.11-dev && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --set python3 /usr/bin/python3.11 && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup install 1.91.1
+RUN rustup install 1.91.1 && rustup default 1.91.1
 
-RUN apt-get update && \
-    add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get update &&  \
-    apt-get install -y python3.12-dev
+ENV PYO3_PYTHON=/usr/bin/python3.11
 
 WORKDIR /mcep
 COPY . ./
 RUN make release
 
-FROM ubuntu:22.04 AS image
-ARG DEBIAN_FRONTEND=noninteractive
+FROM debian:bookworm-slim AS image
 EXPOSE 8080
-RUN apt-get update && \
-    apt-get install -y curl software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get update &&  \
-    apt-get install -y python3.12-dev
 
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
-RUN python3.12 -m pip install psycopg2-binary
+RUN apt-get update && \
+    apt-get install -y python3.11 libpython3.11 && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /mcep
 RUN mkdir config
 COPY --from=build /mcep/target/release/mcep .
