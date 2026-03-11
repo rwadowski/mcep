@@ -4,10 +4,6 @@ fn main() {
     let python = find_python();
     let (lib_dir, lib_name) = get_python_lib_info(&python);
 
-    if cfg!(target_os = "macos") {
-        pyo3_build_config::add_extension_module_link_args();
-    }
-
     if !lib_dir.is_empty() {
         println!("cargo:rustc-link-search=native={}", lib_dir);
     }

@@ -1,5 +1,9 @@
-pub mod code;
+
+pub(crate) mod code;
 mod mod_test;
+mod code_test;
+pub mod github;
+mod github_test;
 
 use crate::types::definition::DataType;
 use serde::{Deserialize, Serialize};
@@ -13,6 +17,7 @@ pub enum BlockType {
     Github,
 }
 
+#[allow(non_local_definitions)]
 #[typetag::serde(tag = "type")]
 pub trait Block: Send + Debug {
     fn block_type(&self) -> BlockType;

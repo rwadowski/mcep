@@ -1,4 +1,4 @@
-use crate::types::definition::block::code::github::Source;
+use crate::types::definition::block::github::Source;
 use crate::utils;
 use serde_derive::{Deserialize, Serialize};
 
