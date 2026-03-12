@@ -1,4 +1,4 @@
-use crate::types::definition::block::code::github::{Github, Source};
+use crate::types::definition::block::github::{Github, Source};
 use crate::types::definition::block::{Dependency, Input, Output};
 use crate::types::definition::{DataType, Definition};
 use crate::utils;

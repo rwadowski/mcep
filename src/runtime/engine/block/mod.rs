@@ -6,7 +6,7 @@ use crate::runtime::engine::block::code::PythonCodeBlock;
 use crate::runtime::engine::Data;
 use crate::runtime::sink::kafka::{KafkaSinkActor, KafkaSinkActorMessage};
 use crate::runtime::{DataFrame, Name};
-use crate::types::definition::block::code::github::Github;
+use crate::types::definition::block::github::Github;
 use crate::types::definition::block::code::CodeBlock as CodeBlockDefinition;
 use crate::types::definition::block::{Block as BlockDefinition, BlockType};
 use crate::types::deployment::{BlockId, BlockInstanceId, DeploymentId};

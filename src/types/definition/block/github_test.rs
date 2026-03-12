@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use crate::types::definition::block::code::github::Github;
-    use crate::types::definition::block::code::github::Source;
+    use crate::types::definition::block::github::Github;
+    use crate::types::definition::block::github::Source;
     use crate::types::definition::block::{Block, Input, Output};
     use crate::types::definition::DataType;
 
@@ -49,9 +49,9 @@ mod test {
                 "dependencies": []
             }
         "#
-        .chars()
-        .filter(|c| !c.is_whitespace())
-        .collect();
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
 
         let result = serde_json::to_string(block.as_ref());
         assert_eq!(result.is_ok(), true);
@@ -102,7 +102,7 @@ mod test {
                 "dependencies": []
             }
         "#
-        .to_string();
+            .to_string();
 
         let result = serde_json::from_str::<Github>(&payload);
         assert_eq!(result.is_ok(), true);

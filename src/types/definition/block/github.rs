@@ -1,5 +1,3 @@
-mod mod_test;
-
 use crate::services::github;
 use crate::types::definition::block::code::CodeBlock;
 use crate::types::definition::block::{Block, BlockType, Dependency, Input, Output};
@@ -15,7 +13,6 @@ pub struct Github {
     pub source: Source,
     pub dependencies: Vec<Dependency>,
 }
-
 impl Github {
     pub fn source(&self) -> Result<String, String> {
         github::fetch_code(&self.source)
