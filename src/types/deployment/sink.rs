@@ -4,7 +4,7 @@ use sqlx::FromRow;
 
 #[derive(Clone, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct SinkId {
-    value: String,
+    pub value: String,
 }
 
 impl From<&str> for SinkId {

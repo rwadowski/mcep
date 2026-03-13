@@ -1,28 +1,21 @@
-use crate::runtime::engine::{EngineActor, EngineActorMessage};
+use sqlx::{Pool, Postgres};
+
+use crate::runtime::engine::Engine;
 use crate::services::deployment::get;
-use crate::types::deployment::DeploymentId;
-use actix::Addr;
-use sqlx::{Error, Pool, Postgres};
 
 pub async fn delete_deployment(
-    sender: &Addr<EngineActor>,
+    engine: &Engine,
     pool: &Pool<Postgres>,
-    id: DeploymentId,
+    id: i32,
 ) -> Result<(), String> {
-    let result = get::get_deployment(&pool, id).await;
-    match result {
-        Ok(deployment) => {
-            sender
-                .send(EngineActorMessage::Undeploy(deployment))
-                .await
-                .expect("TODO: panic message");
-            let delete_result: Result<(), Error> =
-                sqlx::query_as::<_, _>("DELETE FROM deployments WHERE id = $1")
-                    .bind(id)
-                    .fetch_one(pool)
-                    .await;
-            delete_result.map_err(|err| err.to_string())
-        }
-        Err(err) => Err(err.to_string()),
-    }
+    let deployment = get::get_deployment(pool, id)
+        .await
+        .map_err(|e| e.to_string())?;
+    engine.undeploy(&deployment).await;
+    sqlx::query("DELETE FROM deployments WHERE id = $1")
+        .bind(id)
+        .execute(pool)
+        .await
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }

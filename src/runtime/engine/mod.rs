@@ -1,21 +1,19 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
-use actix::dev::{MessageResponse, OneshotSender};
-use actix::{Actor, Addr, Context, Handler, Message};
-use log::error;
+use async_nats::Client;
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
 
 use crate::types::definition::{Definition, DefinitionId};
-use crate::types::deployment::sink::SinkId;
 use crate::types::deployment::{Deployment, DeploymentId};
 
-use crate::runtime::engine::flow::{FlowActor, FlowActorMessages};
-use crate::runtime::sink::kafka::KafkaSinkActor;
-use crate::runtime::DataFrame;
+use crate::runtime::engine::flow::spawn_flow;
 
 mod block;
-mod flow;
+pub mod flow;
 pub mod router;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -33,6 +31,7 @@ impl AsRef<Data> for Data {
         return &self;
     }
 }
+
 impl Hash for Data {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
@@ -46,115 +45,33 @@ impl Hash for Data {
     }
 }
 
-#[derive(Message)]
-#[rtype(result = "EngineActorResponse")]
-pub enum EngineActorMessage {
-    Deploy(Deployment, Vec<Definition>),
-    Undeploy(Deployment),
-    Process(DataFrame),
+pub struct Engine {
+    nats: Client,
+    deployments: Mutex<HashMap<DeploymentId, Vec<JoinHandle<()>>>>,
 }
 
-pub enum EngineActorResponse {
-    Succeed,
-    Failed(String),
-}
-
-impl<A, M> MessageResponse<A, M> for EngineActorResponse
-where
-    A: Actor,
-    M: Message<Result = EngineActorResponse>,
-{
-    fn handle(self, _ctx: &mut A::Context, tx: Option<OneshotSender<M::Result>>) {
-        if let Some(tx) = tx {
-            let _ = tx.send(self);
-        }
+impl Engine {
+    pub fn new(nats: Client) -> Arc<Engine> {
+        Arc::new(Engine {
+            nats,
+            deployments: Mutex::new(HashMap::new()),
+        })
     }
-}
 
-pub struct EngineActor {
-    flows: HashMap<DeploymentId, Addr<FlowActor>>,
-    sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
-}
-
-impl EngineActor {
-    pub fn new(
-        sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
-        definitions: Vec<Definition>,
-        deployments: Vec<Deployment>,
-    ) -> Result<EngineActor, String> {
-        let definitions_by_id: HashMap<DefinitionId, Definition> = definitions
-            .into_iter()
-            .map(|definition| (definition.id, definition))
-            .collect();
-        let deployments_by_id: HashMap<DeploymentId, Deployment> = deployments
-            .into_iter()
-            .map(|deployment| (deployment.id, deployment))
-            .collect();
-        let flows: Result<HashMap<DeploymentId, Addr<FlowActor>>, String> = deployments_by_id
-            .into_iter()
-            .map(|(deployment_id, deployment)| {
-                FlowActor::new(&deployment, &definitions_by_id, sinks.clone())
-                    .map(|flow| (deployment_id, flow))
-            })
-            .collect();
-        let engine = EngineActor {
-            flows: flows?,
-            sinks,
-        };
-        Ok(engine)
-    }
-    fn deploy(
-        &mut self,
+    pub async fn deploy(
+        &self,
         deployment: &Deployment,
         definitions: &HashMap<DefinitionId, Definition>,
     ) -> Result<(), String> {
-        let flow_actor = FlowActor::new(deployment, definitions, self.sinks.clone())?;
-        self.flows.insert(deployment.id, flow_actor);
+        let handles = spawn_flow(&self.nats, deployment, definitions).await?;
+        self.deployments.lock().await.insert(deployment.id, handles);
         Ok(())
     }
 
-    fn undeploy(&mut self, deployment: &Deployment) {
-        let removed = self.flows.remove(&deployment.id);
-        removed.iter().for_each(|addr| {
-            let _ = addr.send(FlowActorMessages::Stop);
-        })
-    }
-
-    fn process(&mut self, df: DataFrame) {
-        self.flows.iter().for_each(|(_, addr)| {
-            addr.do_send(FlowActorMessages::Process(df.clone()));
-        })
-    }
-}
-
-impl Actor for EngineActor {
-    type Context = Context<Self>;
-}
-
-impl Handler<EngineActorMessage> for EngineActor {
-    type Result = EngineActorResponse;
-
-    fn handle(&mut self, msg: EngineActorMessage, _ctx: &mut Self::Context) -> Self::Result {
-        match msg {
-            EngineActorMessage::Process(df) => {
-                self.process(df);
-                EngineActorResponse::Succeed
-            }
-            EngineActorMessage::Deploy(deployment, definitions) => {
-                let definition_map: HashMap<DefinitionId, Definition> =
-                    definitions.into_iter().map(|def| (def.id, def)).collect();
-                let result = self.deploy(&deployment, &definition_map);
-                match result {
-                    Ok(()) => EngineActorResponse::Succeed,
-                    Err(err) => {
-                        error!("engine actor error {}", err);
-                        EngineActorResponse::Failed(err)
-                    }
-                }
-            }
-            EngineActorMessage::Undeploy(deployment) => {
-                self.undeploy(&deployment);
-                EngineActorResponse::Succeed
+    pub async fn undeploy(&self, deployment: &Deployment) {
+        if let Some(handles) = self.deployments.lock().await.remove(&deployment.id) {
+            for handle in handles {
+                handle.abort();
             }
         }
     }

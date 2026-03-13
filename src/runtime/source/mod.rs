@@ -1,58 +1,42 @@
-use crate::runtime::engine::{EngineActor, EngineActorMessage};
+use async_nats::Client;
+use log::error;
+use tokio::task::JoinHandle;
+
 use crate::runtime::source::kafka::KafkaSource;
 use crate::runtime::DataFrame;
 use crate::types::config::Kafka;
-use actix::{Actor, Addr, AsyncContext, Context, Handler, Message};
-use std::time::Duration;
 
 pub mod kafka;
 
-pub trait Source {
+pub trait Source: Send {
     fn fetch(&mut self) -> Result<Vec<DataFrame>, String>;
 }
 
-#[derive(Message)]
-#[rtype(result = "()")]
-pub enum SourceActorMessage {
-    Poll,
+pub fn spawn_source(cfg: &Kafka, nats: Client) -> Result<JoinHandle<()>, String> {
+    let source = KafkaSource::new(cfg)?;
+    let handle = tokio::spawn(async move {
+        run_source(nats, source).await;
+    });
+    Ok(handle)
 }
 
-pub struct SourceActor {
-    source: Box<dyn Source>,
-    engine: Addr<EngineActor>,
-}
-
-impl SourceActor {
-    pub fn new(cfg: &Kafka, engine: Addr<EngineActor>) -> Result<SourceActor, String> {
-        let source = KafkaSource::new(cfg)?;
-        Ok(SourceActor { source, engine })
-    }
-}
-
-impl Actor for SourceActor {
-    type Context = Context<Self>;
-
-    fn started(&mut self, ctx: &mut Self::Context) {
-        ctx.run_interval(
-            Duration::from_millis(1000),
-            |_, c: &mut Context<SourceActor>| {
-                let _ = c.address().do_send(SourceActorMessage::Poll);
-            },
-        );
-    }
-}
-
-impl Handler<SourceActorMessage> for SourceActor {
-    type Result = ();
-
-    fn handle(&mut self, msg: SourceActorMessage, _ctx: &mut Self::Context) -> Self::Result {
-        match msg {
-            SourceActorMessage::Poll => {
-                let frames = self.source.fetch().unwrap();
-                frames.into_iter().for_each(|frame| {
-                    self.engine.do_send(EngineActorMessage::Process(frame));
-                })
+async fn run_source(nats: Client, mut source: Box<dyn Source>) {
+    loop {
+        match source.fetch() {
+            Ok(frames) => {
+                for frame in frames {
+                    match serde_json::to_vec(&frame) {
+                        Ok(payload) => {
+                            if let Err(e) = nats.publish("mcep.frames", payload.into()).await {
+                                error!("source failed to publish frame: {}", e);
+                            }
+                        }
+                        Err(e) => error!("source failed to serialize frame: {}", e),
+                    }
+                }
             }
+            Err(e) => error!("source fetch error: {}", e),
         }
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
 }

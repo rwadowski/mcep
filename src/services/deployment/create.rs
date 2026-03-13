@@ -1,17 +1,17 @@
-use crate::runtime::engine::{EngineActor, EngineActorMessage, EngineActorResponse};
+use std::collections::HashSet;
+
+use log::{error, info};
+use serde_derive::Deserialize;
+use sqlx::types::Json;
+use sqlx::{Pool, Postgres};
+
+use crate::runtime::engine::Engine;
+use crate::services::definition::get::get_definitions;
 use crate::types::definition::DefinitionId;
 use crate::types::deployment::connection::BlockConnection;
 use crate::types::deployment::sink::Sink;
 use crate::types::deployment::source::Source;
 use crate::types::deployment::{DeployedBlock, Deployment};
-use actix::Addr;
-use log::{error, info};
-use serde_derive::Deserialize;
-use sqlx::types::Json;
-use sqlx::{Pool, Postgres};
-use std::collections::HashSet;
-
-use crate::services::definition::get::get_definitions;
 use crate::utils;
 
 #[derive(Deserialize)]
@@ -25,7 +25,7 @@ pub struct NewDeployment {
 }
 
 pub async fn create_deployment(
-    sender: &Addr<EngineActor>,
+    engine: &Engine,
     pool: &Pool<Postgres>,
     new_deployment: NewDeployment,
 ) -> Option<Deployment> {
@@ -40,27 +40,24 @@ pub async fn create_deployment(
         .await
         .map_err(utils::log_and_convert_to_string)
         .ok()?;
+
     let definition_ids: HashSet<DefinitionId> = deployment.definition_ids();
     let definitions = get_definitions(pool, definition_ids)
         .await
         .map_err(utils::log_and_convert_to_string)
         .ok()?;
-    info!("deployment {} created", deployment.id.to_string());
-    let response = sender
-        .send(EngineActorMessage::Deploy(deployment.clone(), definitions))
-        .await
-        .ok()?;
-    match response {
-        EngineActorResponse::Succeed => {
-            info!("deployment {} deployed", deployment.id.to_string());
+
+    info!("deployment {} created", deployment.id);
+
+    let definitions_map: std::collections::HashMap<_, _> =
+        definitions.into_iter().map(|d| (d.id, d)).collect();
+    match engine.deploy(&deployment, &definitions_map).await {
+        Ok(()) => {
+            info!("deployment {} deployed", deployment.id);
             Some(deployment)
         }
-        EngineActorResponse::Failed(err) => {
-            error!(
-                "deployment {} not deployed due to {}",
-                deployment.id.to_string(),
-                err
-            );
+        Err(err) => {
+            error!("deployment {} not deployed: {}", deployment.id, err);
             None
         }
     }
