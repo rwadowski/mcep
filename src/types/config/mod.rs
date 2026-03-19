@@ -8,7 +8,13 @@ use serde_derive::{Deserialize, Serialize};
 pub struct App {
     pub database: Database,
     pub kafka: Kafka,
+    pub nats: Nats,
     pub logging: Logging,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Nats {
+    pub host: String,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

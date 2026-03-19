@@ -1,102 +1,40 @@
+use std::collections::{HashMap, HashSet};
+
+use async_nats::Client;
+use futures::StreamExt;
+use log::debug;
+use tokio::task::JoinHandle;
+
+use crate::runtime::engine::block::{new_block, spawn_block};
+use crate::runtime::engine::router::Router;
+use crate::runtime::DataFrame;
 use crate::types::definition::block::new_block_from_str;
 use crate::types::definition::block::Block as BlockDefinition;
 use crate::types::definition::{Definition, DefinitionId};
 use crate::types::deployment::sink::SinkId;
 use crate::types::deployment::source::SourceId;
-use crate::types::deployment::{BlockId, Deployment};
-use actix::{Actor, ActorContext, Addr, Context, Handler, Message};
-use log::debug;
-use std::collections::{HashMap, HashSet};
+use crate::types::deployment::{BlockId, Deployment, DeploymentId};
 
-use crate::runtime::engine::block::{new_block, BlockActor, BlockActorMessage};
-use crate::runtime::engine::router::Router;
-use crate::runtime::sink::kafka::KafkaSinkActor;
-use crate::runtime::DataFrame;
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub enum FlowActorMessages {
-    Process(DataFrame),
-    Stop,
+pub fn block_subject(deployment_id: DeploymentId, block_id: &BlockId) -> String {
+    format!(
+        "mcep.block.{}.{}.{}",
+        deployment_id, block_id.definition_id, block_id.id
+    )
 }
 
-pub struct FlowActor {
-    deployment_name: String,
-    blocks: HashMap<BlockId, Addr<BlockActor>>,
-    sources: HashMap<SourceId, HashSet<BlockId>>,
-    sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
-    router: Router,
+pub fn sink_subject(sink_id: &SinkId) -> String {
+    format!("mcep.sink.{}", sink_id.value)
 }
 
-impl FlowActor {
-    pub fn new(
-        deployment: &Deployment,
-        definitions: &HashMap<DefinitionId, Definition>,
-        sinks: HashMap<SinkId, Addr<KafkaSinkActor>>,
-    ) -> Result<Addr<FlowActor>, String> {
-        let router = Router::new(&deployment.connections);
-        let blocks: HashMap<BlockId, Addr<BlockActor>> =
-            create_block_actors(deployment, definitions)?;
-        let flow_actor = FlowActor {
-            deployment_name: deployment.name.clone(),
-            blocks,
-            sources: router.source_targets(),
-            sinks,
-            router,
-        };
-        Ok(flow_actor.start())
-    }
-
-    fn process(&self, df: &DataFrame) {
-        match &df.origin.source {
-            Some(source_id) => {
-                debug!(
-                    "processing '{:?}' for deployment '{}'",
-                    df, self.deployment_name
-                );
-                self.send_from_source(source_id, df)
-            }
-            _ => {}
-        }
-    }
-
-    fn send_from_source(&self, source_id: &SourceId, df: &DataFrame) {
-        let block_ids = self
-            .sources
-            .get(&source_id)
-            .unwrap_or(&HashSet::new())
-            .clone();
-        block_ids.iter().for_each(|block_id| {
-            self.blocks.get(block_id).iter().for_each(|addr| {
-                let frames = Vec::from([df.clone()]);
-                addr.do_send(BlockActorMessage::Process(frames));
-            })
-        });
-    }
-
-    fn stop_workers(&mut self) {
-        self.blocks.iter().for_each(|(_, addr)| {
-            let _ = addr.do_send(BlockActorMessage::Stop);
-        });
-    }
-}
-
-fn option_to_set<T: Actor>(opt: Option<&Addr<T>>) -> HashSet<Addr<T>> {
-    match opt {
-        Some(v) => {
-            let mut set = HashSet::new();
-            set.insert(v.clone());
-            set
-        }
-        None => HashSet::new(),
-    }
-}
-
-fn create_block_actors(
+pub async fn spawn_flow(
+    nats: &Client,
     deployment: &Deployment,
     definitions: &HashMap<DefinitionId, Definition>,
-) -> Result<HashMap<BlockId, Addr<BlockActor>>, String> {
-    let mut blocks: HashMap<BlockId, Addr<BlockActor>> = HashMap::new();
+) -> Result<Vec<JoinHandle<()>>, String> {
+    let router = Router::new(&deployment.connections);
+    let deployment_id = deployment.id;
+    let mut handles = Vec::new();
+
     for deployed_block in deployment.blocks.iter() {
         let definition = definitions
             .get(&deployed_block.definition_id)
@@ -104,49 +42,89 @@ fn create_block_actors(
         let body = definition.body.to_string();
         let block_definition: Box<dyn BlockDefinition> = new_block_from_str(body.as_str())?;
         let block = new_block(block_definition, deployment.id, deployed_block.id)?;
-        let block_actor = BlockActor::new(block);
-        blocks.insert(deployed_block.id(), block_actor.start());
-    }
-    Ok(blocks)
-}
+        let block_id = deployed_block.id();
 
-fn init_actors(
-    blocks: &HashMap<BlockId, Addr<BlockActor>>,
-    router: &Router,
-    sinks: &HashMap<SinkId, Addr<KafkaSinkActor>>,
-) {
-    for (block_id, block) in blocks.iter() {
-        let target_blocks: HashSet<Addr<BlockActor>> = router
+        let target_block_subjects: Vec<String> = router
             .block_targets(&block_id)
             .iter()
-            .flat_map(|target| option_to_set(blocks.get(target)))
+            .map(|bid| block_subject(deployment_id, bid))
             .collect();
-        let sink_blocks = router
+        let target_sink_subjects: Vec<String> = router
             .sink_targets(&block_id)
             .iter()
-            .flat_map(|target| option_to_set(sinks.get(target)))
+            .map(sink_subject)
             .collect();
-        let msg = BlockActorMessage::AddTargets(target_blocks, sink_blocks);
-        block.do_send(msg);
+
+        let handle = spawn_block(
+            nats.clone(),
+            deployment_id,
+            block,
+            target_block_subjects,
+            target_sink_subjects,
+        );
+        handles.push(handle);
     }
+
+    let sources = router.source_targets();
+    let deployment_name = deployment.name.clone();
+    let nats_clone = nats.clone();
+    let flow_handle = tokio::spawn(async move {
+        run_flow(nats_clone, deployment_id, deployment_name, sources).await;
+    });
+    handles.push(flow_handle);
+
+    Ok(handles)
 }
-impl Actor for FlowActor {
-    type Context = Context<Self>;
 
-    fn started(&mut self, _ctx: &mut Self::Context) {
-        init_actors(&self.blocks, &self.router, &self.sinks);
-    }
-}
+async fn run_flow(
+    nats: Client,
+    deployment_id: DeploymentId,
+    deployment_name: String,
+    sources: HashMap<SourceId, HashSet<BlockId>>,
+) {
+    let mut sub = match nats.subscribe("mcep.frames").await {
+        Ok(s) => s,
+        Err(e) => {
+            log::error!(
+                "flow '{}' failed to subscribe to mcep.frames: {}",
+                deployment_name,
+                e
+            );
+            return;
+        }
+    };
 
-impl Handler<FlowActorMessages> for FlowActor {
-    type Result = ();
+    while let Some(msg) = sub.next().await {
+        let df: DataFrame = match serde_json::from_slice(&msg.payload) {
+            Ok(df) => df,
+            Err(e) => {
+                log::error!("flow '{}' failed to deserialize DataFrame: {}", deployment_name, e);
+                continue;
+            }
+        };
 
-    fn handle(&mut self, msg: FlowActorMessages, ctx: &mut Self::Context) -> Self::Result {
-        match msg {
-            FlowActorMessages::Process(df) => self.process(&df),
-            FlowActorMessages::Stop => {
-                self.stop_workers();
-                ctx.stop()
+        debug!("flow '{}' processing {:?}", deployment_name, df);
+
+        if let Some(source_id) = &df.origin.source {
+            if let Some(block_ids) = sources.get(source_id) {
+                for block_id in block_ids {
+                    let subject = block_subject(deployment_id, block_id);
+                    let payload = match serde_json::to_vec(&vec![df.clone()]) {
+                        Ok(p) => p,
+                        Err(e) => {
+                            log::error!("flow '{}' failed to serialize frame: {}", deployment_name, e);
+                            continue;
+                        }
+                    };
+                    if let Err(e) = nats.publish(subject.clone(), payload.into()).await {
+                        log::error!(
+                            "flow '{}' failed to publish to block {}: {}",
+                            deployment_name,
+                            subject,
+                            e
+                        );
+                    }
+                }
             }
         }
     }

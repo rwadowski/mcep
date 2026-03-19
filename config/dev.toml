@@ -11,5 +11,8 @@ topics.input="input"
 topics.output="output"
 client_id="mcep-kafka"
 
+[nats]
+host="nats://localhost:4222"
+
 [logging]
 debug=false

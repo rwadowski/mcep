@@ -1,12 +1,11 @@
-use actix::prelude::*;
 use actix_web::middleware::Logger as ActixLogger;
 use actix_web::web::Data;
-use actix_web::{rt, web, App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use log::info;
 use mcep::api::{definition, deployment};
-use mcep::runtime::engine::EngineActor;
-use mcep::runtime::sink::kafka::KafkaSinkActor;
-use mcep::runtime::source::SourceActor;
+use mcep::runtime::engine::Engine;
+use mcep::runtime::sink::kafka::spawn_sink;
+use mcep::runtime::source::spawn_source;
 use mcep::types::config;
 use mcep::types::definition::Definition;
 use mcep::types::deployment::Deployment;
@@ -14,7 +13,7 @@ use mcep::{database, runtime, utils};
 use sqlx::{Pool, Postgres};
 use tokio::signal;
 
-#[actix::main]
+#[actix_web::main]
 async fn main() {
     let config = config::load().expect("config should be loaded");
     utils::configure_logger(&config.logging);
@@ -30,19 +29,34 @@ async fn main() {
         .await
         .expect("migrations failed");
 
+    let nats = async_nats::connect(&config.nats.host)
+        .await
+        .expect("nats connection failed");
+
     info!("starting sink");
-    let sink = KafkaSinkActor::new(&config.kafka).unwrap();
+    spawn_sink(&config.kafka, nats.clone())
+        .await
+        .expect("sink must start");
+
     info!("starting engine");
     let (definitions, deployments) = load(&database_connection_pool)
         .await
         .expect("database state must be loaded");
-    let engine = EngineActor::new(sink, definitions, deployments)
-        .expect("engine must start")
-        .start();
+    let engine = Engine::new(nats.clone());
+
+    {
+        let definitions_by_id: std::collections::HashMap<_, _> =
+            definitions.into_iter().map(|d| (d.id, d)).collect();
+        for dep in deployments {
+            engine
+                .deploy(&dep, &definitions_by_id)
+                .await
+                .expect("deployment must succeed");
+        }
+    }
+
     info!("starting source");
-    SourceActor::new(&config.kafka, engine.clone())
-        .unwrap()
-        .start();
+    spawn_source(&config.kafka, nats.clone()).expect("source must start");
 
     let server = HttpServer::new(move || {
         let definition_services = web::scope("/definition")
@@ -65,12 +79,11 @@ async fn main() {
             .app_data(Data::new(engine.clone()))
             .service(api)
     })
-    // .bind(("0.0.0.0", 8080))
     .bind(("127.0.0.1", 8080))
     .unwrap()
     .run();
     let server_handle = server.handle();
-    rt::spawn(server);
+    actix_web::rt::spawn(server);
     signal::ctrl_c().await.expect("failed to listen for event");
     server_handle.stop(false).await;
     info!("closing mcep");
