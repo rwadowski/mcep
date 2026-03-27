@@ -15,9 +15,12 @@ services:
       - DATABASE_PASSWORD=mcep
       - DATABASE_NAME=mcep
       - KAFKA_HOSTS=kafka:9092
+      - NATS_HOST=nats://nats:4222
       - LOGGING_DEBUG=true
     depends_on:
       kafka:
         condition: service_healthy
       init-kafka:
         condition: service_completed_successfully
+      nats:
+        condition: service_started

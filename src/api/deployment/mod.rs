@@ -9,6 +9,14 @@ use crate::runtime::engine::Engine;
 use crate::services::deployment::{create, delete, get};
 use crate::services::deployment::create::NewDeployment;
 
+#[get("")]
+pub async fn get_all_deployments_handler(pool: Data<Pool<Postgres>>) -> HttpResponse {
+    match get::get_all_deployments(&pool).await {
+        Ok(list) => HttpResponse::Ok().json(list),
+        Err(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
 mod mod_test;
 
 #[get("{id}")]

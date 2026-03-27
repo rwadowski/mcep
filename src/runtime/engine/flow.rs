@@ -58,6 +58,7 @@ pub async fn spawn_flow(
         let handle = spawn_block(
             nats.clone(),
             deployment_id,
+            &block_id,
             block,
             target_block_subjects,
             target_sink_subjects,

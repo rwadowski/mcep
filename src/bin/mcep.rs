@@ -1,3 +1,4 @@
+use actix_files::Files;
 use actix_web::middleware::Logger as ActixLogger;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
@@ -66,6 +67,7 @@ async fn main() {
             .service(definition::update_app_definition_handler)
             .service(definition::get_all_definitions_handler);
         let deployment_services = web::scope("/deployment")
+            .service(deployment::get_all_deployments_handler)
             .service(deployment::create_deployment_handler)
             .service(deployment::get_deployment_handler)
             .service(deployment::delete_deployment_handler);
@@ -78,8 +80,13 @@ async fn main() {
             .app_data(Data::new(database_connection_pool.clone()))
             .app_data(Data::new(engine.clone()))
             .service(api)
+            .service(
+                Files::new("/", "./frontend/dist")
+                    .index_file("index.html")
+                    .default_handler(web::get().to(spa_fallback)),
+            )
     })
-    .bind(("127.0.0.1", 8080))
+    .bind(("0.0.0.0", 8080))
     .unwrap()
     .run();
     let server_handle = server.handle();
@@ -87,6 +94,10 @@ async fn main() {
     signal::ctrl_c().await.expect("failed to listen for event");
     server_handle.stop(false).await;
     info!("closing mcep");
+}
+
+async fn spa_fallback() -> actix_web::Result<actix_files::NamedFile> {
+    Ok(actix_files::NamedFile::open("./frontend/dist/index.html")?)
 }
 
 async fn load(pool: &Pool<Postgres>) -> Result<(Vec<Definition>, Vec<Deployment>), String> {

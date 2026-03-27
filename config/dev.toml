@@ -6,7 +6,7 @@ password="mcep"
 name="mcep"
 
 [kafka]
-hosts="localhost:9092"
+hosts="localhost:9094"
 topics.input="input"
 topics.output="output"
 client_id="mcep-kafka"
@@ -15,4 +15,4 @@ client_id="mcep-kafka"
 host="nats://localhost:4222"
 
 [logging]
-debug=false
+debug=true
