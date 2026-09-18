@@ -14,7 +14,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup install 1.91.1 && rustup default 1.91.1
+RUN rustup install 1.97.1 && rustup default 1.97.1
 
 ENV PYO3_PYTHON=/usr/bin/python3.11
 

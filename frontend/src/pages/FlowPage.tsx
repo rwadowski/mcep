@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
@@ -15,9 +16,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { createDeployment } from '../api/deployments';
+import { createDeployment, getDeployment, updateDeployment } from '../api/deployments';
 import { getDefinitions } from '../api/definitions';
-import type { BlockConnection, DataType, Definition, NewDeployment } from '../types';
+import type { BlockConnection, BlockJunction, DataType, Definition, Deployment, NewDeployment, UpdateDeployment } from '../types';
 import {
   SourceNodeComponent,
   BlockNodeComponent,
@@ -40,6 +41,10 @@ const nextId = (prefix: string) => `${prefix}-${++uid}`;
 
 export default function FlowPage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const deploymentId = id ? Number(id) : null;
+  const isEditing = deploymentId !== null;
+
   const [definitions, setDefinitions] = useState<Definition[]>([]);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -51,8 +56,29 @@ export default function FlowPage() {
   const nextPos = useRef({ x: 80, y: 80 });
 
   useEffect(() => {
-    getDefinitions().then(setDefinitions).catch(() => {});
-  }, []);
+    let cancelled = false;
+    (async () => {
+      try {
+        const defs = await getDefinitions();
+        if (cancelled) return;
+        setDefinitions(defs);
+
+        if (deploymentId !== null) {
+          const dep = await getDeployment(deploymentId);
+          if (cancelled) return;
+          setName(dep.name);
+          setVersion(dep.version);
+          uid = Math.max(uid, ...dep.blocks.map((b) => b.id), 0);
+          const { nodes: loadedNodes, edges: loadedEdges } = buildGraphFromDeployment(dep, defs);
+          setNodes(loadedNodes);
+          setEdges(loadedEdges);
+        }
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load deployment');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [deploymentId]);
 
   // Keep selectedNode in sync with nodes array (data may have changed via updateNodeData)
   useEffect(() => {
@@ -123,18 +149,27 @@ export default function FlowPage() {
       return [{ from: { ...from, data_type: from.data_type }, to: { ...to, data_type: from.data_type } }];
     });
 
-    const payload: NewDeployment = {
-      name: name.trim(),
-      version: version.trim(),
-      sources: sourceNodes.map((n) => { const d = n.data as SourceData; return { id: d.portId, data_type: d.dataType }; }),
-      sinks:   sinkNodes.map((n)   => { const d = n.data as SinkData;   return { id: d.portId, data_type: d.dataType }; }),
-      blocks:  blockNodes.map((n)  => { const d = n.data as BlockData;  return { definition_id: d.definitionId, id: d.instanceId }; }),
-      connections,
-    };
+    const sources = sourceNodes.map((n) => { const d = n.data as SourceData; return { id: d.portId, data_type: d.dataType }; });
+    const sinks   = sinkNodes.map((n)   => { const d = n.data as SinkData;   return { id: d.portId, data_type: d.dataType }; });
+    const blocks  = blockNodes.map((n)  => { const d = n.data as BlockData;  return { definition_id: d.definitionId, id: d.instanceId }; });
 
     setLoading(true);
     try {
-      await createDeployment(payload);
+      if (isEditing && deploymentId !== null) {
+        const payload: UpdateDeployment = {
+          id: deploymentId,
+          name: name.trim(),
+          version: version.trim(),
+          sources,
+          sinks,
+          blocks,
+          connections,
+        };
+        await updateDeployment(payload);
+      } else {
+        const payload: NewDeployment = { name: name.trim(), version: version.trim(), sources, sinks, blocks, connections };
+        await createDeployment(payload);
+      }
       navigate('/deployments');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
@@ -168,7 +203,7 @@ export default function FlowPage() {
           <div className="flow-topbar-sep" />
           <button className="btn-secondary" onClick={() => navigate('/deployments')}>Cancel</button>
           <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Creating…' : 'Create Flow'}
+            {loading ? (isEditing ? 'Saving…' : 'Creating…') : (isEditing ? 'Save Changes' : 'Create Flow')}
           </button>
         </div>
       </div>
@@ -176,34 +211,37 @@ export default function FlowPage() {
       {error && <div className="error flow-error">{error}</div>}
 
       {/* Canvas + edit panel */}
-      <div className="flow-workspace">
-        <div className="flow-canvas-area">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            nodeTypes={nodeTypes}
-            onNodeClick={(_, node) => setSelectedNode(node)}
-            onPaneClick={() => setSelectedNode(null)}
-            fitView
-            deleteKeyCode="Delete"
-          >
-            <Background gap={16} color="#1e2130" />
-            <Controls />
-            <MiniMap nodeColor={miniMapColor} maskColor="rgba(15,17,23,0.6)" style={{ background: '#1a1d27' }} />
-          </ReactFlow>
-        </div>
+      <ReactFlowProvider>
+        <div className="flow-workspace">
+          <div className="flow-canvas-area">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              nodeTypes={nodeTypes}
+              onNodeClick={(_, node) => setSelectedNode(node)}
+              onPaneClick={() => setSelectedNode(null)}
+              fitView
+              fitViewOptions={{ maxZoom: 1 }}
+              deleteKeyCode="Delete"
+            >
+              <Background gap={16} color="#1e2130" />
+              <Controls />
+              <MiniMap nodeColor={miniMapColor} maskColor="rgba(15,17,23,0.6)" style={{ background: '#1a1d27' }} />
+            </ReactFlow>
+          </div>
 
-        {selectedNode && (
-          <EditPanel
-            node={selectedNode}
-            definitions={definitions}
-            onClose={() => setSelectedNode(null)}
-          />
-        )}
-      </div>
+          {selectedNode && (
+            <EditPanel
+              node={selectedNode}
+              definitions={definitions}
+              onClose={() => setSelectedNode(null)}
+            />
+          )}
+        </div>
+      </ReactFlowProvider>
     </div>
   );
 }
@@ -213,6 +251,86 @@ function miniMapColor(node: Node) {
   if (node.type === 'block')  return '#818cf8';
   if (node.type === 'sink')   return '#f472b6';
   return '#64748b';
+}
+
+function buildGraphFromDeployment(dep: Deployment, definitions: Definition[]): { nodes: Node[]; edges: Edge[] } {
+  const nodes: Node[] = [];
+  const sourceIdToNode = new Map<string, string>();
+  const sinkIdToNode = new Map<string, string>();
+  const blockRefToDef = new Map<string, Definition | undefined>();
+  const blockRefToNode = new Map<string, string>();
+
+  dep.sources.forEach((s, i) => {
+    const nodeId = `lsrc-${i}`;
+    sourceIdToNode.set(s.id, nodeId);
+    const data: SourceData = { portId: s.id, dataType: s.data_type };
+    nodes.push({ id: nodeId, type: 'source', position: { x: 80, y: 80 + i * 140 }, data });
+  });
+
+  dep.blocks.forEach((b, i) => {
+    const nodeId = `lblk-${i}`;
+    const ref = `${b.definition_id}.${b.id}`;
+    blockRefToNode.set(ref, nodeId);
+    const def = definitions.find((d) => d.id === b.definition_id);
+    blockRefToDef.set(ref, def);
+    const body = def?.body as { inputs?: { name: string; data_type: DataType }[]; outputs?: { name: string; data_type: DataType }[] } | undefined;
+    const data: BlockData = {
+      definitionId: b.definition_id,
+      instanceId: b.id,
+      definitionName: def?.name ?? `def:${b.definition_id}`,
+      inputs: body?.inputs ?? [],
+      outputs: body?.outputs ?? [],
+    };
+    nodes.push({ id: nodeId, type: 'block', position: { x: 420, y: 80 + i * 160 }, data });
+  });
+
+  dep.sinks.forEach((s, i) => {
+    const nodeId = `lsnk-${i}`;
+    sinkIdToNode.set(s.id, nodeId);
+    const data: SinkData = { portId: s.id, dataType: s.data_type };
+    nodes.push({ id: nodeId, type: 'sink', position: { x: 760, y: 80 + i * 140 }, data });
+  });
+
+  // The backend only stores which block instance a connection touches, not the
+  // port name — pick the first port of matching data_type as a best-effort guess.
+  const resolveEndpoint = (junction: BlockJunction, side: 'from' | 'to'): { node: string; handle: string } | null => {
+    if (junction.source) {
+      const node = sourceIdToNode.get(junction.source);
+      return node ? { node, handle: 'out' } : null;
+    }
+    if (junction.sink) {
+      const node = sinkIdToNode.get(junction.sink);
+      return node ? { node, handle: 'in' } : null;
+    }
+    if (junction.block) {
+      const node = blockRefToNode.get(junction.block);
+      if (!node) return null;
+      const def = blockRefToDef.get(junction.block);
+      const body = def?.body as { inputs?: { name: string; data_type: DataType }[]; outputs?: { name: string; data_type: DataType }[] } | undefined;
+      const ports = side === 'from' ? body?.outputs ?? [] : body?.inputs ?? [];
+      const port = ports.find((p) => p.data_type === junction.data_type) ?? ports[0];
+      if (!port) return null;
+      return { node, handle: side === 'from' ? `out-${port.name}` : `in-${port.name}` };
+    }
+    return null;
+  };
+
+  const edges: Edge[] = dep.connections.flatMap((conn, i) => {
+    const from = resolveEndpoint(conn.from, 'from');
+    const to = resolveEndpoint(conn.to, 'to');
+    if (!from || !to) return [];
+    return [{
+      id: `e${i}`,
+      source: from.node,
+      sourceHandle: from.handle,
+      target: to.node,
+      targetHandle: to.handle,
+      type: 'smoothstep',
+      animated: true,
+    }];
+  });
+
+  return { nodes, edges };
 }
 
 function buildJunction(node: Node, handle: string) {

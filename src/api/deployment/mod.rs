@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json, Path};
-use actix_web::{delete, get, post, HttpResponse};
+use actix_web::{delete, get, patch, post, HttpResponse};
 use sqlx::{Pool, Postgres};
 
 use crate::runtime::engine::Engine;
-use crate::services::deployment::{create, delete, get};
-use crate::services::deployment::create::NewDeployment;
+use crate::services::deployment::{create, delete, get, update};
+use crate::types::deployment::{NewDeployment, UpdateDeployment};
 
 #[get("")]
 pub async fn get_all_deployments_handler(pool: Data<Pool<Postgres>>) -> HttpResponse {
@@ -50,4 +50,15 @@ pub async fn delete_deployment_handler(
     let id = path.into_inner();
     let _ = delete::delete_deployment(&engine, &pool, id).await;
     HttpResponse::new(StatusCode::OK)
+}
+
+#[patch("")]
+pub async fn update_deployment_handler(
+    pool: Data<Pool<Postgres>>,
+    dep: Json<UpdateDeployment>,
+) -> HttpResponse {
+    match update::update_deployment(&pool, dep.into_inner()).await {
+        Ok(deployment) => HttpResponse::Ok().json(deployment),
+        Err(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }

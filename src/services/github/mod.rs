@@ -32,19 +32,25 @@ pub fn fetch_code(source: &Source) -> Result<String, String> {
         "https://api.github.com/repos/{}/{}/contents/{}",
         source.owner, source.repository, source.path
     );
-    let bearer = format!("Bearer {}", source.token);
-    let body = ureq::get(path.as_str())
-        .set("Authorization", bearer.as_str())
-        .set("Accept", " application/vnd.github+json")
+    let mut request = ureq::get(path.as_str())
+        .header("Accept", "application/vnd.github+json")
+        .header("User-Agent", "mcep");
+    if let Some(token) = &source.token {
+        let bearer = format!("Bearer {}", token);
+        request = request.header("Authorization", bearer.as_str());
+    }
+    let body = request
         .call()
         .map_err(utils::to_string)?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .map_err(utils::to_string)?;
     let content = serde_json::from_str::<Content>(body.as_str()).map_err(utils::to_string)?;
     let source = ureq::get(content.download_url.as_str())
         .call()
         .map_err(utils::to_string)?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .map_err(utils::to_string)?;
     Ok(source)
 }

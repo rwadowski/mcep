@@ -59,12 +59,11 @@ export default function DefinitionCreatePage() {
     if (blockType === 'CodeBlock') {
       body = { type: 'CodeBlock', inputs, outputs, source, dependencies };
     } else {
-      if (!ghToken) { setError('GitHub token is required'); return; }
       body = {
         type: 'Github',
         inputs,
         outputs,
-        source: { owner: ghOwner, repository: ghRepo, token: ghToken, path: ghPath },
+        source: { owner: ghOwner, repository: ghRepo, token: ghToken || undefined, path: ghPath },
         dependencies,
       };
     }
@@ -156,7 +155,7 @@ export default function DefinitionCreatePage() {
             <label>File Path
               <input value={ghPath} onChange={(e) => setGhPath(e.target.value)} placeholder="blocks/my_block.py" />
             </label>
-            <label>Token
+            <label>Token <span className="optional-hint">(optional — required for private repos)</span>
               <input
                 type="password"
                 autoComplete="off"

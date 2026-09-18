@@ -17,15 +17,14 @@ export default function App() {
           Deployments
         </NavLink>
       </nav>
-      <main>
-        <Routes>
-          <Route path="/" element={<DefinitionsPage />} />
-          <Route path="/definitions" element={<DefinitionsPage />} />
-          <Route path="/definitions/new" element={<DefinitionCreatePage />} />
-          <Route path="/deployments" element={<DeploymentsPage />} />
-          <Route path="/deployments/new" element={<FlowPage />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path="/" element={<DefinitionsPage />} />
+        <Route path="/definitions" element={<DefinitionsPage />} />
+        <Route path="/definitions/new" element={<main><DefinitionCreatePage /></main>} />
+        <Route path="/deployments" element={<DeploymentsPage />} />
+        <Route path="/deployments/new" element={<FlowPage />} />
+        <Route path="/deployments/:id/edit" element={<FlowPage />} />
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -20,6 +20,26 @@ pub struct Definition {
     pub help: Option<String>,
 }
 
+#[derive(Deserialize)]
+pub struct NewDefinition {
+    pub name: String,
+    pub version: String,
+    pub body: Box<dyn block::Block>,
+    pub description: Option<String>,
+    pub help: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateDefinition {
+    pub id: i32,
+    pub version: Option<String>,
+    pub name: Option<String>,
+    pub body: Option<String>,
+    pub body_type: Option<String>,
+    pub description: Option<String>,
+    pub help: Option<String>,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, Type)]
 #[sqlx(rename_all = "snake_case", type_name = "VARCHAR")]
 pub enum DataType {

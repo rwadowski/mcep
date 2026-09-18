@@ -1,18 +1,7 @@
-use crate::types::definition::block::Block;
 use log::{error, info};
-use serde_derive::Deserialize;
 use sqlx::{Error, Pool, Postgres};
 
-use crate::types::definition::Definition;
-
-#[derive(Deserialize)]
-pub struct NewDefinition {
-    pub name: String,
-    pub version: String,
-    pub body: Box<dyn Block>,
-    pub description: Option<String>,
-    pub help: Option<String>,
-}
+use crate::types::definition::{Definition, NewDefinition};
 
 pub async fn create_definition(
     pool: &Pool<Postgres>,

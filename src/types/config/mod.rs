@@ -4,6 +4,8 @@ use config::{Config, Environment, File};
 use std::env;
 use serde_derive::{Deserialize, Serialize};
 
+mod mod_test;
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct App {
     pub database: Database,

@@ -27,7 +27,7 @@ export interface GithubBlockBody {
   source: {
     owner: string;
     repository: string;
-    token: string; // write-only: sent once, never persisted
+    token?: string; // optional — only required for private repos
     path: string;
   };
   dependencies: Dependency[];
@@ -101,4 +101,14 @@ export interface NewDeployment {
   sources: DeploymentPort[];
   sinks: DeploymentPort[];
   blocks: DeploymentBlock[];
+}
+
+export interface UpdateDeployment {
+  id: number;
+  name: string | null;
+  version: string | null;
+  connections: BlockConnection[] | null;
+  sources: DeploymentPort[] | null;
+  sinks: DeploymentPort[] | null;
+  blocks: DeploymentBlock[] | null;
 }

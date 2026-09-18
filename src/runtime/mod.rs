@@ -106,5 +106,5 @@ impl From<SourceId> for Origin {
 }
 
 pub fn init() {
-    pyo3::prepare_freethreaded_python();
+    pyo3::Python::initialize();
 }

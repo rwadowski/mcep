@@ -67,6 +67,7 @@ impl Block for Github {
 pub struct Source {
     pub owner: String,
     pub repository: String,
-    pub token: String,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub token: Option<String>,
     pub path: String,
 }

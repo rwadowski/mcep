@@ -70,7 +70,8 @@ async fn main() {
             .service(deployment::get_all_deployments_handler)
             .service(deployment::create_deployment_handler)
             .service(deployment::get_deployment_handler)
-            .service(deployment::delete_deployment_handler);
+            .service(deployment::delete_deployment_handler)
+            .service(deployment::update_deployment_handler);
         let v1 = web::scope("/v1")
             .service(definition_services)
             .service(deployment_services);

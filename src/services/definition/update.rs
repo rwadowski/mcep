@@ -1,30 +1,13 @@
-use crate::types::definition::Definition;
+use crate::types::definition::{Definition, UpdateDefinition};
 use log::{error, info};
-use serde_derive::Deserialize;
-use sqlx::{Error, Pool, Postgres};
-
-#[derive(Deserialize)]
-pub struct UpdateDefinition {
-    pub id: i32,
-    pub version: Option<String>,
-    pub name: Option<String>,
-    pub body: Option<String>,
-    pub body_type: Option<String>,
-    pub description: Option<String>,
-    pub help: Option<String>,
-}
+use sqlx::{Error, Pool, Postgres, QueryBuilder};
 
 pub async fn update_definition<'a>(
     pool: &Pool<Postgres>,
-    def: UpdateDefinition,
+    update: UpdateDefinition,
 ) -> Result<Definition, String> {
-    let id = def.id;
-    let (query_str, values) = query_data(def);
-    let mut query = sqlx::query_as::<_, Definition>(query_str.as_str());
-    for value in values {
-        query = query.bind(value);
-    }
-    query = query.bind(id);
+    let mut builder = new_builder(&update);
+    let query = builder.build_query_as::<Definition>();
     let result: Result<Definition, Error> = query.fetch_one(pool).await;
     match result {
         Ok(definition) => {
@@ -32,54 +15,48 @@ pub async fn update_definition<'a>(
             Ok(definition)
         }
         Err(err) => {
-            error!("definition updated error - {}", err);
+            error!("definition {} updated failed - {}", update.id, err);
             Err(err.to_string())
         }
     }
 }
-
-fn query_data(def: UpdateDefinition) -> (String, Vec<String>) {
-    let mut query_str = "UPDATE definitions SET ".to_string();
-    let mut set_clauses: Vec<String> = Vec::new();
-    let mut values: Vec<String> = Vec::new();
-    let mut index = 1;
-    if let Some(title) = def.name {
-        let q = format!("{} = ${}", "title", index);
-        set_clauses.push(q);
-        values.push(title);
-        index = index + 1;
+pub(crate) fn new_builder(definition: &UpdateDefinition) -> QueryBuilder<Postgres> {
+    let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new("UPDATE definitions SET ");
+    let mut sep = query_builder.separated(", ");
+    let mut has_fields = false;
+    if let Some(version) = &definition.version {
+        sep.push("version = ")
+            .push_bind_unseparated(version.clone());
+        has_fields = true;
     }
-    if let Some(body) = def.body {
-        let q = format!("{} = ${}", "body", index);
-        set_clauses.push(q);
-        values.push(body);
-        index = index + 1;
+    if let Some(name) = &definition.name {
+        sep.push("name = ").push_bind_unseparated(name.clone());
+        has_fields = true;
     }
-    if let Some(description) = def.description {
-        let q = format!("{} = ${}", "description", index);
-        set_clauses.push(q);
-        values.push(description);
-        index = index + 1;
+    if let Some(body) = &definition.body {
+        sep.push("body = ").push_bind_unseparated(body.clone());
+        has_fields = true;
     }
-    if let Some(help) = def.help {
-        let q = format!("{} = ${}", "help", index);
-        set_clauses.push(q);
-        values.push(help);
-        index = index + 1;
+    if let Some(body_type) = &definition.body_type {
+        sep.push("body_type = ")
+            .push_bind_unseparated(body_type.clone());
+        has_fields = true;
     }
-    if let Some(version) = def.version {
-        let q = format!("{} = ${}", "version", index);
-        set_clauses.push(q);
-        values.push(version);
-        index = index + 1;
+    if let Some(description) = &definition.description {
+        sep.push("description = ")
+            .push_bind_unseparated(description.clone());
+        has_fields = true;
     }
-    if let Some(body_type) = def.body_type {
-        let q = format!("{} = ${}", "body_type", index);
-        set_clauses.push(q);
-        values.push(body_type);
-        index = index + 1;
+    if let Some(help) = &definition.help {
+        sep.push("help = ").push_bind_unseparated(help.clone());
+        has_fields = true;
     }
-    query_str.push_str(set_clauses.join(", ").as_str());
-    query_str.push_str(format!(" WHERE id = ${} RETURNING *;", index).as_str());
-    (query_str, values)
+    query_builder.push(if has_fields {
+        " WHERE id = "
+    } else {
+        "WHERE id = "
+    });
+    query_builder.push_bind(definition.id);
+    query_builder.push(" RETURNING *");
+    query_builder
 }

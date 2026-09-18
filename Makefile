@@ -1,21 +1,18 @@
-.PHONY: test build build-frontend release clean frontend frontend-install frontend-dev
+.PHONY: test build release clean frontend frontend-install frontend-dev
 
 release: frontend
 	cargo build --release
 
-build:
-	cargo build
-
-build-frontend: frontend
+build: frontend
 	cargo build
 
 test:
 	cargo test
 
 clean:
-	rm -rf target
-	rm -rf frontend/dist
-	rm -rf frontend/node_modules
+	-rm -rf target
+	-rm -rf frontend/dist
+	-rm -rf frontend/node_modules
 
 frontend-install:
 	cd frontend && npm install
