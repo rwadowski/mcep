@@ -8,14 +8,23 @@ RUN apt-get update && \
     update-alternatives --set python3 /usr/bin/python3.11 && \
     rm -rf /var/lib/apt/lists/*
 
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup install 1.91.1 && rustup default 1.91.1
+RUN rustup install 1.97.1 && rustup default 1.97.1
 
 ENV PYO3_PYTHON=/usr/bin/python3.11
 
 WORKDIR /mcep
+
+COPY frontend/package*.json ./frontend/
+RUN cd frontend && npm ci
+
 COPY . ./
+RUN cd frontend && npm run build
 RUN make release
 
 FROM debian:bookworm-slim AS image
@@ -26,7 +35,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /mcep
-RUN mkdir config
+RUN mkdir -p config frontend/dist
 COPY --from=build /mcep/target/release/mcep .
-COPY --from=build /mcep/config/*toml ./config
+COPY --from=build /mcep/config/*toml ./config/
+COPY --from=build /mcep/frontend/dist/ ./frontend/dist/
 CMD ["./mcep"]

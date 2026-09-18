@@ -5,7 +5,69 @@ mod tests {
     use crate::types::deployment::connection::BlockConnection;
     use crate::types::deployment::sink::{Sink, SinkId};
     use crate::types::deployment::source::{Source, SourceId};
-    use crate::types::deployment::{BlockId, DeployedBlock, Deployment, DeploymentId};
+    use crate::types::deployment::{BlockId, DeployedBlock, Deployment, DeploymentId, NewDeployment, UpdateDeployment};
+
+    #[test]
+    fn new_deployment_deserialize() {
+        let payload = r#"{
+          "name": "flow",
+          "version": "1.0.0",
+          "connections": [],
+          "sources": [
+            { "id": "source_1", "data_type": "Text" }
+          ],
+          "sinks": [
+            { "id": "sink_1", "data_type": "Text" }
+          ],
+          "blocks": [
+            { "definition_id": 1, "id": 1 }
+          ]
+        }"#;
+
+        let result = serde_json::from_str::<NewDeployment>(payload).unwrap();
+        assert_eq!(result.name, "flow");
+        assert_eq!(result.version, "1.0.0");
+        assert_eq!(result.connections, Vec::new());
+        assert_eq!(result.sources, vec![Source { id: SourceId::from("source_1"), data_type: DataType::Text }]);
+        assert_eq!(result.sinks, vec![Sink { id: SinkId::from("sink_1"), data_type: DataType::Text }]);
+        assert_eq!(result.blocks, vec![DeployedBlock { definition_id: 1, id: 1 }]);
+    }
+
+    #[test]
+    fn update_deployment_deserialize_all_fields() {
+        let payload = r#"{
+          "id": 1,
+          "name": "renamed",
+          "version": "2.0.0",
+          "connections": [],
+          "sources": [],
+          "sinks": [],
+          "blocks": []
+        }"#;
+
+        let result = serde_json::from_str::<UpdateDeployment>(payload).unwrap();
+        assert_eq!(result.id, 1);
+        assert_eq!(result.name, Some("renamed".to_string()));
+        assert_eq!(result.version, Some("2.0.0".to_string()));
+        assert_eq!(result.connections, Some(Vec::new()));
+        assert_eq!(result.sources, Some(Vec::new()));
+        assert_eq!(result.sinks, Some(Vec::new()));
+        assert_eq!(result.blocks, Some(Vec::new()));
+    }
+
+    #[test]
+    fn update_deployment_deserialize_only_id_leaves_rest_none() {
+        let payload = r#"{ "id": 1 }"#;
+
+        let result = serde_json::from_str::<UpdateDeployment>(payload).unwrap();
+        assert_eq!(result.id, 1);
+        assert_eq!(result.name, None);
+        assert_eq!(result.version, None);
+        assert_eq!(result.connections, None);
+        assert_eq!(result.sources, None);
+        assert_eq!(result.sinks, None);
+        assert_eq!(result.blocks, None);
+    }
 
     #[test]
     fn test_serialize_body() {

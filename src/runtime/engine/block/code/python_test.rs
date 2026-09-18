@@ -2,13 +2,14 @@
 mod python {
     use crate::runtime::engine::Data;
     use pyo3::prelude::*;
+
     #[test]
     fn bool_conversion() {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let expected = true;
             let data = Data::Boolean(expected);
-            let result = data.to_object(py);
-            let value: PyResult<bool> = result.extract(py);
+            let object = data.into_pyobject(py).unwrap();
+            let value: PyResult<bool> = object.extract();
             assert_eq!(true, value.is_ok());
             assert_eq!(expected, value.unwrap());
         })
@@ -16,11 +17,11 @@ mod python {
 
     #[test]
     fn unsigned_int_conversion() {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let expected: u64 = 1000;
             let data = Data::UnsignedInt(expected);
-            let result = data.to_object(py);
-            let value: PyResult<u64> = result.extract(py);
+            let object = data.into_pyobject(py).unwrap();
+            let value: PyResult<u64> = object.extract();
             assert_eq!(true, value.is_ok());
             assert_eq!(expected, value.unwrap());
         })
@@ -28,11 +29,11 @@ mod python {
 
     #[test]
     fn signed_int_conversion() {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let expected: i64 = 300;
             let data = Data::SignedInt(expected);
-            let result = data.to_object(py);
-            let value: PyResult<i64> = result.extract(py);
+            let object = data.into_pyobject(py).unwrap();
+            let value: PyResult<i64> = object.extract();
             assert_eq!(true, value.is_ok());
             assert_eq!(expected, value.unwrap());
         })
@@ -40,11 +41,11 @@ mod python {
 
     #[test]
     fn text_conversion() {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let expected: String = "text".to_string();
             let data = Data::Text(expected.clone());
-            let result = data.to_object(py);
-            let value: PyResult<String> = result.extract(py);
+            let object = data.into_pyobject(py).unwrap();
+            let value: PyResult<String> = object.extract();
             assert_eq!(true, value.is_ok());
             assert_eq!(expected, value.unwrap());
         })
@@ -52,13 +53,13 @@ mod python {
 
     #[test]
     fn array_conversion() {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let element_1 = "element_1".to_string();
             let element_2 = "element_2".to_string();
             let expected: Vec<Data> =
                 vec![Data::Text(element_1.clone()), Data::Text(element_2.clone())];
-            let result = expected.to_object(py);
-            let value: PyResult<Vec<Data>> = result.extract(py);
+            let object = expected.clone().into_pyobject(py).unwrap();
+            let value: PyResult<Vec<Data>> = object.extract();
             assert_eq!(true, value.is_ok());
             assert_eq!(expected, value.unwrap());
         })

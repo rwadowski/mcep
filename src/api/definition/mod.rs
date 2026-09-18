@@ -1,6 +1,5 @@
-use crate::services::definition::create::NewDefinition;
-use crate::services::definition::update::UpdateDefinition;
 use crate::services::definition::{create, delete, get, update};
+use crate::types::definition::{NewDefinition, UpdateDefinition};
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json, Path};
 use actix_web::{delete, get, patch, post, HttpResponse};

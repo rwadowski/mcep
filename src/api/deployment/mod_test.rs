@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::services::deployment::create::NewDeployment;
+    use crate::types::deployment::NewDeployment;
     use crate::types::definition::{DataType, DefinitionId};
     use crate::types::deployment::connection::junction::BlockJunction;
     use crate::types::deployment::connection::BlockConnection;

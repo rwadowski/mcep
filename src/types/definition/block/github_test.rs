@@ -11,12 +11,11 @@ mod test {
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let owner = "owner".to_string();
         let repository = "repository".to_string();
-        let token = "token".to_string();
         let path = "path".to_string();
         let source = Source {
             owner,
             repository,
-            token,
+            token: None,
             path,
         };
         let block: Box<dyn Block> = Box::new(Github {
@@ -43,7 +42,6 @@ mod test {
                 "source": {
                     "owner": "owner",
                     "repository": "repository",
-                    "token": "token",
                     "path": "path"
                 },
                 "dependencies": []
@@ -64,12 +62,11 @@ mod test {
         let outputs = vec![Output::new("output_id_1", DataType::Text)];
         let owner = "owner".to_string();
         let repository = "repository".to_string();
-        let token = "token".to_string();
         let path = "path".to_string();
         let source = Source {
             owner,
             repository,
-            token,
+            token: None,
             path,
         };
         let expected = Github {
@@ -96,7 +93,6 @@ mod test {
                 "source": {
                     "owner": "owner",
                     "repository": "repository",
-                    "token": "token",
                     "path": "path"
                 },
                 "dependencies": []

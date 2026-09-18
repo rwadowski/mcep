@@ -13,7 +13,7 @@ pub fn new_store_block_definition(token: String) -> Result<Definition, String> {
         source: Source {
             owner: "rwadowski".to_string(),
             repository: "mcep-scripts".to_string(),
-            token,
+            token: Some(token),
             path: "store.py".to_string(),
         },
         dependencies: vec![Dependency {
@@ -41,7 +41,7 @@ pub fn new_sum_block_definition(token: String) -> Result<Definition, String> {
         source: Source {
             owner: "rwadowski".to_string(),
             repository: "mcep-scripts".to_string(),
-            token,
+            token: Some(token),
             path: "sum.py".to_string(),
         },
         dependencies: Vec::new(),

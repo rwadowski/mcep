@@ -66,6 +66,27 @@ impl FromRow<'_, PgRow> for Deployment {
     }
 }
 
+#[derive(Deserialize)]
+pub struct NewDeployment {
+    pub name: String,
+    pub version: String,
+    pub connections: Vec<BlockConnection>,
+    pub sources: Vec<Source>,
+    pub sinks: Vec<Sink>,
+    pub blocks: Vec<DeployedBlock>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateDeployment {
+    pub id: i32,
+    pub name: Option<String>,
+    pub version: Option<String>,
+    pub connections: Option<Vec<BlockConnection>>,
+    pub sources: Option<Vec<Source>>,
+    pub sinks: Option<Vec<Sink>>,
+    pub blocks: Option<Vec<DeployedBlock>>,
+}
+
 #[derive(Eq, PartialEq, Hash, Clone, Debug, Ord, PartialOrd)]
 pub struct BlockId {
     pub definition_id: DefinitionId,

@@ -1,0 +1,57 @@
+:root {
+  /* Surfaces (Material dark theme baseline) */
+  --bg-app: #121212;
+  --bg-panel: #1e1e1e;
+  --bg-inset: #171717;
+
+  /* Borders */
+  --border: #333333;
+  --border-strong: #454545;
+
+  /* Text */
+  --text: #ececec;
+  --text-muted: #a8a8a8;
+  --text-subtle: #7d7d7d;
+
+  /* Accent (Material Teal 400/600) */
+  --accent: #26a69a;
+  --accent-strong: #00897b;
+  --accent-contrast: #ffffff;
+
+  /* Node types (flow editor) */
+  --success: #66bb6a;
+  --sink: #f06292;
+
+  /* Status */
+  --danger: #7d2a3c;
+  --danger-bg: #2a1015;
+  --danger-text: #cf6679;
+  --info-bg: #0d1b2a;
+  --info-border: #1a3a5c;
+  --info-text: #64b5f6;
+
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}

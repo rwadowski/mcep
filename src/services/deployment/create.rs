@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
 use log::{error, info};
-use serde_derive::Deserialize;
 use sqlx::types::Json;
 use sqlx::{Pool, Postgres};
 
@@ -11,18 +10,8 @@ use crate::types::definition::DefinitionId;
 use crate::types::deployment::connection::BlockConnection;
 use crate::types::deployment::sink::Sink;
 use crate::types::deployment::source::Source;
-use crate::types::deployment::{DeployedBlock, Deployment};
+use crate::types::deployment::{DeployedBlock, Deployment, NewDeployment};
 use crate::utils;
-
-#[derive(Deserialize)]
-pub struct NewDeployment {
-    pub name: String,
-    pub version: String,
-    pub connections: Vec<BlockConnection>,
-    pub sources: Vec<Source>,
-    pub sinks: Vec<Sink>,
-    pub blocks: Vec<DeployedBlock>,
-}
 
 pub async fn create_deployment(
     engine: &Engine,

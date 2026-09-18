@@ -12,7 +12,7 @@ pub async fn delete_deployment(
         .await
         .map_err(|e| e.to_string())?;
     engine.undeploy(&deployment).await;
-    sqlx::query("DELETE FROM deployments WHERE id = $1")
+    sqlx::query("DELETE FROM deployments WHERE id = $1 RETURNING id")
         .bind(id)
         .execute(pool)
         .await

@@ -42,9 +42,10 @@ pub fn create_definition(
 ) -> Result<DefinitionId, String> {
     let path = format!("http://{}:{}/api/v1/definition", host, port);
     let body = ureq::post(path.as_str())
-        .send_json(ureq::json!(definition))
+        .send_json(serde_json::json!(definition))
         .map_err(utils::to_string)?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .map_err(utils::to_string)?;
     let result = serde_json::from_str::<Definition>(&body).map_err(utils::to_string)?;
     Ok(result.id)
@@ -69,9 +70,10 @@ pub fn create_deployment(
 ) -> Result<DeploymentId, String> {
     let path = format!("http://{}:{}/api/v1/deployment", host, port);
     let body = ureq::post(path.as_str())
-        .send_json(ureq::json!(deployment))
+        .send_json(serde_json::json!(deployment))
         .map_err(utils::to_string)?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .map_err(utils::to_string)?;
     let result = serde_json::from_str::<Deployment>(&body).map_err(utils::to_string)?;
     Ok(result.id)
@@ -93,7 +95,8 @@ fn delete(path: String) -> Result<(), String> {
     ureq::delete(path.as_str())
         .call()
         .map_err(utils::to_string)?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .map_err(utils::to_string)
         .map(|_| ())
 }

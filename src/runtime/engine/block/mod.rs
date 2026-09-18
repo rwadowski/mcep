@@ -63,11 +63,12 @@ fn as_type<T: Clone + 'static>(definition: Box<dyn BlockDefinition>) -> Result<T
 pub fn spawn_block(
     nats: Client,
     deployment_id: DeploymentId,
+    block_id: &BlockId,
     block: Box<dyn Block>,
     target_block_subjects: Vec<String>,
     target_sink_subjects: Vec<String>,
 ) -> JoinHandle<()> {
-    let subject = block_subject(deployment_id, &block.id());
+    let subject = block_subject(deployment_id, block_id);
     tokio::spawn(async move {
         run_block(nats, subject, block, target_block_subjects, target_sink_subjects).await;
     })
