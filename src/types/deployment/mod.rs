@@ -95,7 +95,7 @@ pub struct BlockId {
 
 impl fmt::Display for BlockId {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "BlockId({}.{})", self.definition_id, self.id)
+        write!(f, "{}.{}", self.definition_id, self.id)
     }
 }
 
@@ -124,10 +124,6 @@ pub type BlockInstanceId = i32;
 impl BlockId {
     pub fn new(definition_id: DefinitionId, id: BlockInstanceId) -> BlockId {
         BlockId { definition_id, id }
-    }
-
-    pub fn to_string(self) -> String {
-        format!("{}.{}", self.definition_id, self.id)
     }
 }
 

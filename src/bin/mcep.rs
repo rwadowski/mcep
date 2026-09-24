@@ -3,15 +3,17 @@ use actix_web::middleware::Logger as ActixLogger;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use log::info;
-use mcep::api::{definition, deployment};
+use mcep::api::definition::definition_handler_routes;
+use mcep::api::deployment::deployment_handler_routes;
+use mcep::database::psql::definition::PsqlDefinitionStore;
+use mcep::database::psql::deployment::PsqlDeploymentStore;
 use mcep::runtime::engine::Engine;
 use mcep::runtime::sink::kafka::spawn_sink;
 use mcep::runtime::source::spawn_source;
+use mcep::services::definition::{DefinitionService, Service};
+use mcep::services::deployment::{DeploymentService, Service as DeploymentServiceImpl};
 use mcep::types::config;
-use mcep::types::definition::Definition;
-use mcep::types::deployment::Deployment;
 use mcep::{database, runtime, utils};
-use sqlx::{Pool, Postgres};
 use tokio::signal;
 
 #[actix_web::main]
@@ -39,11 +41,23 @@ async fn main() {
         .await
         .expect("sink must start");
 
-    info!("starting engine");
-    let (definitions, deployments) = load(&database_connection_pool)
-        .await
-        .expect("database state must be loaded");
     let engine = Engine::new(nats.clone());
+
+    let definition_store = PsqlDefinitionStore::new(database_connection_pool.clone());
+    let definition_service = Service::new(definition_store.clone());
+    let deployment_store = PsqlDeploymentStore::new(database_connection_pool.clone());
+    let deployment_service =
+        DeploymentServiceImpl::new(deployment_store, definition_store, engine.clone());
+
+    info!("starting engine");
+    let definitions = definition_service
+        .get_all()
+        .await
+        .expect("definitions should be loaded");
+    let deployments = deployment_service
+        .get_all()
+        .await
+        .expect("deployments should be loaded");
 
     {
         let definitions_by_id: std::collections::HashMap<_, _> =
@@ -60,21 +74,9 @@ async fn main() {
     spawn_source(&config.kafka, nats.clone()).expect("source must start");
 
     let server = HttpServer::new(move || {
-        let definition_services = web::scope("/definition")
-            .service(definition::create_app_definition_handler)
-            .service(definition::get_app_definition_handler)
-            .service(definition::delete_app_definition_handler)
-            .service(definition::update_app_definition_handler)
-            .service(definition::get_all_definitions_handler);
-        let deployment_services = web::scope("/deployment")
-            .service(deployment::get_all_deployments_handler)
-            .service(deployment::create_deployment_handler)
-            .service(deployment::get_deployment_handler)
-            .service(deployment::delete_deployment_handler)
-            .service(deployment::update_deployment_handler);
         let v1 = web::scope("/v1")
-            .service(definition_services)
-            .service(deployment_services);
+            .service(definition_handler_routes(definition_service.clone()))
+            .service(deployment_handler_routes(deployment_service.clone()));
         let api = web::scope("/api").service(v1);
         App::new()
             .wrap(ActixLogger::default())
@@ -99,14 +101,4 @@ async fn main() {
 
 async fn spa_fallback() -> actix_web::Result<actix_files::NamedFile> {
     Ok(actix_files::NamedFile::open("./frontend/dist/index.html")?)
-}
-
-async fn load(pool: &Pool<Postgres>) -> Result<(Vec<Definition>, Vec<Deployment>), String> {
-    let definitions = mcep::services::definition::get::get_all_definitions(pool)
-        .await
-        .map_err(utils::to_string)?;
-    let deployments = mcep::services::deployment::get::get_all_deployments(pool)
-        .await
-        .map_err(utils::to_string)?;
-    Ok((definitions, deployments))
 }
